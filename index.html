@@ -3,148 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abyss - 纯粹防烧屏系统</title>
+    <title>Abyss Pro - 终极防烧屏系统</title>
     <style>
         :root {
-            --pc-panel-bg: rgba(10, 10, 12, 0.85);
-            --pe-panel-bg: rgba(5, 5, 5, 0.9);
-            --accent: #5e6ad2;
-            --text-main: rgba(255, 255, 255, 0.8);
-            --text-muted: rgba(255, 255, 255, 0.3);
-            --global-brightness: 1; /* 全局亮度控制 */
+            --pc-bg: rgba(12, 12, 14, 0.85);
+            --pe-bg: rgba(5, 5, 5, 0.95);
+            --accent: #7a88ff;
+            --text-main: rgba(255, 255, 255, 0.85);
+            --text-sub: rgba(255, 255, 255, 0.35);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
         body, html {
             width: 100%; height: 100%; background-color: #000; overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
             color: var(--text-main); user-select: none;
         }
 
-        /* 隐藏鼠标与UI的终极状态 */
+        /* 隐藏状态：光标消失、UI隐遁 */
         body.idle { cursor: none; }
         body.idle #pc-sidebar { transform: translateX(-100%); opacity: 0; }
         body.idle #pe-overlay { opacity: 0; pointer-events: none; backdrop-filter: blur(0px); }
 
-        /* 核心渲染画布 */
-        #render-canvas {
+        /* 全局亮度蒙版 */
+        #brightness-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            filter: brightness(var(--global-brightness));
-            z-index: 1;
+            background: rgba(0,0,0,0); pointer-events: none; z-index: 10; transition: background 0.3s;
         }
 
+        /* 核心画布 */
+        #render-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
         /* ========================================= */
-        /* PC 端专属 UI：左侧滑出式中控台 (Hover唤醒) */
+        /* PC 端专属 UI：侧边中控台 & 快捷键提示 */
         /* ========================================= */
         #pc-sidebar {
-            position: absolute; left: 0; top: 0; height: 100%; width: 300px;
-            background: var(--pc-panel-bg); backdrop-filter: blur(30px); border-right: 1px solid rgba(255,255,255,0.05);
-            z-index: 100; transform: translateX(0); transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.5s;
-            display: flex; flex-direction: column; padding: 40px 30px;
+            position: absolute; left: 0; top: 0; height: 100%; width: 340px;
+            background: var(--pc-bg); backdrop-filter: blur(40px); border-right: 1px solid rgba(255,255,255,0.03);
+            z-index: 100; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column; padding: 50px 40px;
         }
-        .pc-header { font-size: 24px; font-weight: 200; letter-spacing: 4px; margin-bottom: 40px; color: #fff; }
+        .pc-header { font-size: 28px; font-weight: 200; letter-spacing: 6px; margin-bottom: 50px; color: #fff; }
+        .pc-header span { display: block; font-size: 11px; letter-spacing: 2px; color: var(--accent); margin-top: 8px; font-weight: 600; }
+        
         .pc-menu-item {
-            padding: 15px 0; font-size: 14px; letter-spacing: 2px; color: var(--text-muted);
-            cursor: pointer; transition: all 0.3s ease; border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 18px 0; font-size: 15px; letter-spacing: 2px; color: var(--text-sub);
+            cursor: pointer; transition: all 0.3s ease; border-bottom: 1px solid rgba(255,255,255,0.03);
             display: flex; align-items: center; justify-content: space-between;
         }
-        .pc-menu-item:hover { color: #fff; padding-left: 10px; }
-        .pc-menu-item.active { color: var(--accent); border-bottom-color: var(--accent); }
-        .pc-controls { margin-top: auto; }
-        .slider-group { margin-bottom: 20px; }
-        .slider-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
-        input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
-        .btn-fullscreen {
-            margin-top: 20px; padding: 12px; width: 100%; background: transparent; color: #fff;
-            border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; cursor: pointer; transition: 0.3s;
+        .pc-menu-item:hover { color: #fff; padding-left: 8px; }
+        .pc-menu-item.active { color: #fff; border-bottom-color: var(--accent); }
+        
+        /* 快捷键视觉设计 */
+        kbd {
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 4px; padding: 2px 8px; font-family: monospace; font-size: 11px;
+            color: var(--accent); letter-spacing: 0; transition: all 0.2s;
         }
-        .btn-fullscreen:hover { background: #fff; color: #000; }
+        .pc-menu-item:hover kbd { background: var(--accent); color: #000; border-color: var(--accent); }
+
+        .pc-controls { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 30px; }
+        .hint-text { font-size: 12px; color: var(--text-sub); line-height: 2; letter-spacing: 1px; }
+        .hint-text kbd { margin: 0 4px; }
+
+        /* Toast 提示框 (PC专属) */
+        #toast {
+            position: absolute; bottom: 40px; left: 50%; transform: translate(-50%, 20px);
+            background: rgba(20,20,25,0.9); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+            padding: 12px 24px; border-radius: 50px; color: #fff; font-size: 14px; letter-spacing: 2px;
+            z-index: 200; opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #toast.show { opacity: 1; transform: translate(-50%, 0); }
 
         /* ========================================= */
-        /* PE (移动) 端专属 UI：全屏沉浸式毛玻璃菜单 */
+        /* PE 端专属 UI：全屏沉浸式阵列 */
         /* ========================================= */
         #pe-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--pe-panel-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            z-index: 100; display: none; flex-direction: column; padding: 10vw;
-            transition: opacity 0.4s ease, backdrop-filter 0.4s ease;
+            background: var(--pe-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            z-index: 100; display: none; flex-direction: column; padding: 8vw 6vw;
+            transition: opacity 0.5s ease; overflow-y: auto;
         }
-        .pe-header { font-size: 8vw; font-weight: 300; margin-bottom: 10vh; text-align: center; letter-spacing: 2px; }
-        .pe-grid { display: grid; grid-template-columns: 1fr; gap: 4vw; flex-grow: 1; }
+        .pe-header { font-size: 7vw; font-weight: 300; margin-bottom: 6vh; text-align: center; letter-spacing: 4px; color: #fff;}
+        .pe-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4vw; flex-grow: 1; align-content: start; }
         .pe-card {
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 20px; padding: 6vw; display: flex; flex-direction: column; justify-content: center;
-            transition: background 0.2s;
+            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px; padding: 5vw; display: flex; flex-direction: column;
+            transition: all 0.3s; min-height: 25vw; justify-content: space-between;
         }
-        .pe-card.active { border-color: var(--accent); background: rgba(94, 106, 210, 0.1); }
-        .pe-card-title { font-size: 5vw; margin-bottom: 2vw; color: #fff; }
-        .pe-card-desc { font-size: 3vw; color: var(--text-muted); line-height: 1.4; }
-        .pe-footer-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 5vh; }
-        .pe-btn { padding: 4vw 8vw; border-radius: 50px; background: rgba(255,255,255,0.1); color: #fff; border: none; font-size: 4vw; }
+        .pe-card.active { border-color: var(--accent); background: rgba(122, 136, 255, 0.08); }
+        .pe-card-title { font-size: 4vw; color: #fff; margin-bottom: 1vw; }
+        .pe-card-desc { font-size: 2.8vw; color: var(--text-sub); line-height: 1.4; }
+        .pe-footer { margin-top: 4vh; text-align: center; }
+        .pe-btn { padding: 4vw 12vw; border-radius: 50px; background: rgba(255,255,255,0.1); color: #fff; border: none; font-size: 3.5vw; letter-spacing: 2px;}
 
-        /* 响应式断点严格分离 DOM 表现 */
-        @media (max-width: 768px) {
-            #pc-sidebar { display: none !important; }
-            #pe-overlay { display: flex; opacity: 1; } /* 默认打开 */
+        /* --- 响应式分离 --- */
+        @media (max-width: 800px) {
+            #pc-sidebar, #toast { display: none !important; }
+            #pe-overlay { display: flex; opacity: 1; }
         }
-        @media (min-width: 769px) {
+        @media (min-width: 801px) {
             #pe-overlay { display: none !important; }
         }
     </style>
 </head>
 <body>
 
+    <div id="brightness-overlay"></div>
+
     <canvas id="render-canvas"></canvas>
 
     <aside id="pc-sidebar">
-        <div class="pc-header">ABYSS<br><span style="font-size: 12px; color: var(--text-muted);">AFK SYSTEM</span></div>
-        <div class="pc-menu-item active" data-mode="zen">禅意游丝 (Zen Thread)<span>01</span></div>
-        <div class="pc-menu-item" data-mode="quantum">量子涨落 (Quantum Dust)<span>02</span></div>
-        <div class="pc-menu-item" data-mode="orbit">星轨时钟 (Orbit Time)<span>03</span></div>
+        <div class="pc-header">ABYSS PRO<span>PURE OLED PROTECTION</span></div>
+        
+        <div class="pc-menu-item active" data-mode="zen">禅意游丝 (Zen)<kbd>1</kbd></div>
+        <div class="pc-menu-item" data-mode="quantum">量子涨落 (Dust)<kbd>2</kbd></div>
+        <div class="pc-menu-item" data-mode="orbit">星轨时钟 (Orbit)<kbd>3</kbd></div>
+        <div class="pc-menu-item" data-mode="nebula">流体星云 (Nebula)<kbd>4</kbd></div>
+        <div class="pc-menu-item" data-mode="ripple">暗夜涟漪 (Ripple)<kbd>5</kbd></div>
+        <div class="pc-menu-item" data-mode="pixel">极简质点 (Pixel)<kbd>6</kbd></div>
         
         <div class="pc-controls">
-            <div class="slider-group">
-                <label>全局发光强度 (Brightness)</label>
-                <input type="range" id="pc-bright" min="0.1" max="1" step="0.1" value="0.8">
+            <div class="hint-text">
+                快捷控制面板<br>
+                亮度调节: <kbd>↑</kbd> <kbd>↓</kbd><br>
+                全屏切换: <kbd>F</kbd><br>
+                唤醒界面: <kbd>Esc</kbd> / 移动鼠标
             </div>
-            <button class="btn-fullscreen" onclick="toggleFullScreen()">进入全屏模式</button>
         </div>
     </aside>
 
+    <div id="toast">模式已切换</div>
+
     <div id="pe-overlay">
-        <div class="pe-header">选择护屏协议</div>
+        <div class="pe-header">护屏协议矩阵</div>
         <div class="pe-grid">
             <div class="pe-card active" data-mode="zen">
-                <div class="pe-card-title">禅意游丝</div>
-                <div class="pe-card-desc">极细单线条缓慢游走，像素级位移</div>
+                <div class="pe-card-title">禅意游丝</div><div class="pe-card-desc">极细单线平滑游荡</div>
             </div>
             <div class="pe-card" data-mode="quantum">
-                <div class="pe-card-title">量子涨落</div>
-                <div class="pe-card-desc">全屏微光粒子随机生灭，极低平均亮度</div>
+                <div class="pe-card-title">量子涨落</div><div class="pe-card-desc">全屏微光随机生灭</div>
             </div>
             <div class="pe-card" data-mode="orbit">
-                <div class="pe-card-title">星轨时钟</div>
-                <div class="pe-card-desc">同心圆环代替数字，全域缓慢漂移</div>
+                <div class="pe-card-title">星轨时钟</div><div class="pe-card-desc">同心圆弧公转漂移</div>
+            </div>
+            <div class="pe-card" data-mode="nebula">
+                <div class="pe-card-title">流体星云</div><div class="pe-card-desc">深邃暗色渐变交融</div>
+            </div>
+            <div class="pe-card" data-mode="ripple">
+                <div class="pe-card-title">暗夜涟漪</div><div class="pe-card-desc">微弱波纹扩散消散</div>
+            </div>
+            <div class="pe-card" data-mode="pixel">
+                <div class="pe-card-title">极简质点</div><div class="pe-card-desc">单像素级纯粹运动</div>
             </div>
         </div>
-        <div class="pe-footer-controls">
-            <span style="font-size: 4vw; color: var(--text-muted);">轻触屏幕唤醒菜单</span>
-            <button class="pe-btn" onclick="toggleFullScreen()">全屏</button>
+        <div class="pe-footer">
+            <button class="pe-btn" onclick="toggleFullScreen()">进入全屏挂机</button>
+            <div style="margin-top:4vw; font-size:3vw; color:var(--text-sub);">轻触任意位置唤醒</div>
         </div>
     </div>
 
     <script>
         // ==========================================
-        // 1. 全局状态与 UI 管理
+        // 1. 核心控制器与按键识别
         // ==========================================
-        let idleTimer;
         let currentMode = 'zen';
+        let brightness = 1.0;
+        let idleTimer;
+        let toastTimer;
         let animationId;
+        
         const canvas = document.getElementById('render-canvas');
-        const ctx = canvas.getContext('2d', { alpha: false }); // alpha: false 强制黑色背景，提升性能
+        const ctx = canvas.getContext('2d', { alpha: false }); // 优化：纯黑底色无需透明通道
+        const overlay = document.getElementById('brightness-overlay');
+        const toast = document.getElementById('toast');
 
-        // 调整 Canvas 尺寸
         function resize() {
             canvas.width = window.innerWidth * window.devicePixelRatio;
             canvas.height = window.innerHeight * window.devicePixelRatio;
@@ -153,161 +187,200 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // 闲置检测 (隐藏 UI)
+        // 闲置状态管理 (双端共用)
         function resetIdle() {
             document.body.classList.remove('idle');
             clearTimeout(idleTimer);
-            // 鼠标移动或点击后，3.5秒无操作进入纯黑挂机模式
-            idleTimer = setTimeout(() => {
-                document.body.classList.add('idle');
-            }, 3500); 
+            idleTimer = setTimeout(() => { document.body.classList.add('idle'); }, 4000); // 4秒无操作沉浸
         }
-        ['mousemove', 'touchstart', 'click'].forEach(evt => window.addEventListener(evt, resetIdle));
+        ['mousemove', 'touchstart', 'mousedown'].forEach(evt => window.addEventListener(evt, resetIdle));
         resetIdle();
 
-        // 全屏 API
-        function toggleFullScreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            } else {
-                if (document.exitFullscreen) document.exitFullscreen();
-            }
+        // 快捷键提示 Toast (PC专属)
+        function showToast(msg) {
+            if(window.innerWidth <= 800) return; // 手机端不弹窗
+            toast.innerText = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
         }
 
-        // 模式切换绑定 (双端共用逻辑)
-        function switchMode(mode) {
-            currentMode = mode;
-            // 更新 PC 状态
-            document.querySelectorAll('.pc-menu-item').forEach(el => el.classList.remove('active'));
-            const pcBtn = document.querySelector(`.pc-menu-item[data-mode="${mode}"]`);
-            if(pcBtn) pcBtn.classList.add('active');
-            
-            // 更新 PE 状态
-            document.querySelectorAll('.pe-card').forEach(el => el.classList.remove('active'));
-            const peBtn = document.querySelector(`.pe-card[data-mode="${mode}"]`);
-            if(peBtn) peBtn.classList.add('active');
+        function setBrightness(val) {
+            brightness = Math.max(0.1, Math.min(1.0, val));
+            // 用黑色遮罩的透明度来模拟亮度降低，比 filter:brightness 性能更好
+            overlay.style.background = `rgba(0,0,0,${1 - brightness})`;
+            showToast(`全局亮度: ${Math.round(brightness * 100)}%`);
+        }
 
-            // 切换模式时清空画布并重启引擎
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+            else if (document.exitFullscreen) document.exitFullscreen();
+        }
+
+        // PC端专属键盘监听
+        window.addEventListener('keydown', (e) => {
+            resetIdle();
+            if (window.innerWidth <= 800) return; // PE端忽略大部分快捷键
+
+            const modeKeys = {'1':'zen', '2':'quantum', '3':'orbit', '4':'nebula', '5':'ripple', '6':'pixel'};
+            
+            if (modeKeys[e.key]) {
+                switchMode(modeKeys[e.key]);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault(); setBrightness(brightness + 0.1);
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault(); setBrightness(brightness - 0.1);
+            } else if (e.key.toLowerCase() === 'f') {
+                toggleFullScreen();
+            } else if (e.key === 'Escape') {
+                document.body.classList.remove('idle'); // 强制唤醒
+            }
+        });
+
+        // 模式切换
+        const modeNames = {zen:'禅意游丝', quantum:'量子涨落', orbit:'星轨时钟', nebula:'流体星云', ripple:'暗夜涟漪', pixel:'极简质点'};
+        function switchMode(mode) {
+            if (currentMode === mode) return;
+            currentMode = mode;
+            
+            // UI 更新
+            document.querySelectorAll('.pc-menu-item, .pe-card').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.pc-menu-item[data-mode="${mode}"]`)?.classList.add('active');
+            document.querySelector(`.pe-card[data-mode="${mode}"]`)?.classList.add('active');
+            
+            showToast(`已切换: ${modeNames[mode]}`);
+
+            // 重置画布与引擎
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
             cancelAnimationFrame(animationId);
+            
+            // 清理特定模式的变量
+            ripples = []; dusts = [];
             startEngine();
         }
 
+        // 绑定点击事件
         document.querySelectorAll('.pc-menu-item, .pe-card').forEach(el => {
             el.addEventListener('click', (e) => switchMode(e.currentTarget.dataset.mode));
         });
 
-        // 亮度控制
-        document.getElementById('pc-bright').addEventListener('input', (e) => {
-            document.documentElement.style.setProperty('--global-brightness', e.target.value);
-        });
+        // ==========================================
+        // 2. 核心渲染算法 (6大纯粹模式)
+        // ==========================================
 
-        // ==========================================
-        // 2. 核心渲染引擎：三大防烧屏算法
-        // ==========================================
-        
-        // 模式 A: 禅意游丝 (Zen Thread)
-        let zenAngle = 0;
-        let zenX, zenY;
+        // [1] 禅意游丝 (Zen Thread)
+        let zAngle = 0, zX, zY;
         function renderZen() {
-            // 使用极低透明度的黑色覆盖，形成柔和拖尾
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.04)'; // 极低透明度擦除产生拖尾
             ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-
-            if(!zenX) { zenX = window.innerWidth/2; zenY = window.innerHeight/2; }
-            
-            // 极缓的李萨如曲线轨迹计算
-            zenX = window.innerWidth/2 + Math.sin(zenAngle * 0.5) * (window.innerWidth * 0.4);
-            zenY = window.innerHeight/2 + Math.cos(zenAngle * 0.7) * (window.innerHeight * 0.4);
-            zenAngle += 0.005;
-
+            if(!zX) { zX = window.innerWidth/2; zY = window.innerHeight/2; }
+            zX = window.innerWidth/2 + Math.sin(zAngle * 0.4) * (window.innerWidth * 0.4);
+            zY = window.innerHeight/2 + Math.cos(zAngle * 0.55) * (window.innerHeight * 0.4);
+            zAngle += 0.004;
             ctx.beginPath();
-            ctx.arc(zenX, zenY, 2, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(150, 180, 255, 0.8)';
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = 'rgba(150, 180, 255, 0.5)';
+            ctx.arc(zX, zY, 1.5, 0, Math.PI*2);
+            ctx.fillStyle = 'rgba(200, 220, 255, 0.9)';
             ctx.fill();
-            ctx.shadowBlur = 0; // 重置阴影防止性能泄漏
         }
 
-        // 模式 B: 量子涨落 (Quantum Dust)
+        // [2] 量子涨落 (Quantum Dust)
         let dusts = [];
         function renderQuantum() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; // 较快清除拖尾
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
             ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-
-            // 动态补充粒子
-            if(dusts.length < 50 && Math.random() > 0.5) {
-                dusts.push({
-                    x: Math.random() * window.innerWidth,
-                    y: Math.random() * window.innerHeight,
-                    life: 0,
-                    maxLife: Math.random() * 100 + 50,
-                    size: Math.random() * 1.5 + 0.5
-                });
+            if(dusts.length < 60 && Math.random() > 0.4) {
+                dusts.push({ x: Math.random()*window.innerWidth, y: Math.random()*window.innerHeight, life: 0, maxLife: Math.random()*120+60, size: Math.random()*1.2+0.3 });
             }
-
             for(let i = dusts.length - 1; i >= 0; i--) {
-                let p = dusts[i];
-                p.life++;
-                let opacity = Math.sin((p.life / p.maxLife) * Math.PI) * 0.6; // 呼吸渐隐渐现算法
-                
-                ctx.beginPath();
-                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fill();
-
+                let p = dusts[i]; p.life++;
+                let op = Math.sin((p.life/p.maxLife)*Math.PI) * 0.5;
+                ctx.beginPath(); ctx.fillStyle = `rgba(255,255,255,${op})`; ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
                 if(p.life >= p.maxLife) dusts.splice(i, 1);
             }
         }
 
-        // 模式 C: 星轨时钟 (Orbit Time)
-        let orbitOffsetX = 0, orbitOffsetY = 0;
-        let orbitAngle = 0;
+        // [3] 星轨时钟 (Orbit Time)
+        let oAngle = 0;
         function renderOrbit() {
-            ctx.fillStyle = '#000'; // 完全重绘，不留拖尾
-            ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-
+            ctx.fillStyle = '#000'; ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
             const now = new Date();
-            const h = now.getHours() % 12 + now.getMinutes() / 60;
-            const m = now.getMinutes() + now.getSeconds() / 60;
-            const s = now.getSeconds() + now.getMilliseconds() / 1000;
+            const s = now.getSeconds() + now.getMilliseconds()/1000, m = now.getMinutes() + s/60, h = now.getHours()%12 + m/60;
+            const cx = window.innerWidth/2 + Math.sin(oAngle*0.2)*(window.innerWidth*0.25);
+            const cy = window.innerHeight/2 + Math.cos(oAngle*0.3)*(window.innerHeight*0.25);
+            oAngle += 0.002;
 
-            // 让整个时钟系在屏幕内极其缓慢地公转
-            orbitOffsetX = Math.sin(orbitAngle * 0.3) * (window.innerWidth * 0.2);
-            orbitOffsetY = Math.cos(orbitAngle * 0.4) * (window.innerHeight * 0.2);
-            orbitAngle += 0.002;
-
-            const cx = window.innerWidth / 2 + orbitOffsetX;
-            const cy = window.innerHeight / 2 + orbitOffsetY;
-
-            const drawArc = (radius, value, max, color, lineWidth) => {
-                ctx.beginPath();
-                ctx.arc(cx, cy, radius, -Math.PI / 2, (-Math.PI / 2) + (value / max) * Math.PI * 2);
-                ctx.strokeStyle = color;
-                ctx.lineWidth = lineWidth;
-                ctx.lineCap = 'round';
-                ctx.stroke();
+            const drawA = (r, v, max, c, w) => {
+                ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI/2, -Math.PI/2 + (v/max)*Math.PI*2);
+                ctx.strokeStyle = c; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.stroke();
             };
-
-            // 秒、分、时同心圆
-            drawArc(60, s, 60, 'rgba(255, 255, 255, 0.2)', 2);
-            drawArc(80, m, 60, 'rgba(255, 255, 255, 0.4)', 4);
-            drawArc(100, h, 12, 'rgba(200, 220, 255, 0.8)', 6);
+            drawA(50, s, 60, 'rgba(255,255,255,0.15)', 2);
+            drawA(70, m, 60, 'rgba(255,255,255,0.3)', 3);
+            drawA(90, h, 12, 'rgba(180,200,255,0.6)', 5);
         }
 
-        // 主循环分配器
+        // [4] 流体星云 (Nebula) - 高性能纯暗色渐变算法
+        let nTime = 0;
+        function renderNebula() {
+            ctx.fillStyle = '#000'; ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+            nTime += 0.005;
+            const drawGlow = (ox, oy, r, g, b) => {
+                let grad = ctx.createRadialGradient(ox, oy, 0, ox, oy, window.innerWidth*0.6);
+                grad.addColorStop(0, `rgba(${r},${g},${b},0.08)`); // 极低的亮度
+                grad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+            };
+            let cx1 = window.innerWidth/2 + Math.sin(nTime)*window.innerWidth*0.3;
+            let cy1 = window.innerHeight/2 + Math.cos(nTime*0.8)*window.innerHeight*0.3;
+            let cx2 = window.innerWidth/2 + Math.sin(nTime*1.2 + Math.PI)*window.innerWidth*0.3;
+            let cy2 = window.innerHeight/2 + Math.cos(nTime*0.9 + Math.PI)*window.innerHeight*0.3;
+            // 混合渲染两个暗色系光晕
+            drawGlow(cx1, cy1, 40, 60, 150); // 暗蓝
+            drawGlow(cx2, cy2, 100, 40, 100); // 暗紫
+        }
+
+        // [5] 暗夜涟漪 (Ripple)
+        let ripples = [];
+        function renderRipple() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+            if(Math.random() > 0.95) {
+                ripples.push({x: Math.random()*window.innerWidth, y: Math.random()*window.innerHeight, r: 1, maxR: Math.random()*150+50});
+            }
+            for(let i = ripples.length - 1; i >= 0; i--) {
+                let p = ripples[i]; p.r += 0.5;
+                let op = 1 - (p.r / p.maxR); // 半径越大越透明
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                ctx.strokeStyle = `rgba(150, 180, 255, ${op * 0.3})`; ctx.lineWidth = 1; ctx.stroke();
+                if(p.r >= p.maxR) ripples.splice(i, 1);
+            }
+        }
+
+        // [6] 极简质点 (Pixel) - 最省电、最安全的终极模式
+        let px = 100, py = 100, pdx = 0.8, pdy = 0.8;
+        function renderPixel() {
+            ctx.fillStyle = '#000'; ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+            if(px > window.innerWidth - 3 || px < 0) pdx = -pdx;
+            if(py > window.innerHeight - 3 || py < 0) pdy = -pdy;
+            px += pdx; py += pdy;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.fillRect(px, py, 3, 3); // 仅渲染一个 3x3 的极小方块
+        }
+
+        // 引擎分配器
         function startEngine() {
-            if (currentMode === 'zen') renderZen();
-            else if (currentMode === 'quantum') renderQuantum();
-            else if (currentMode === 'orbit') renderOrbit();
+            if(currentMode === 'zen') renderZen();
+            else if(currentMode === 'quantum') renderQuantum();
+            else if(currentMode === 'orbit') renderOrbit();
+            else if(currentMode === 'nebula') renderNebula();
+            else if(currentMode === 'ripple') renderRipple();
+            else if(currentMode === 'pixel') renderPixel();
             
             animationId = requestAnimationFrame(startEngine);
         }
 
-        // 启动！
+        // 初始化运行
         startEngine();
+
     </script>
 </body>
 </html>
