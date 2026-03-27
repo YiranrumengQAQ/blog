@@ -2,264 +2,382 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Pro版 动态防烧屏挂机系统</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ultimate OLED Protector</title>
     <style>
         :root {
-            --ui-bg: rgba(255, 255, 255, 0.1);
-            --ui-border: rgba(255, 255, 255, 0.2);
-            --ui-text: rgba(255, 255, 255, 0.8);
+            --glass-bg: rgba(20, 20, 20, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: rgba(255, 255, 255, 0.9);
+            --text-sub: rgba(255, 255, 255, 0.5);
+            --accent: #00d2ff;
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: #000; /* 极致黑底色 */
-            overflow: hidden;
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-            user-select: none;
-            -webkit-user-select: none;
+            background-color: #000; overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-main); user-select: none; -webkit-user-select: none;
         }
 
-        /* 隐藏鼠标指针的魔法 */
+        /* 鼠标空闲隐藏 */
         body.idle { cursor: none; }
-        
-        #app { width: 100%; height: 100%; position: relative; }
+        body.idle .ui-container { opacity: 0; pointer-events: none; transform: translateY(20px); }
 
-        /* --- 绝美毛玻璃控制台 --- */
-        #ui-layer {
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            z-index: 999; display: flex; gap: 15px;
-            background: var(--ui-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            padding: 12px 24px; border-radius: 30px; border: 1px solid var(--ui-border);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s ease;
-        }
-
-        body.idle #ui-layer {
-            opacity: 0; transform: translate(-50%, 20px); pointer-events: none;
-        }
-
-        button {
-            background: transparent; border: none; color: var(--ui-text);
-            font-size: 15px; font-weight: 500; cursor: pointer;
-            padding: 8px 16px; border-radius: 20px; transition: all 0.3s ease;
-        }
-        button:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
-        button.active { background: rgba(255, 255, 255, 0.9); color: #000; }
-
-        /* --- 模式容器 --- */
-        .mode-container {
+        /* 全局变暗滤镜（进一步保护OLED） */
+        #dim-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: none; opacity: 0; transition: opacity 0.5s ease;
+            background: rgba(0, 0, 0, 0.2); pointer-events: none; z-index: 10;
         }
-        .mode-container.active { display: block; opacity: 1; }
 
-        /* 模式1: 极致纯黑 */
+        /* 渲染层 */
+        .render-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; opacity: 0; transition: opacity 0.8s ease;
+        }
+        .render-layer.active { display: block; opacity: 1; }
+
+        /* --- 模式特定样式 --- */
         #mode-black { background: #000; }
+        
+        #clock-wrapper {
+            position: absolute; white-space: nowrap;
+            transition: top 4s cubic-bezier(0.25, 1, 0.5, 1), left 4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .time-txt { font-size: 8vw; font-weight: 200; letter-spacing: 2px; text-shadow: 0 0 20px rgba(255,255,255,0.3); }
+        .date-txt { font-size: 2vw; font-weight: 400; color: var(--text-sub); margin-top: -10px; }
 
-        /* 模式2: 霓虹时钟 */
-        #neon-clock-text {
-            position: absolute; font-size: 10vw; font-weight: 200; color: #fff;
-            text-shadow: 0 0 10px rgba(255,255,255,0.5), 0 0 20px rgba(0,255,255,0.5), 0 0 40px rgba(0,255,255,0.3);
-            transition: top 3s cubic-bezier(0.4, 0, 0.2, 1), left 3s cubic-bezier(0.4, 0, 0.2, 1);
-            white-space: nowrap;
+        .dvd-box {
+            position: absolute; padding: 20px 40px; border-radius: 16px;
+            font-size: 2rem; font-weight: 800; letter-spacing: 4px; color: #fff;
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* 模式3: 极光呼吸 */
-        .aurora-orb {
-            position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.6;
-            animation: float 20s infinite alternate ease-in-out;
-        }
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(100px, 150px) scale(1.5); }
+        /* ========================================= */
+        /* PC端专属 UI 布局             */
+        /* ========================================= */
+        .ui-container {
+            position: absolute; z-index: 100; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* 模式4: 经典 DVD */
-        #dvd-logo {
-            position: absolute; width: 180px; height: 90px;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 32px; font-weight: 900; color: #fff; border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        #ui-pc {
+            bottom: 40px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 8px; padding: 10px;
+            background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
         }
 
-        /* 模式5: 深邃星空 */
-        #starfield { width: 100%; height: 100%; display: block; }
+        .btn-pc {
+            padding: 12px 24px; border: none; background: transparent; color: var(--text-sub);
+            font-size: 14px; font-weight: 600; border-radius: 16px; cursor: pointer;
+            transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;
+        }
+        .btn-pc:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .btn-pc.active { color: #000; background: #fff; box-shadow: 0 4px 15px rgba(255,255,255,0.3); }
 
+        /* ========================================= */
+        /* PE端专属 UI 布局             */
+        /* ========================================= */
+        #ui-pe {
+            bottom: 0; left: 0; width: 100%; display: none;
+            flex-direction: column; padding: 20px 20px 40px 20px;
+            background: linear-gradient(to top, rgba(10,10,10,0.95), rgba(20,20,20,0.8));
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border); border-radius: 30px 30px 0 0;
+        }
+
+        .pe-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding: 0 10px;
+        }
+        .pe-title { font-size: 18px; font-weight: 600; color: #fff; }
+        
+        .pe-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+        }
+
+        .btn-pe {
+            padding: 16px; border: 1px solid var(--glass-border); border-radius: 16px;
+            background: rgba(255,255,255,0.03); color: var(--text-sub);
+            font-size: 15px; font-weight: 500; text-align: left;
+            transition: all 0.2s ease;
+        }
+        .btn-pe.active {
+            background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.4); color: #fff;
+        }
+
+        /* 响应式断点控制 */
+        @media (max-width: 768px) {
+            #ui-pc { display: none !important; }
+            #ui-pe { display: flex !important; }
+            .time-txt { font-size: 15vw; }
+            .date-txt { font-size: 4vw; }
+            .dvd-box { font-size: 1.5rem; padding: 15px 30px; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="app">
-        <div id="mode-black" class="mode-container"></div>
-        
-        <div id="mode-clock" class="mode-container">
-            <div id="neon-clock-text">00:00:00</div>
-        </div>
-        
-        <div id="mode-aurora" class="mode-container">
-            </div>
-        
-        <div id="mode-dvd" class="mode-container">
-            <div id="dvd-logo">SCREENSAVER</div>
-        </div>
-        
-        <div id="mode-stars" class="mode-container">
-            <canvas id="starfield"></canvas>
-        </div>
+    <div id="dim-overlay"></div>
 
-        <div id="ui-layer">
-            <button class="mode-btn" data-mode="black">极致纯黑</button>
-            <button class="mode-btn" data-mode="clock">霓虹时钟</button>
-            <button class="mode-btn" data-mode="aurora">极光呼吸</button>
-            <button class="mode-btn" data-mode="dvd">经典弹跳</button>
-            <button class="mode-btn" data-mode="stars">深邃星空</button>
-            <button id="btn-fs">⛶ 全屏</button>
+    <div id="mode-black" class="render-layer"></div>
+    
+    <div id="mode-clock" class="render-layer">
+        <div id="clock-wrapper">
+            <div class="time-txt" id="time-display">00:00:00</div>
+            <div class="date-txt" id="date-display">1月1日 星期一</div>
+        </div>
+    </div>
+    
+    <div id="mode-dvd" class="render-layer">
+        <div class="dvd-box" id="dvd-logo">OLED SAFE</div>
+    </div>
+    
+    <div id="mode-matrix" class="render-layer">
+        <canvas id="canvas-matrix" style="width:100%; height:100%; display:block;"></canvas>
+    </div>
+
+    <div id="mode-network" class="render-layer">
+        <canvas id="canvas-network" style="width:100%; height:100%; display:block;"></canvas>
+    </div>
+
+    <div id="ui-pc" class="ui-container">
+        <button class="btn-pc ctrl-btn" data-mode="black">⚫ 极致纯黑</button>
+        <button class="btn-pc ctrl-btn" data-mode="clock">🕒 游走时钟</button>
+        <button class="btn-pc ctrl-btn" data-mode="dvd">🔲 质感弹跳</button>
+        <button class="btn-pc ctrl-btn" data-mode="matrix">💻 矩阵代码</button>
+        <button class="btn-pc ctrl-btn" data-mode="network">🌌 星光网络</button>
+        <div style="width:1px; background:var(--glass-border); margin:0 8px;"></div>
+        <button class="btn-pc" id="fs-btn-pc">⛶ 全屏</button>
+    </div>
+
+    <div id="ui-pe" class="ui-container">
+        <div class="pe-header">
+            <div class="pe-title">防烧屏控制台</div>
+            <button class="btn-pc" id="fs-btn-pe" style="padding: 8px 16px;">⛶</button>
+        </div>
+        <div class="pe-grid">
+            <button class="btn-pe ctrl-btn" data-mode="black">⚫ 极致纯黑</button>
+            <button class="btn-pe ctrl-btn" data-mode="clock">🕒 游走时钟</button>
+            <button class="btn-pe ctrl-btn" data-mode="dvd">🔲 质感弹跳</button>
+            <button class="btn-pe ctrl-btn" data-mode="matrix">💻 矩阵代码</button>
+            <button class="btn-pe ctrl-btn" data-mode="network" style="grid-column: span 2; text-align: center;">🌌 星光网络渲染</button>
         </div>
     </div>
 
     <script>
-        // === 1. 核心状态与防呆逻辑 ===
+        // ==========================================
+        // 1. 核心状态与防呆 (双端统一)
+        // ==========================================
         let idleTimer;
-        const body = document.body;
+        let currentMode = '';
+        let animFrameId = null; // 用于精细控制性能，切出模式时停止渲染
         
         function resetIdle() {
-            body.classList.remove('idle');
+            document.body.classList.remove('idle');
             clearTimeout(idleTimer);
-            idleTimer = setTimeout(() => body.classList.add('idle'), 3500); // 3.5秒无动作隐藏
+            // 4秒无操作隐藏 UI，沉浸式挂机
+            idleTimer = setTimeout(() => document.body.classList.add('idle'), 4000); 
         }
         ['mousemove', 'touchstart', 'keydown', 'click'].forEach(evt => 
-            window.addEventListener(evt, resetIdle)
+            window.addEventListener(evt, resetIdle, { passive: true })
         );
         resetIdle();
 
         // 全屏逻辑
-        document.getElementById('btn-fs').addEventListener('click', () => {
+        function toggleFS() {
             if (!document.fullscreenElement) document.documentElement.requestFullscreen();
             else document.exitFullscreen();
-        });
+        }
+        document.getElementById('fs-btn-pc').onclick = toggleFS;
+        document.getElementById('fs-btn-pe').onclick = toggleFS;
 
-        // === 2. 模式切换系统 ===
-        const containers = document.querySelectorAll('.mode-container');
-        const btns = document.querySelectorAll('.mode-btn');
-        let currentMode = 'stars'; // 默认模式
+        // ==========================================
+        // 2. 模式切换管理器
+        // ==========================================
+        function setMode(mode) {
+            if(currentMode === mode) return;
+            currentMode = mode;
 
-        function setMode(modeId) {
-            currentMode = modeId;
-            containers.forEach(c => c.classList.remove('active'));
-            btns.forEach(b => b.classList.remove('active'));
+            // 停止所有 Canvas 动画帧，释放性能
+            if(animFrameId) cancelAnimationFrame(animFrameId);
             
-            document.getElementById(`mode-${modeId}`).classList.add('active');
-            document.querySelector(`[data-mode="${modeId}"]`).classList.add('active');
+            // UI 状态更新
+            document.querySelectorAll('.render-layer').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.ctrl-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(`mode-${mode}`).classList.add('active');
+            document.querySelectorAll(`[data-mode="${mode}"]`).forEach(btn => btn.classList.add('active'));
+
+            // 触发对应模式的初始化
+            if(mode === 'matrix') initMatrix();
+            if(mode === 'network') initNetwork();
         }
 
-        btns.forEach(btn => {
-            btn.addEventListener('click', (e) => setMode(e.target.dataset.mode));
+        document.querySelectorAll('.ctrl-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => setMode(e.currentTarget.dataset.mode));
         });
 
-        // === 3. 各模式引擎 ===
+        // ==========================================
+        // 3. 各种绝美模式引擎 (高度优化版)
+        // ==========================================
 
-        // 【模式2】霓虹时钟
-        const clockEl = document.getElementById('neon-clock-text');
-        function tickClock() {
-            clockEl.innerText = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+        // 【模式: 游走时钟】
+        const clockWrap = document.getElementById('clock-wrapper');
+        const timeDisp = document.getElementById('time-display');
+        const dateDisp = document.getElementById('date-display');
+        const days = ['日','一','二','三','四','五','六'];
+
+        function updateClock() {
+            const now = new Date();
+            timeDisp.innerText = now.toLocaleTimeString('zh-CN', {hour12: false});
+            dateDisp.innerText = `${now.getMonth()+1}月${now.getDate()}日 星期${days[now.getDay()]}`;
         }
         function moveClock() {
             if(currentMode !== 'clock') return;
-            const maxX = window.innerWidth - clockEl.clientWidth - 50;
-            const maxY = window.innerHeight - clockEl.clientHeight - 50;
-            clockEl.style.left = Math.max(20, Math.random() * maxX) + 'px';
-            clockEl.style.top = Math.max(20, Math.random() * maxY) + 'px';
-            // 随机霓虹颜色
-            const hues = [0, 60, 120, 180, 280, 320];
-            const hue = hues[Math.floor(Math.random() * hues.length)];
-            clockEl.style.textShadow = `0 0 10px hsla(${hue},100%,70%,0.5), 0 0 30px hsla(${hue},100%,50%,0.8)`;
+            // 确保不超出边界
+            const maxX = window.innerWidth - clockWrap.offsetWidth - 40;
+            const maxY = window.innerHeight - clockWrap.offsetHeight - 40;
+            clockWrap.style.left = `${Math.max(20, Math.random() * maxX)}px`;
+            clockWrap.style.top = `${Math.max(20, Math.random() * maxY)}px`;
         }
-        setInterval(tickClock, 1000);
-        setInterval(moveClock, 6000); // 每6秒移动一次
+        setInterval(updateClock, 1000);
+        setInterval(moveClock, 8000); // 极缓移动
+        updateClock(); moveClock();
 
-        // 【模式3】极光呼吸
-        const auroraBg = document.getElementById('mode-aurora');
-        const colors = ['#0f2027', '#203a43', '#2c5364', '#1a2a6c', '#b21f1f', '#fdbb2d', '#4b6cb7', '#182848'];
-        for(let i=0; i<4; i++) {
-            let orb = document.createElement('div');
-            orb.className = 'aurora-orb';
-            orb.style.width = Math.random() * 400 + 300 + 'px';
-            orb.style.height = orb.style.width;
-            orb.style.background = colors[Math.floor(Math.random() * colors.length)];
-            orb.style.left = Math.random() * 100 + '%';
-            orb.style.top = Math.random() * 100 + '%';
-            orb.style.animationDelay = `-${Math.random() * 10}s`;
-            auroraBg.appendChild(orb);
-        }
-
-        // 【模式4】经典 DVD
+        // 【模式: 质感弹跳 DVD】
         const dvd = document.getElementById('dvd-logo');
-        let x=100, y=100, vx=2.5, vy=2.5;
+        let dx=150, dy=150, vx=1.5, vy=1.5;
         function animateDvd() {
             if (currentMode === 'dvd') {
                 let rect = dvd.getBoundingClientRect();
-                if (x + rect.width >= window.innerWidth || x <= 0) {
-                    vx = -vx;
-                    dvd.style.background = `hsl(${Math.random()*360}, 80%, 50%)`;
+                if (dx + rect.width >= window.innerWidth || dx <= 0) {
+                    vx = -vx; 
+                    dvd.style.borderColor = `hsla(${Math.random()*360}, 100%, 70%, 0.6)`;
+                    dvd.style.boxShadow = `0 10px 30px hsla(${Math.random()*360}, 100%, 50%, 0.3)`;
                 }
-                if (y + rect.height >= window.innerHeight || y <= 0) {
+                if (dy + rect.height >= window.innerHeight || dy <= 0) {
                     vy = -vy;
-                    dvd.style.background = `hsl(${Math.random()*360}, 80%, 50%)`;
+                    dvd.style.borderColor = `hsla(${Math.random()*360}, 100%, 70%, 0.6)`;
+                    dvd.style.boxShadow = `0 10px 30px hsla(${Math.random()*360}, 100%, 50%, 0.3)`;
                 }
-                x += vx; y += vy;
-                dvd.style.transform = `translate(${x}px, ${y}px)`;
+                dx += vx; dy += vy;
+                dvd.style.transform = `translate(${dx}px, ${dy}px)`;
             }
-            requestAnimationFrame(animateDvd);
+            animFrameId = requestAnimationFrame(animateDvd);
         }
-        dvd.style.background = '#e91e63'; // 初始颜色
+        // 由于需要在后台跑帧，用独立逻辑触发
+        setInterval(() => { if(currentMode === 'dvd') animateDvd(); }, 100);
 
-        // 【模式5】深邃星空 (Canvas 粒子引擎)
-        const canvas = document.getElementById('starfield');
-        const ctx = canvas.getContext('2d');
-        let stars = [];
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            initStars();
+        // 【模式: 矩阵代码雨 Matrix】
+        const canvasM = document.getElementById('canvas-matrix');
+        const ctxM = canvasM.getContext('2d', { alpha: false }); // 优化渲染
+        let letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*'.split('');
+        let fontSize = 16, columns, drops;
+
+        function initMatrix() {
+            canvasM.width = window.innerWidth;
+            canvasM.height = window.innerHeight;
+            columns = canvasM.width / fontSize;
+            drops = [];
+            for(let x = 0; x < columns; x++) drops[x] = 1;
+            drawMatrix();
         }
-        function initStars() {
-            stars = [];
-            for(let i=0; i<150; i++) {
-                stars.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    radius: Math.random() * 1.5,
-                    speed: Math.random() * 0.5 + 0.1
-                });
+        function drawMatrix() {
+            if(currentMode !== 'matrix') return;
+            // 采用极暗的背景刷新，确保背景深邃且拖尾自然
+            ctxM.fillStyle = 'rgba(0, 0, 0, 0.08)';
+            ctxM.fillRect(0, 0, canvasM.width, canvasM.height);
+            
+            // 代码采用暗绿色，护眼防烧屏
+            ctxM.fillStyle = '#0f8'; 
+            ctxM.font = fontSize + 'px monospace';
+            
+            for(let i = 0; i < drops.length; i++) {
+                let text = letters[Math.floor(Math.random() * letters.length)];
+                ctxM.fillText(text, i * fontSize, drops[i] * fontSize);
+                if(drops[i] * fontSize > canvasM.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+            animFrameId = requestAnimationFrame(drawMatrix);
+        }
+
+        // 【模式: 星光粒子网络 Network】
+        const canvasN = document.getElementById('canvas-network');
+        const ctxN = canvasN.getContext('2d');
+        let particlesArray;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvasN.width;
+                this.y = Math.random() * canvasN.height;
+                this.size = Math.random() * 2 + 0.5; // 极小的粒子
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if(this.x > canvasN.width || this.x < 0) this.speedX = -this.speedX;
+                if(this.y > canvasN.height || this.y < 0) this.speedY = -this.speedY;
+            }
+            draw() {
+                ctxN.beginPath();
+                ctxN.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctxN.fillStyle = 'rgba(255,255,255,0.6)';
+                ctxN.fill();
             }
         }
-        function drawStars() {
-            if(currentMode === 'stars') {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#fff';
-                stars.forEach(star => {
-                    ctx.beginPath();
-                    ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-                    ctx.fill();
-                    star.y += star.speed; // 星星向下坠落
-                    if(star.y > canvas.height) {
-                        star.y = 0;
-                        star.x = Math.random() * canvas.width;
+
+        function initNetwork() {
+            canvasN.width = window.innerWidth;
+            canvasN.height = window.innerHeight;
+            particlesArray = [];
+            // 根据屏幕大小动态决定粒子数量，防止手机端卡顿
+            let count = (canvasN.width * canvasN.height) / 12000; 
+            for(let i = 0; i < count; i++) particlesArray.push(new Particle());
+            drawNetwork();
+        }
+
+        function drawNetwork() {
+            if(currentMode !== 'network') return;
+            ctxN.clearRect(0, 0, canvasN.width, canvasN.height);
+            
+            for(let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+                // 绘制粒子连线
+                for(let j = i; j < particlesArray.length; j++) {
+                    let dx = particlesArray[i].x - particlesArray[j].x;
+                    let dy = particlesArray[i].y - particlesArray[j].y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if(distance < 100) { // 连线阈值
+                        ctxN.beginPath();
+                        ctxN.strokeStyle = `rgba(255,255,255, ${0.1 - distance/1000})`; // 距离越远越透明
+                        ctxN.lineWidth = 0.5;
+                        ctxN.moveTo(particlesArray[i].x, particlesArray[i].y);
+                        ctxN.lineTo(particlesArray[j].x, particlesArray[j].y);
+                        ctxN.stroke();
                     }
-                });
+                }
             }
-            requestAnimationFrame(drawStars);
+            animFrameId = requestAnimationFrame(drawNetwork);
         }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
 
-        // 启动引擎
-        setMode('black'); // 默认打开纯黑模式
-        tickClock(); moveClock();
-        animateDvd();
-        drawStars();
-        
+        // 监听窗口大小改变，重置 Canvas 尺寸
+        window.addEventListener('resize', () => {
+            if(currentMode === 'matrix') initMatrix();
+            if(currentMode === 'network') initNetwork();
+            if(currentMode === 'clock') moveClock();
+        });
+
+        // 默认启动项
+        setMode('network'); // 默认展示最炫酷的网络模式
+
     </script>
 </body>
 </html>
