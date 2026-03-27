@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>防烧屏挂机工具</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none; /* 防止误触选中文本 */
+        }
+
+        /* 鼠标空闲时隐藏指针 */
+        body.idle {
+            cursor: none;
+        }
+
+        #app {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* 控制面板 UI */
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            transition: opacity 0.5s ease;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .idle #ui-layer {
+            opacity: 0;
+            pointer-events: none; /* 隐藏后不可点击 */
+        }
+
+        button {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            font-size: 16px;
+            transition: background 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 模式 1: DVD 弹跳 */
+        #mode-dvd {
+            position: absolute;
+            width: 160px;
+            height: 80px;
+            background: #ff5722;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            display: none;
+        }
+
+        /* 模式 2: 移动时钟 */
+        #mode-clock {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 8vw; /* 响应式字体 */
+            font-weight: lighter;
+            transition: top 2s ease-in-out, left 2s ease-in-out;
+            white-space: nowrap;
+            display: none;
+        }
+
+        /* 模式 3: 全屏渐变 */
+        #mode-color {
+            width: 100%;
+            height: 100%;
+            transition: background-color 4s linear;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <div id="ui-layer">
+            <button id="btn-fullscreen">进入全屏</button>
+            <button id="btn-mode">切换模式：DVD弹跳</button>
+        </div>
+
+        <div id="mode-dvd">AFK</div>
+        <div id="mode-clock">00:00:00</div>
+        <div id="mode-color"></div>
+    </div>
+
+    <script>
+        // === 基础设置与 UI 隐藏逻辑 ===
+        let idleTimer;
+        const body = document.body;
+
+        function resetIdleTimer() {
+            body.classList.remove('idle');
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => {
+                body.classList.add('idle');
+            }, 3000); // 3秒无操作后隐藏UI和鼠标
+        }
+
+        // 监听 PC 鼠标和手机触摸事件
+        window.addEventListener('mousemove', resetIdleTimer);
+        window.addEventListener('touchstart', resetIdleTimer);
+        window.addEventListener('keydown', resetIdleTimer);
+        resetIdleTimer();
+
+        // === 全屏功能 ===
+        const btnFullscreen = document.getElementById('btn-fullscreen');
+        btnFullscreen.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`无法全屏: ${err.message}`);
+                });
+                btnFullscreen.innerText = '退出全屏';
+            } else {
+                document.exitFullscreen();
+                btnFullscreen.innerText = '进入全屏';
+            }
+        });
+
+        // === 模式切换逻辑 ===
+        const modes = ['dvd', 'clock', 'color'];
+        const modeNames = ['DVD弹跳', '移动时钟', '暗色渐变'];
+        let currentModeIndex = 0;
+        const btnMode = document.getElementById('btn-mode');
+        
+        const elDvd = document.getElementById('mode-dvd');
+        const elClock = document.getElementById('mode-clock');
+        const elColor = document.getElementById('mode-color');
+
+        function switchMode() {
+            // 隐藏所有模式
+            elDvd.style.display = 'none';
+            elClock.style.display = 'none';
+            elColor.style.display = 'none';
+
+            // 显示当前模式
+            const currentMode = modes[currentModeIndex];
+            if (currentMode === 'dvd') elDvd.style.display = 'flex';
+            if (currentMode === 'clock') elClock.style.display = 'block';
+            if (currentMode === 'color') elColor.style.display = 'block';
+
+            btnMode.innerText = `切换模式：${modeNames[currentModeIndex]}`;
+        }
+
+        btnMode.addEventListener('click', () => {
+            currentModeIndex = (currentModeIndex + 1) % modes.length;
+            switchMode();
+        });
+
+        // === 模式 1: DVD 弹跳动画 ===
+        let x = 50, y = 50, dx = 2, dy = 2;
+        const colors = ['#ff5722', '#4caf50', '#2196f3', '#9c27b0', '#e91e63', '#00bcd4'];
+        
+        function animateDvd() {
+            if (modes[currentModeIndex] === 'dvd') {
+                const rect = elDvd.getBoundingClientRect();
+                const winWidth = window.innerWidth;
+                const winHeight = window.innerHeight;
+
+                if (x + rect.width >= winWidth || x <= 0) {
+                    dx = -dx;
+                    elDvd.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                }
+                if (y + rect.height >= winHeight || y <= 0) {
+                    dy = -dy;
+                    elDvd.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                }
+
+                x += dx;
+                y += dy;
+                elDvd.style.left = x + 'px';
+                elDvd.style.top = y + 'px';
+            }
+            requestAnimationFrame(animateDvd);
+        }
+
+        // === 模式 2: 移动时钟 ===
+        function updateClock() {
+            const now = new Date();
+            elClock.innerText = now.toLocaleTimeString('zh-CN', { hour12: false });
+        }
+        
+        function moveClock() {
+            if (modes[currentModeIndex] === 'clock') {
+                const winWidth = window.innerWidth;
+                const winHeight = window.innerHeight;
+                // 确保时钟不会超出屏幕边界 (预留大概的宽度和高度)
+                const maxLeft = winWidth * 0.6;
+                const maxTop = winHeight * 0.8;
+                
+                elClock.style.left = Math.random() * maxLeft + 'px';
+                elClock.style.top = Math.random() * maxTop + 'px';
+            }
+        }
+        
+        setInterval(updateClock, 1000);
+        setInterval(moveClock, 8000); // 每8秒移动一次位置
+
+        // === 模式 3: 全屏渐变 ===
+        function changeBgColor() {
+            if (modes[currentModeIndex] === 'color') {
+                // 使用低亮度的暗色系防止刺眼和过度耗电
+                const r = Math.floor(Math.random() * 50);
+                const g = Math.floor(Math.random() * 50);
+                const b = Math.floor(Math.random() * 50);
+                elColor.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+            }
+        }
+        setInterval(changeBgColor, 4000); // 每4秒渐变一次
+
+        // 初始化运行
+        switchMode();
+        animateDvd();
+        updateClock();
+        moveClock();
+        changeBgColor();
+
+    </script>
+</body>
+</html>
