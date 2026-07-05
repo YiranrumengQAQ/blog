@@ -2715,3 +2715,93 @@
         layoutFixObserver.observe(document.getElementById('sidebar') || document.body, { childList: true, subtree: true });
     })();
 </script>
+<!-- LGBTQIA+ Header Stretch Fixer (第三次深度对齐补丁) 开始 -->
+<style>
+    /* 1. 锁死全局与顶栏的横向边界，从根本上杜绝任何组件引发的页面横向拉伸 */
+    html, body, .site-header, .header-inner, .main-container {
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 2. 优化博主名字和徽章所在的容器，使其具备弹性收缩能力 */
+    .blog-name {
+        display: inline-flex !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+        max-width: 60% !important; /* 强行限制左侧区域最大只占常态屏幕的60%，给右侧按钮留出绝对安全的物理空间 */
+        overflow: hidden !important;
+    }
+
+    /* 3. 对注入的多元性别与跨性别徽章实施硬性响应式缩减，防止其沦为拉伸源 */
+    .blog-name .user-pronoun-badge {
+        flex-shrink: 1 !important;
+        white-space: nowrap !important;
+        font-size: 0.62rem !important;
+        padding: 0.1rem 0.35rem !important;
+        margin-left: 0.25rem !important;
+        text-overflow: ellipsis !important;
+        overflow: hidden !important;
+    }
+
+    /* 4. 当处于小屏/移动端纵向屏幕（<= 480px）时，实施精细化收拢机制 */
+    @media (max-width: 480px) {
+        /* 针对过长的跨性别声明徽章进行视觉精简，将其转化为极其精致的小图标模式，或在顶栏有限空间内精简显示 */
+        .blog-name .user-pronoun-badge.trans-identity {
+            max-width: 45px !important;
+            font-size: 0.55rem !important;
+            content: "trans" !important; /* 缩短字符防止推挤 */
+        }
+        
+        .blog-name .user-pronoun-badge.they-them {
+            max-width: 55px !important;
+            font-size: 0.55rem !important;
+        }
+        
+        .blog-name {
+            max-width: 55% !important;
+        }
+    }
+
+    /* 5. 确保右侧动作功能按钮区域具备最高优先级，绝不缩水或被顶开 */
+    .header-actions {
+        flex-shrink: 0 !important;
+        margin-left: auto !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+    }
+</style>
+
+<script>
+    (function() {
+        function enforceLgbtResponsiveLayout() {
+            // 在极窄屏幕下，直接将长文本提炼为跨性别旗帜图腾符号，既保持强烈的平权能见度，又彻底解放顶栏空间
+            if (window.innerWidth <= 480) {
+                const transBadges = document.querySelectorAll('.user-pronoun-badge.trans-identity');
+                transBadges.forEach(badge => {
+                    if (badge.textContent !== '🏳️‍⚧️ trans') {
+                        badge.textContent = '🏳️‍⚧️ trans';
+                        badge.style.padding = '0.1rem 0.25rem';
+                    }
+                });
+            }
+        }
+
+        // 绑定到现有的生命周期中
+        if (window.__blogApp) {
+            enforceLgbtResponsiveLayout();
+            const prevRefresh = window.__blogApp.refreshAll;
+            if (prevRefresh) {
+                window.__blogApp.refreshAll = async function() {
+                    await prevRefresh.apply(this, arguments);
+                    enforceLgbtResponsiveLayout();
+                };
+            }
+        }
+
+        window.addEventListener('resize', enforceLgbtResponsiveLayout);
+        window.addEventListener('orientationchange', enforceLgbtResponsiveLayout);
+    })();
+</script>
+<!-- LGBTQIA+ Header Stretch Fixer (第三次深度对齐补丁) 结束 -->
