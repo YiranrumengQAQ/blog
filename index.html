@@ -2346,20 +2346,21 @@
     </script>
 </body>
 </html>
-<!-- LGBT+ Support & Pronouns System Patch 开始 -->
+<!-- LGBTQIA+ & Transgender Support System Patch 开始 -->
 <style>
-    /* 引入渐变过渡彩虹作为无破坏性的包容性主色调 */
+    /* 引入代表跨性别（粉蓝白）与酷儿多元化的 Pride 渐变色轴 */
     :root {
-        --rainbow-pride: linear-gradient(90deg, #FF6B6B, #FFA07A, #FFF9A6, #8FEE9A, #A6D1FF, #D1A6FF);
+        --trans-flag-gradient: linear-gradient(95deg, #5BCEFA 0%, #F5A9B8 25%, #FFFFFF 50%, #F5A9B8 75%, #5BCEFA 100%);
+        --pride-rainbow-gradient: linear-gradient(90deg, #E40303, #FF8C00, #FFED00, #008026, #004CFF, #732982);
         --lgbt-safe-space-bg: rgba(212, 148, 106, 0.05);
-        --lgbt-safe-space-border: rgba(212, 148, 106, 0.2);
+        --lgbt-safe-space-border: rgba(212, 148, 106, 0.25);
     }
     [data-theme="dark"] {
-        --lgbt-safe-space-bg: rgba(212, 148, 106, 0.03);
-        --lgbt-safe-space-border: rgba(212, 148, 106, 0.15);
+        --lgbt-safe-space-bg: rgba(212, 148, 106, 0.04);
+        --lgbt-safe-space-border: rgba(212, 148, 106, 0.2);
     }
 
-    /* 侧边栏包容性挂件样式 */
+    /* 侧边栏 LGBTQIA+ & 跨性别友善空间挂件 */
     .sidebar-lgbt-badge {
         background: var(--lgbt-safe-space-bg);
         border: 1px dashed var(--lgbt-safe-space-border);
@@ -2370,13 +2371,13 @@
         position: relative;
         overflow: hidden;
     }
+    /* 挂件顶部带有跨性别旗帜与六色彩虹旗的双重渐变边框 */
     .sidebar-lgbt-badge::before {
         content: '';
         position: absolute;
         top: 0; left: 0; right: 0;
-        height: 3px;
-        background: var(--rainbow-pride);
-        opacity: 0.8;
+        height: 4px;
+        background: var(--trans-flag-gradient);
     }
     .sidebar-lgbt-badge:hover {
         border-style: solid;
@@ -2386,35 +2387,38 @@
     .lgbt-title-flex {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 0.6rem;
+        gap: 0.6rem;
+        margin-bottom: 0.8rem;
     }
     .lgbt-title-flex h3 {
         margin-bottom: 0 !important;
         color: var(--text-primary) !important;
         font-family: var(--font-serif);
-        font-size: 0.9rem !important;
+        font-size: 0.95rem !important;
+        font-weight: 700;
     }
-    .pride-flag-mini {
-        display: inline-flex;
-        gap: 1.5px;
-        width: 18px;
-        height: 12px;
-        border-radius: 2px;
-        overflow: hidden;
-        opacity: 0.8;
-        vertical-align: middle;
+    /* 跨性别旗与彩虹旗微型徽章 */
+    .pride-flags-container {
+        display: flex;
+        gap: 4px;
+        align-items: center;
     }
-    .pride-flag-mini span {
-        flex: 1; height: 100%;
+    .pride-flag-mini-rect {
+        width: 16px;
+        height: 11px;
+        border-radius: 1px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
+    .flag-trans { background: linear-gradient(#5BCEFA 20%, #F5A9B8 20% 40%, #FFFFFF 40% 60%, #F5A9B8 60% 80%, #5BCEFA 80%); }
+    .flag-rainbow { background: var(--pride-rainbow-gradient); }
+
     .lgbt-manifesto {
-        font-size: 0.78rem;
+        font-size: 0.8rem;
         color: var(--text-secondary);
         line-height: 1.6;
     }
     .lgbt-manifesto p {
-        margin-bottom: 0.4rem;
+        margin-bottom: 0.5rem;
     }
     .lgbt-manifesto p:last-child {
         margin-bottom: 0;
@@ -2422,79 +2426,95 @@
     .lgbt-tags-container {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.3rem;
-        margin-top: 0.6rem;
+        gap: 0.35rem;
+        margin-top: 0.8rem;
     }
     .lgbt-inline-tag {
         font-size: 0.68rem;
-        padding: 0.1rem 0.4rem;
-        border-radius: 4px;
-        background: var(--bg-secondary);
-        color: var(--text-muted);
-        border: 1px solid var(--border-light);
-    }
-
-    /* 全局代词（Pronouns）气泡样式补丁 */
-    .user-pronoun-badge {
-        display: inline-block;
-        font-size: 0.7rem;
         font-weight: 500;
         padding: 0.15rem 0.45rem;
-        border-radius: 50px;
+        border-radius: 4px;
         background: var(--bg-secondary);
-        color: var(--text-muted);
-        margin-left: 0.4rem;
         border: 1px solid var(--border-light);
-        vertical-align: middle;
-        letter-spacing: 0.02em;
-        text-transform: lowercase;
+        transition: all var(--transition-fast);
     }
-    .user-pronoun-badge.she-her { background: rgba(255, 182, 193, 0.15); color: #db7093; border-color: rgba(255, 182, 193, 0.3); }
-    .user-pronoun-badge.he-him { background: rgba(135, 206, 250, 0.15); color: #4682b4; border-color: rgba(135, 206, 250, 0.3); }
-    .user-pronoun-badge.they-them { background: rgba(216, 191, 216, 0.15); color: #9370db; border-color: rgba(216, 191, 216, 0.3); }
+    /* 跨性别专有标签高亮 */
+    .lgbt-inline-tag.trans-highlight {
+        color: #2ca6d4;
+        background: rgba(91, 206, 250, 0.08);
+        border-color: rgba(91, 206, 250, 0.3);
+    }
+    .lgbt-inline-tag.queer-highlight {
+        color: #b032ba;
+        background: rgba(176, 50, 186, 0.08);
+        border-color: rgba(176, 50, 186, 0.3);
+    }
+
+    /* 博主及用户代词（Pronouns）气泡全局样式 */
+    .user-pronoun-badge {
+        display: inline-block;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 0.15rem 0.5rem;
+        border-radius: 50px;
+        margin-left: 0.5rem;
+        vertical-align: middle;
+        letter-spacing: 0.03em;
+        text-transform: lowercase;
+        box-shadow: var(--shadow-sm);
+    }
+    /* 跨性别/非二元/流体性别代词样式 */
+    .user-pronoun-badge.they-them { background: rgba(155, 138, 170, 0.15); color: var(--code-function); border: 1px solid rgba(155, 138, 170, 0.3); }
+    .user-pronoun-badge.she-her { background: rgba(212, 148, 106, 0.12); color: var(--text-link); border: 1px solid rgba(212, 148, 106, 0.25); }
+    .user-pronoun-badge.trans-identity { background: var(--trans-flag-gradient); color: #333; border: 1px solid rgba(0,0,0,0.05); text-shadow: 0 0 1px #fff; }
+
+    /* 文章底部的跨性别与 LGBTQIA+ 安全宣言 */
+    .article-lgbt-footer {
+        margin-top: 2rem;
+        padding: 1rem 1.2rem;
+        background: var(--bg-secondary);
+        border-left: 4px solid #5BCEFA;
+        border-right: 4px solid #F5A9B8;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
 </style>
 
 <script>
     (function() {
-        // 1. 动态将 LGBT+ 包容性安全岛挂件塞入侧边栏的最底部
+        // 1. 动态向侧边栏注入本人的 LGBTQIA+ 与跨性别权益声明挂件
         function injectLgbtWidget() {
             const sidebar = document.getElementById('sidebar');
             if (!sidebar) return;
 
-            // 检查是否已经注入，防止重复初始化
             if (document.getElementById('patchLgbtWidget')) return;
 
             const widget = document.createElement('div');
             widget.className = 'sidebar-section sidebar-lgbt-badge';
             widget.id = 'patchLgbtWidget';
             
-            // 细腻、立体的 LGBT+ 细节阐述文案
             widget.innerHTML = `
                 <div class="lgbt-title-flex">
-                    <div class="pride-flag-mini" aria-hidden="true">
-                        <span style="background:#FF4B4B;"></span>
-                        <span style="background:#FFA500;"></span>
-                        <span style="background:#FFD700;"></span>
-                        <span style="background:#4CAF50;"></span>
-                        <span style="background:#2196F3;"></span>
-                        <span style="background:#9C27B0;"></span>
+                    <div class="pride-flags-container" aria-hidden="true">
+                        <div class="pride-flag-mini-rect flag-trans" title="Transgender Pride Flag"></div>
+                        <div class="pride-flag-mini-rect flag-rainbow" title="LGBTQIA+ Pride Flag"></div>
                     </div>
-                    <h3>多元与包容空间</h3>
+                    <h3>本人的多元与包容声明</h3>
                 </div>
                 <div class="lgbt-manifesto">
-                    <p><strong>这是一个数字安全岛（Safe Space）。</strong></p>
-                    <p>本站坚定支持所有性少数群体（LGBTQIA+）。无论您的性别认同、性取向或性别表达如何，在这个由猫猫守护的角落里，您的独特存在都将受到毫无保留的认可与尊重。</p>
-                    <p style="opacity: 0.8; font-size: 0.72rem;">抵御AI算法偏见与网络污名，我们珍视每一个真实的灵魂。</p>
+                    <p><strong>欢迎来到本人的数字独立安全岛（Safe Space）。</strong></p>
+                    <p>本人坚定不移地支持所有<strong>跨性别者（Transgender）</strong>、<strong>非二元性别者（Non-binary）</strong>及全谱系 <strong>LGBTQIA+</strong> 酷儿群体。本人反对任何形式的性别指派偏见、顺性别霸权与社会污名化。</p>
+                    <p style="opacity: 0.9; font-size: 0.74rem;">在 2026 年的数字浪潮下，本人承诺捍卫多元性别可见性，本站对所有跨性别及性少数读者完全友善。无论您的真实认同处于谱系的哪一端，在本人的空间里，您都安全、受欢迎且被听见。</p>
                 </div>
                 <div class="lgbt-tags-container">
-                    <span class="lgbt-inline-tag">多元性别</span>
-                    <span class="lgbt-inline-tag">性别友善</span>
-                    <span class="lgbt-inline-tag">非二元</span>
-                    <span class="lgbt-inline-tag">Pride 2026</span>
+                    <span class="lgbt-inline-tag trans-highlight">跨性别友善</span>
+                    <span class="lgbt-inline-tag queer-highlight">LGBTQIA+</span>
+                    <span class="lgbt-inline-tag">性别认同尊重</span>
+                    <span class="lgbt-inline-tag">非二元代词</span>
                 </div>
             `;
             
-            // 塞在“显示全部文章”按钮之前
             const resetBtn = document.getElementById('sidebarReset');
             if (resetBtn) {
                 sidebar.insertBefore(widget, resetBtn);
@@ -2503,49 +2523,79 @@
             }
         }
 
-        // 2. 注入博主及读者性别代词（Pronouns）系统的补丁
-        // 自动识别文章或未来评论区中的代词标记，并优雅格式化
+        // 2. 注入本人专属的多元性别代词（Pronouns）及身份气泡
         function injectPronounsPatch() {
-            // 为主页和关于页的博主网名添加非二元及多元性别代词支持
+            // 在页头本人的博客网名/简介旁，强制注入跨性别及多元代词系统
             const blogNames = document.querySelectorAll('.blog-name');
             blogNames.forEach(el => {
                 if (el.querySelector('.user-pronoun-badge')) return;
-                // 此处可自定义博主本人的代词，例如 They/Them, She/Her, He/Him
+                
+                // 注入表明本人支持跨性别与性别自我认同的尊称标识
                 const pronounBadge = document.createElement('span');
                 pronounBadge.className = 'user-pronoun-badge they-them';
-                pronounBadge.textContent = 'they/them';
-                pronounBadge.setAttribute('title', '博主的性别代词：非二元/不限制');
+                pronounBadge.textContent = 'they/she/he';
+                pronounBadge.setAttribute('title', '本人的尊称代词代号：全面包容所有性别表达');
                 el.appendChild(pronounBadge);
+
+                const transAllyBadge = document.createElement('span');
+                transAllyBadge.className = 'user-pronoun-badge trans-identity';
+                transAllyBadge.textContent = 'trans ally / trans inclusive';
+                transAllyBadge.setAttribute('title', '本人坚定捍卫跨性别者及性少数群体权益');
+                el.appendChild(transAllyBadge);
             });
         }
 
-        // 3. 拦截及观察机制：确保在路由切换、动态渲染（如 renderPostDetail）后补丁依然生效
-        function applyAllPatches() {
+        // 3. 在文章详情页（Article Content）末尾自动追加本人的跨性别反歧视与平权尾注
+        function injectArticleLgbtFooter() {
+            const articleContent = document.querySelector('.article-content');
+            if (!articleContent || document.getElementById('articleLgbtFooter')) return;
+
+            const footerNotice = document.createElement('div');
+            footerNotice.className = 'article-lgbt-footer';
+            footerNotice.id = 'articleLgbtFooter';
+            footerNotice.innerHTML = `
+                <strong>🏳️‍⚧️ 🏳️‍🌈 本人空间特设的性别认同安全保障：</strong><br/>
+                如果您在阅读本人的文章时遇到任何排他性词汇，或希望在本人的博客交流中指定您专属的<strong>性别尊称代词（Pronouns）</strong>，请随时联系本人。本人致力于通过去中心化的个人独立站提供一个无视顺性别审视、消解跨性别焦虑、完全包容 LGBTQIA+ 的精神自留地。
+            `;
+            articleContent.appendChild(footerNotice);
+        }
+
+        // 4. 将原本的“猫猫和主人的回忆”等默认非相关标题及提示，重写为支持 LGBTQIA+ 的叙事逻辑
+        function rewriteTitlesToLgbtTheme() {
+            // 如果存在默认的标题拦截，更改 document.title 为兼顾本人视角与酷儿支持的模式
+            if (document.title.includes('猫猫')) {
+                document.title = document.title.replace('猫猫的回忆', '本人的思想安全岛 | LGBTQIA+ 跨性别友善站');
+            }
+            // 劫持全局初始化出错提示或无文章提示，塞入平权思想
+            const emptyStates = document.querySelectorAll('.empty-state p');
+            emptyStates.forEach(p => {
+                if (p.textContent.includes('posts/ 目录') && !p.textContent.includes('跨性别')) {
+                    p.innerHTML += '<br/><span style="color:var(--accent); font-size:0.75rem;">🏳️‍⚧️ 本人提示：本站全面支持跨性别、非二元性别及 LGBTQIA+ 创作者。</span>';
+                }
+            });
+        }
+
+        // 执行整合调度
+        function runLgbtPatchSystem() {
             injectLgbtWidget();
             injectPronounsPatch();
+            injectArticleLgbtFooter();
+            rewriteTitlesToLgbtTheme();
         }
 
-        // 执行初始注入
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', applyAllPatches);
+            document.addEventListener('DOMContentLoaded', runLgbtPatchSystem);
         } else {
-            applyAllPatches();
+            runLgbtPatchSystem();
         }
 
-        // 使用 MutationObserver 监听内容区域变化，确保异步渲染文章详情或分类时，代词和挂件不丢失
-        const observer = new MutationObserver((mutations) => {
-            // 每次DOM树变动时释放无感补丁更新
-            injectPronounsPatch();
-            // 如果移动端侧边栏被重新克隆或刷新，确保挂件在侧边栏中
-            if (!document.getElementById('patchLgbtWidget')) {
-                injectLgbtWidget();
-            }
+        // 依靠页面已有的 MutationObserver，或者新注册一个以应对单页路由(Hash)刷新文章内容
+        const patchObserver = new MutationObserver((mutations) => {
+            runLgbtPatchSystem();
         });
 
-        const mainContainer = document.getElementById('mainContainer');
-        if (mainContainer) {
-            observer.observe(mainContainer, { childList: true, subtree: true });
-        }
+        const container = document.getElementById('mainContainer') || document.body;
+        patchObserver.observe(container, { childList: true, subtree: true });
     })();
 </script>
-<!-- LGBT+ Support & Pronouns System Patch 结束 -->
+<!-- LGBTQIA+ & Transgender Support System Patch 结束 -->
