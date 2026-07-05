@@ -2599,3 +2599,119 @@
     })();
 </script>
 <!-- LGBTQIA+ & Transgender Support System Patch 结束 -->
+<style>
+    /* 强力隔离与覆写：防止侧边栏挂件破坏原生盒模型与拉伸高度 */
+    #patchLgbtWidget.sidebar-section.sidebar-lgbt-badge {
+        display: block !important;
+        flex: none !important;
+        align-self: stretch !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        margin: 1rem 0 !important; /* 恢复原生的垂直流间距 */
+        padding: 1rem !important;
+        box-sizing: border-box !important;
+        transform: none !important;
+    }
+
+    /* 修复挂件内的排版布局，严禁使用任何可能导致异常撑开的 grid/flex */
+    .lgbt-title-flex {
+        display: block !important; /* 强制改用块级+浮动，避免不兼容的伸缩布局 */
+        clear: both !important;
+        margin-bottom: 0.5rem !important;
+        height: 1.2rem !important;
+        line-height: 1.2rem !important;
+    }
+    
+    .pride-flags-container {
+        float: left !important;
+        display: inline-flex !important;
+        gap: 3px !important;
+        margin-top: 0.15rem !important;
+        margin-right: 0.5rem !important;
+    }
+
+    .lgbt-title-flex h3 {
+        display: inline !important;
+        float: left !important;
+        font-size: 0.85rem !important;
+        line-height: 1.2rem !important;
+        padding: 0 !important;
+    }
+
+    .lgbt-manifesto {
+        clear: both !important;
+        display: block !important;
+        font-size: 0.75rem !important;
+        line-height: 1.5 !important;
+        text-align: left !important;
+    }
+
+    .lgbt-manifesto p {
+        margin: 0 0 0.3rem 0 !important;
+    }
+
+    .lgbt-tags-container {
+        clear: both !important;
+        display: block !important;
+        margin-top: 0.5rem !important;
+        text-align: left !important;
+    }
+
+    .lgbt-inline-tag {
+        display: inline-block !important;
+        margin-right: 0.3rem !important;
+        margin-bottom: 0.3rem !important;
+        float: none !important;
+    }
+
+    /* 修复网名后面注入代词导致的文字整体换行或过度拉伸 */
+    .blog-name {
+        display: inline-block !important;
+        white-space: nowrap !important;
+    }
+
+    .user-pronoun-badge {
+        display: inline-block !important;
+        white-space: nowrap !important;
+        margin: 0 0 0 0.3rem !important;
+        padding: 0.1rem 0.35rem !important;
+        font-size: 0.65rem !important;
+        line-height: 1.2 !important;
+        height: auto !important;
+        vertical-align: middle !important;
+    }
+</style>
+
+<script>
+    (function() {
+        function fixLgbtLayoutNodes() {
+            const widget = document.getElementById('patchLgbtWidget');
+            if (widget) {
+                // 去除所有可能引发布局坍塌的动态框架控制类名，实施严格样式隔离
+                widget.style.flexShrink = '0';
+                widget.style.flexGrow = '0';
+                widget.style.flexBasis = 'auto';
+            }
+        }
+
+        // 持续看管，防止原生 JS 重新渲染列表时布局再次错位
+        if (window.__blogApp) {
+            fixLgbtLayoutNodes();
+            const originalRefresh = window.__blogApp.refreshAll;
+            if (originalRefresh && !originalRefresh.__isPatched) {
+                window.__blogApp.refreshAll = async function() {
+                    await originalRefresh.apply(this, arguments);
+                    fixLgbtLayoutNodes();
+                };
+                window.__blogApp.refreshAll.__isPatched = true;
+            }
+        }
+
+        // 注册 DOM 补救观察
+        const layoutFixObserver = new MutationObserver(() => {
+            fixLgbtLayoutNodes();
+        });
+        layoutFixObserver.observe(document.getElementById('sidebar') || document.body, { childList: true, subtree: true });
+    })();
+</script>
