@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>博客</title>
-    <meta name="description" content="记录温暖时光的静态博客">
+    <meta name="description" content="记录温暖时光的静态博客" data-i18n-attr="content:site.description">
     <meta name="theme-color" content="#FDFBF7">
     <link rel="stylesheet" href="assets/css/tokens.css">
     <link rel="stylesheet" href="assets/css/base.css">
@@ -14,7 +14,9 @@
     <link rel="stylesheet" href="assets/css/responsive.css">
 </head>
 <body>
-    <noscript><p class="nojs-tip">🐱 这个博客需要启用 JavaScript 才能阅读哦～</p></noscript>
+    <!-- noscript 里的内容只有在"禁用 JS"时才会显示，而 i18n 本身要靠 JS 运行，
+         所以这句话无法走语言包，这里直接中英双语写死 -->
+    <noscript><p class="nojs-tip">🐱 这个博客需要启用 JavaScript 才能阅读哦～ / This blog needs JavaScript enabled.</p></noscript>
 
     <!-- 阅读进度条（文章页显示） -->
     <div class="reading-progress" id="readingProgress" hidden>
@@ -24,7 +26,7 @@
     <!-- 顶栏 -->
     <header class="site-header" id="siteHeader">
         <div class="header-inner">
-            <a class="blog-name" href="#/" title="返回首页">
+            <a class="blog-name" href="#/" title="返回首页" data-i18n-attr="title:nav.backHome">
                 <span id="headerBlogName">博客</span>
                 <span class="paw-dot"></span>
                 <span class="paw-dot"></span>
@@ -33,19 +35,29 @@
             <div class="header-actions">
                 <div class="search-wrap" id="searchWrap">
                     <input type="text" class="search-input" id="searchInput" placeholder="搜索文章…"
-                        autocomplete="off" aria-label="搜索文章">
-                    <button class="search-clear" id="searchClear" aria-label="清除搜索">&#10005;</button>
+                        autocomplete="off" aria-label="搜索文章"
+                        data-i18n-attr="placeholder:nav.searchPlaceholder;aria-label:nav.searchAria">
+                    <button class="search-clear" id="searchClear" aria-label="清除搜索"
+                        data-i18n-attr="aria-label:nav.searchClear">&#10005;</button>
                     <span class="search-kbd" aria-hidden="true">/</span>
                     <span class="search-icon" aria-hidden="true">&#8981;</span>
                 </div>
-                <button class="mobile-search-btn" id="mobileSearchBtn" aria-label="打开搜索" title="搜索">
+                <button class="mobile-search-btn" id="mobileSearchBtn" aria-label="打开搜索" title="搜索"
+                    data-i18n-attr="aria-label:nav.searchOpen;title:nav.search">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 </button>
-                <button class="m3-icon-btn theme-toggle" id="themeToggle" aria-label="切换主题" title="切换亮色/暗色主题">
+                <!-- 语言切换：选项由 config.json 的 languages 自动生成 -->
+                <div class="lang-wrap" id="langWrap" hidden>
+                    <select class="lang-select" id="langSelect" aria-label="选择界面语言" title="选择界面语言"
+                        data-i18n-attr="aria-label:nav.languageAria;title:nav.languageAria"></select>
+                </div>
+                <button class="m3-icon-btn theme-toggle" id="themeToggle" aria-label="切换主题" title="切换亮色/暗色主题"
+                    data-i18n-attr="aria-label:nav.themeToggleAria;title:nav.themeToggleTitle">
                     <svg class="sun-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                     <svg class="moon-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 </button>
-                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="菜单" title="侧边栏菜单" aria-expanded="false">
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="菜单" title="侧边栏菜单" aria-expanded="false"
+                    data-i18n-attr="aria-label:nav.menuAria;title:nav.menuTitle">
                     <span></span><span></span><span></span>
                 </button>
             </div>
@@ -60,24 +72,24 @@
         <!-- 侧边栏 -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-section">
-                <h3>分类目录</h3>
+                <h3 data-i18n="sidebar.categories">分类目录</h3>
                 <div id="sidebarCategories"></div>
             </div>
             <div class="sidebar-section">
-                <h3>标签云</h3>
+                <h3 data-i18n="sidebar.tags">标签云</h3>
                 <div class="sidebar-tags" id="sidebarTags"></div>
             </div>
             <div class="sidebar-section">
-                <h3>归档</h3>
+                <h3 data-i18n="sidebar.archives">归档</h3>
                 <div id="sidebarArchives"></div>
             </div>
-            <button class="sidebar-reset" id="sidebarReset" type="button">显示全部文章</button>
+            <button class="sidebar-reset" id="sidebarReset" type="button" data-i18n="sidebar.reset">显示全部文章</button>
         </aside>
 
         <!-- 内容 -->
         <main class="content-area" id="contentArea">
             <div class="content-header" id="contentHeader">
-                <span class="content-title" id="contentTitle">最新文章</span>
+                <span class="content-title" id="contentTitle" data-i18n="list.latest">最新文章</span>
                 <span class="result-count" id="resultCount"></span>
             </div>
             <div class="loading-skeleton" id="loadingSkeleton">
@@ -86,7 +98,7 @@
                 <div class="skeleton-card"><div class="skeleton-cover"></div><div class="skeleton-body"><div class="skeleton-line long"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div></div>
             </div>
             <div id="contentBody"></div>
-            <nav class="pagination" id="pagination" aria-label="分页"></nav>
+            <nav class="pagination" id="pagination" aria-label="分页" data-i18n-attr="aria-label:list.paginationAria"></nav>
         </main>
     </div>
 
@@ -95,14 +107,16 @@
         <div class="footer-line">
             <span>© <span id="footerYear">2026</span> <span id="footerName">博客</span></span>
             <span>·</span>
-            <span>用 <span class="footer-heart">❤</span> 记录每一刻</span>
+            <span data-i18n="site.slogan">用 ❤ 记录每一刻</span>
             <span>·</span>
-            <a href="editor.html" title="打开写作助手">✍️ 写文章</a>
+            <a href="editor.html" title="打开写作助手" data-i18n="nav.writeArticle"
+                data-i18n-attr="title:nav.writeArticleTitle">✍️ 写文章</a>
         </div>
     </footer>
 
     <!-- 回到顶部 -->
-    <button class="back-to-top" id="backToTop" aria-label="回到顶部" title="回到顶部">&#8593;</button>
+    <button class="back-to-top" id="backToTop" aria-label="回到顶部" title="回到顶部"
+        data-i18n-attr="aria-label:nav.backToTop;title:nav.backToTop">&#8593;</button>
 
     <!-- Toast 容器 -->
     <div class="toast-container" id="toastContainer"></div>
@@ -114,6 +128,8 @@
     <!-- 工具 -->
     <script src="assets/js/utils/dom.js" defer></script>
     <script src="assets/js/utils/format.js" defer></script>
+    <!-- 多语言 -->
+    <script src="assets/js/core/i18n.js" defer></script>
     <!-- 内核 -->
     <script src="assets/js/core/frontmatter.js" defer></script>
     <script src="assets/js/core/markdown.js" defer></script>

@@ -115,10 +115,12 @@
             }
         });
 
-        // 搜索框占位符提示快捷键
-        if (!('ontouchstart' in window)) {
-            el.searchInput.placeholder = '搜索文章… (Ctrl+K)';
-        }
+        // 搜索框占位符提示快捷键（非触屏设备）
+        el.searchInput.dataset.i18nAttr =
+            ('ontouchstart' in window)
+                ? 'placeholder:nav.searchPlaceholder;aria-label:nav.searchAria'
+                : 'placeholder:nav.searchPlaceholderKbd;aria-label:nav.searchAria';
+        Blog.i18n.applyToDOM(el.searchInput.parentNode);
     }
 
     function focusSearch(ctx) {

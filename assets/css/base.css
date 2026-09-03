@@ -91,6 +91,7 @@ body {
     text-decoration: underline;
     text-underline-offset: 3px;
 }
-.site-footer .footer-heart {
+/* 页脚口号整句走 i18n（含 ❤ 字符），所以这里只给整句一点弱化色 */
+.site-footer [data-i18n="site.slogan"] {
     color: var(--md-sys-color-tertiary);
 }

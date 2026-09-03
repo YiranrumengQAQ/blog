@@ -13,8 +13,10 @@
     const Blog = (window.Blog = window.Blog || {});
     Blog.ui = Blog.ui || {};
 
-    const { $, $$, escapeHTML, escapeAttr, formatDate, copyText } = Blog.utils;
+    const { $, $$, escapeHTML, escapeAttr, copyText } = Blog.utils;
     const { renderMarkdown } = Blog.core;
+    // 所有界面文案走 i18n，切换语言后重新 render 即可
+    const t = (key, vars) => Blog.i18n.t(key, vars);
 
     /* ---------------- 渲染 ---------------- */
 
@@ -59,35 +61,35 @@
 
         const navItem = (dir, p, emptyText) => p
             ? `<div class="article-nav-item ${dir}" data-nav-slug="${escapeAttr(p.slug)}" role="link" tabindex="0">
-                 <div class="article-nav-label">${dir === 'prev' ? '上一篇' : '下一篇'}</div>
+                 <div class="article-nav-label">${escapeHTML(t(dir === 'prev' ? 'article.prev' : 'article.next'))}</div>
                  <div class="article-nav-title">${escapeHTML(p.title || '')}</div>
                </div>`
             : `<div class="article-nav-item ${dir} empty">
-                 <div class="article-nav-label">${dir === 'prev' ? '上一篇' : '下一篇'}</div>
-                 <div class="article-nav-title">${emptyText}</div>
+                 <div class="article-nav-label">${escapeHTML(t(dir === 'prev' ? 'article.prev' : 'article.next'))}</div>
+                 <div class="article-nav-title">${escapeHTML(emptyText)}</div>
                </div>`;
 
         el.contentBody.innerHTML = `
           <div class="article-view">
             <button class="article-back" id="articleBackBtn" type="button">
-              <span class="article-back-arrow">&larr;</span> 返回文章列表
+              <span class="article-back-arrow">&larr;</span> ${escapeHTML(t('article.back'))}
             </button>
             ${coverHTML}
             <h1 class="article-title">${escapeHTML(post.title || '')}</h1>
             <div class="article-meta">
-              <span>${escapeHTML(formatDate(post.date))}</span>
+              <span>${escapeHTML(Blog.i18n.formatDate(post.date))}</span>
               <span class="meta-sep"></span>
               ${post.category ? `<span class="card-category clickable" data-cat-nav="${escapeAttr(post.category)}">${escapeHTML(post.category)}</span><span class="meta-sep"></span>` : ''}
-              <span>约 ${post.readingTime} 分钟阅读</span>
+              <span>${escapeHTML(t('article.readingTime', { n: post.readingTime }))}</span>
               <span class="meta-sep"></span>
-              <span>${post.wordCount} 字</span>
+              <span>${escapeHTML(t('article.wordCount', { n: post.wordCount }))}</span>
               ${tagsHTML}
-              ${post.sticky ? '<span class="card-sticky-badge">置顶</span>' : ''}
+              ${post.sticky ? `<span class="card-sticky-badge">${escapeHTML(t('article.sticky'))}</span>` : ''}
             </div>
             <div class="article-content">${renderMarkdown(post.content || '')}</div>
             <div class="article-nav">
-              ${navItem('prev', adjacent.prevPost, '没有更早的文章了')}
-              ${navItem('next', adjacent.nextPost, '已经是最新文章了')}
+              ${navItem('prev', adjacent.prevPost, t('article.noPrev'))}
+              ${navItem('next', adjacent.nextPost, t('article.noNext'))}
             </div>
           </div>`;
 
@@ -99,16 +101,16 @@
         const { el } = ctx;
         const isFileProtocol = window.location.protocol === 'file:';
         const hint = isFileProtocol
-            ? '检测到你直接双击打开了本页面：浏览器安全策略禁止本地读取文件，请使用本地服务器或部署到 GitHub Pages 后访问。'
-            : `无法找到文章 "${slug}"，请检查 posts/ 目录下是否存在对应的 .md 文件。`;
+            ? t('article.errorFileHint')
+            : t('article.errorMissingHint', { slug });
         el.contentBody.innerHTML = `
           <div class="empty-state">
             <div class="empty-icon">😿</div>
-            <h3>文章加载失败</h3>
+            <h3>${escapeHTML(t('article.errorTitle'))}</h3>
             <p>${escapeHTML(hint)}</p>
             <div class="empty-actions">
-              <button class="sidebar-reset" data-article-action="retry">重试</button>
-              <button class="sidebar-reset" data-article-action="home">返回首页</button>
+              <button class="sidebar-reset" data-article-action="retry">${escapeHTML(t('article.retry'))}</button>
+              <button class="sidebar-reset" data-article-action="home">${escapeHTML(t('article.home'))}</button>
             </div>
           </div>`;
         void err;
@@ -138,7 +140,9 @@
             img.addEventListener('error', () => {
                 const tip = document.createElement('span');
                 tip.className = 'img-fallback';
-                tip.textContent = `🖼 图片暂时无法加载${img.alt ? '：' + img.alt : ''}`;
+                tip.textContent = img.alt
+                    ? t('article.imgFallbackAlt', { alt: img.alt })
+                    : t('article.imgFallback');
                 img.replaceWith(tip);
             });
             img.addEventListener('click', () => openLightbox(ctx, i));
@@ -150,18 +154,24 @@
             const btn = document.createElement('button');
             btn.className = 'copy-code-btn';
             btn.type = 'button';
-            btn.textContent = '复制';
+            btn.textContent = t('article.copy');
+            // 取代码时先摘掉按钮，避免把按钮文字（"复制"/"Copy"）也复制进去
+            const codeOf = () => {
+                const clone = pre.cloneNode(true);
+                $$('.copy-code-btn', clone).forEach((b) => b.remove());
+                return clone.textContent;
+            };
             btn.addEventListener('click', async () => {
                 try {
-                    await copyText(pre.textContent.replace(/^复制\s*/, ''));
-                    btn.textContent = '已复制 ✓';
+                    await copyText(codeOf());
+                    btn.textContent = t('article.copied');
                     btn.classList.add('copied');
                     setTimeout(() => {
-                        btn.textContent = '复制';
+                        btn.textContent = t('article.copy');
                         btn.classList.remove('copied');
                     }, 1500);
                 } catch (e) {
-                    Blog.ui.toast.show('复制失败，请手动选择复制', 'error');
+                    Blog.ui.toast.show(t('article.copyFailed'), 'error');
                 }
             });
             pre.appendChild(btn);
@@ -208,12 +218,13 @@
         root.id = 'lightbox';
         root.hidden = true;
         root.innerHTML = `
-          <button class="lightbox-close" type="button" aria-label="关闭">✕</button>
-          <button class="lightbox-prev" type="button" aria-label="上一张">&#8249;</button>
+          <button class="lightbox-close" type="button" data-i18n-attr="aria-label:lightbox.close" aria-label="关闭">✕</button>
+          <button class="lightbox-prev" type="button" data-i18n-attr="aria-label:lightbox.prev" aria-label="上一张">&#8249;</button>
           <img class="lightbox-img" alt="">
           <div class="lightbox-caption"></div>
           <div class="lightbox-counter"></div>
-          <button class="lightbox-next" type="button" aria-label="下一张">&#8250;</button>`;
+          <button class="lightbox-next" type="button" data-i18n-attr="aria-label:lightbox.next" aria-label="下一张">&#8250;</button>`;
+        Blog.i18n.applyToDOM(root);
         document.body.appendChild(root);
         lbElements = {
             root,

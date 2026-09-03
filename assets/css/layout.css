@@ -185,6 +185,41 @@
     transform: rotate(0deg) scale(1);
 }
 
+/* ----- 语言切换 (Language Picker) ----- */
+.lang-wrap {
+    display: flex;
+    align-items: center;
+}
+.lang-select {
+    height: 40px;
+    max-width: 118px;
+    padding: 0 1.6rem 0 0.7rem;
+    border-radius: var(--md-sys-shape-corner-full);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface-variant);
+    font: inherit;
+    font-size: var(--md-sys-typescale-body-small);
+    cursor: pointer;
+    transition: all var(--md-sys-transition-short);
+    /* 自绘下拉箭头，避免各浏览器默认样式不一致 */
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+        linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: calc(100% - 14px) 17px, calc(100% - 9px) 17px;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    text-overflow: ellipsis;
+}
+.lang-select:hover,
+.lang-select:focus-visible {
+    border-color: var(--md-sys-color-primary);
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    outline: none;
+}
+
 /* ----- 移动端按钮 ----- */
 .mobile-menu-btn {
     display: none;

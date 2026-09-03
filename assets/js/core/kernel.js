@@ -18,10 +18,15 @@
     const Blog = (window.Blog = window.Blog || {});
     Blog.core = Blog.core || {};
 
-    const { parseDate, monthKey, makeSummary, calcReadingTime } = Blog.utils;
+    const { parseDate, monthKey, makeSummary, calcReadingTime, countWords } = Blog.utils;
     const { parseFrontMatter } = Blog.core;
 
+    // 兜底的"未分类"名称；实际值可在 config.json 里用 defaultCategory 覆盖
     const DEFAULT_CATEGORY = '默认分类';
+
+    /** 阅读速率（字符/分钟）与计数方式都跟着界面语言走 */
+    const readingRate = () => (Blog.i18n ? Blog.i18n.num('format.charsPerMinute', 350) : 350);
+    const countMode = () => (Blog.i18n ? Blog.i18n.get('format.countMode', 'chars') : 'chars');
 
     class BlogKernel {
         constructor(options = {}) {
@@ -49,7 +54,8 @@
                 fetchJSON(this.manifestUrl, 'posts/manifest.json 加载失败')
             ]);
             this.config = normalizeConfig(configRes);
-            this.postsIndex = normalizePosts(manifestRes);
+            if (this.config.defaultCategory) this.defaultCategory = this.config.defaultCategory;
+            this.postsIndex = normalizePosts(manifestRes, this.defaultCategory);
             this._buildTaxonomies();
             return this;
         }
@@ -81,7 +87,7 @@
             this.tags = {};
             this.archives = {};
             for (const post of this.postsIndex) {
-                const cat = post.category || DEFAULT_CATEGORY;
+                const cat = post.category || this.defaultCategory;
                 (this.categories[cat] = this.categories[cat] || []).push(post);
                 for (const tag of post.tags || []) {
                     (this.tags[tag] = this.tags[tag] || []).push(post);
@@ -150,12 +156,12 @@
                 // front matter 优先于 manifest（改文章即改信息，所见即所得）
                 const merged = Object.assign({}, base, meta, { slug });
                 if (!merged.title) merged.title = slug;
-                if (!merged.category) merged.category = DEFAULT_CATEGORY;
+                if (!merged.category) merged.category = this.defaultCategory;
                 if (!Array.isArray(merged.tags)) merged.tags = merged.tags ? [String(merged.tags)] : [];
 
                 merged.content = parsed.content;
-                merged.wordCount = parsed.content.replace(/\s+/g, '').length;
-                merged.readingTime = calcReadingTime(parsed.content);
+                merged.wordCount = countWords(parsed.content, countMode());
+                merged.readingTime = calcReadingTime(parsed.content, readingRate());
 
                 // 封面：front matter cover > manifest cover > 正文第一张图
                 let cover = merged.cover || null;
@@ -208,7 +214,7 @@
             } = params;
 
             let result = [...this.postsIndex];
-            if (category) result = result.filter((p) => (p.category || DEFAULT_CATEGORY) === category);
+            if (category) result = result.filter((p) => (p.category || this.defaultCategory) === category);
             if (tag) result = result.filter((p) => (p.tags || []).includes(tag));
             if (archive) result = result.filter((p) => monthKey(p.date) === archive);
             if (keyword) {
@@ -265,6 +271,21 @@
             };
         }
 
+        /**
+         * 切换界面语言后重算与语言有关的统计（阅读时长 / 字数）。
+         * 正文、标题等内容本身不翻译，只重算这些数字。
+         */
+        recalcStats() {
+            const rate = readingRate();
+            const mode = countMode();
+            this.postsCache.forEach((post, slug) => {
+                post.readingTime = calcReadingTime(post.content, rate);
+                post.wordCount = countWords(post.content, mode);
+                const idx = this.postsIndex.findIndex((p) => p.slug === slug);
+                if (idx !== -1) this.postsIndex[idx].readingTime = post.readingTime;
+            });
+        }
+
         clearCache() {
             this.postsCache.clear();
             this.hydrated = false;
@@ -286,22 +307,28 @@
     function normalizeConfig(raw) {
         const c = raw && typeof raw === 'object' ? raw : {};
         return {
-            blogName: c.blogName || '我的博客',
+            blogName: c.blogName || (Blog.i18n ? Blog.i18n.t('site.defaultBlogName') : '我的博客'),
             author: c.author || '',
             description: c.description || '',
-            perPage: Math.max(1, parseInt(c.perPage, 10) || 5)
+            perPage: Math.max(1, parseInt(c.perPage, 10) || 5),
+            // 多语言相关配置原样透传，供 main.js / i18n 使用
+            defaultLanguage: typeof c.defaultLanguage === 'string' ? c.defaultLanguage : '',
+            languages: Array.isArray(c.languages) ? c.languages : [],
+            defaultCategory: typeof c.defaultCategory === 'string' && c.defaultCategory.trim()
+                ? c.defaultCategory.trim() : ''
         };
     }
 
-    function normalizePosts(list) {
+    function normalizePosts(list, defaultCategory) {
         if (!Array.isArray(list)) return [];
+        const fallbackCat = defaultCategory || DEFAULT_CATEGORY;
         return list
             .filter((e) => e && e.slug)
             .map((e) => {
                 const post = Object.assign({}, e);
                 post.slug = String(e.slug).replace(/\.md$/i, '');
                 post.title = e.title || post.slug;
-                post.category = e.category || DEFAULT_CATEGORY;
+                post.category = e.category || fallbackCat;
                 post.tags = Array.isArray(e.tags) ? e.tags : (e.tags ? [String(e.tags)] : []);
                 post.sticky = !!e.sticky;
                 post.date = e.date || '';

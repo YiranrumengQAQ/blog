@@ -1,0 +1,119 @@
+{
+    "meta": {
+        "name": "English",
+        "htmlLang": "en",
+        "dir": "ltr"
+    },
+    "format": {
+        "dateLong": "{mon} {d}, {y}",
+        "monthLong": "{mon} {y}",
+        "months": [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+        ],
+        "charsPerMinute": 1000,
+        "countMode": "words"
+    },
+    "site": {
+        "defaultTitle": "Blog",
+        "defaultBlogName": "My Blog",
+        "description": "A static blog for warm little moments",
+        "slogan": "Made with ❤ , one moment at a time"
+    },
+    "nav": {
+        "backHome": "Back to home",
+        "searchPlaceholder": "Search posts…",
+        "searchPlaceholderKbd": "Search posts… (Ctrl+K)",
+        "searchAria": "Search posts",
+        "searchClear": "Clear search",
+        "searchOpen": "Open search",
+        "search": "Search",
+        "themeToggleAria": "Toggle theme",
+        "themeToggleTitle": "Switch light/dark theme",
+        "menuAria": "Menu",
+        "menuTitle": "Sidebar menu",
+        "backToTop": "Back to top",
+        "languageAria": "Choose interface language",
+        "writeArticle": "✍️ Write",
+        "writeArticleTitle": "Open the writing assistant"
+    },
+    "sidebar": {
+        "categories": "Categories",
+        "tags": "Tags",
+        "archives": "Archives",
+        "reset": "Show all posts",
+        "empty": "Nothing here yet"
+    },
+    "list": {
+        "latest": "Latest Posts",
+        "searchTitle": "Search: \"{keyword}\"",
+        "categoryTitle": "Category: {name}",
+        "tagTitle": "Tag: {name}",
+        "archiveTitle": "Archive: {name}",
+        "resultCount": "{n} posts in total",
+        "resultCount_one": "{n} post in total",
+        "readingTime": "{n} min read",
+        "sticky": "Pinned",
+        "readAria": "Read: {title}",
+        "fallbackChar": "P",
+        "prevPage": "Previous page",
+        "nextPage": "Next page",
+        "paginationAria": "Pagination",
+        "emptySearchTitle": "No matching posts",
+        "emptySearchHint": "Try another keyword, or clear the search",
+        "emptySearchHintIndexing": "Try another keyword, or wait for the post index to finish",
+        "emptySearchAction": "Clear search",
+        "emptyTitle": "No posts yet",
+        "emptyHint": "Add a .md file under posts/ and update posts/manifest.json to publish a new post",
+        "emptyEditor": "✍️ Open the writing assistant",
+        "emptyShowAll": "Show all",
+        "errorTitle": "Failed to load",
+        "errorHint": "Make sure config.json and posts/manifest.json exist and are valid JSON",
+        "retry": "Reload"
+    },
+    "article": {
+        "back": "Back to posts",
+        "prev": "Previous",
+        "next": "Next",
+        "noPrev": "No earlier posts",
+        "noNext": "This is the latest post",
+        "readingTime": "{n} min read",
+        "wordCount": "{n} words",
+        "wordCount_one": "{n} word",
+        "sticky": "Pinned",
+        "imgFallback": "🖼 Image could not be loaded",
+        "imgFallbackAlt": "🖼 Image could not be loaded: {alt}",
+        "copy": "Copy",
+        "copied": "Copied ✓",
+        "copyFailed": "Copy failed, please select and copy manually",
+        "errorTitle": "Failed to load this post",
+        "errorFileHint": "It looks like this page was opened by double-clicking the file: browsers block local file access. Please use a local server or deploy to GitHub Pages.",
+        "errorMissingHint": "Post \"{slug}\" not found. Check that the matching .md file exists under posts/.",
+        "retry": "Retry",
+        "home": "Back to home"
+    },
+    "lightbox": {
+        "close": "Close",
+        "prev": "Previous image",
+        "next": "Next image"
+    },
+    "boot": {
+        "errorTitle": "Blog failed to start",
+        "errorFileHint": "You opened index.html by double-clicking it: browser security blocks local pages from reading post data.",
+        "errorHint": "Could not load config.json or posts/manifest.json. Check that the files exist and the JSON is valid.",
+        "localPreviewHint": "For a local preview, run in the repo folder: python3 -m http.server 8000",
+        "retry": "Retry",
+        "partialFail": "{n} posts failed to load, please check the posts/ folder",
+        "partialFail_one": "{n} post failed to load, please check the posts/ folder"
+    }
+}

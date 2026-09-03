@@ -67,6 +67,13 @@
     .search-kbd {
         display: none;
     }
+    /* 顶栏空间紧张：语言下拉框收窄，只留够看语言名的宽度 */
+    .lang-select {
+        max-width: 86px;
+        padding: 0 1.4rem 0 0.5rem;
+        font-size: 0.75rem;
+        background-position: calc(100% - 12px) 17px, calc(100% - 8px) 17px;
+    }
     .mobile-menu-btn {
         display: flex;
     }
@@ -200,6 +207,10 @@
     }
     .lightbox-prev { left: 0.4rem; }
     .lightbox-next { right: 0.4rem; }
+    .lang-select {
+        max-width: 70px;
+        padding: 0 1.2rem 0 0.4rem;
+    }
 }
 
 @media (min-width: 769px) {
