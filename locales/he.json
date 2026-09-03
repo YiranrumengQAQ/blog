@@ -1,0 +1,119 @@
+{
+    "meta": {
+        "name": "עברית",
+        "htmlLang": "he",
+        "dir": "rtl"
+    },
+    "format": {
+        "dateLong": "{d} ב{mon} {y}",
+        "monthLong": "{mon} {y}",
+        "months": [
+            "ינואר",
+            "פברואר",
+            "מרץ",
+            "אפריל",
+            "מאי",
+            "יוני",
+            "יולי",
+            "אוגוסט",
+            "ספטמבר",
+            "אוקטובר",
+            "נובמבר",
+            "דצמבר"
+        ],
+        "charsPerMinute": 900,
+        "countMode": "words"
+    },
+    "site": {
+        "blogName": "זיכרונות של חתול",
+        "defaultBlogName": "הבלוג שלי",
+        "description": "בלוג סטטי לרגעים קטנים וחמים",
+        "slogan": "נכתב בתשומת לב, רגע אחר רגע"
+    },
+    "nav": {
+        "backHome": "חזרה לדף הבית",
+        "searchPlaceholder": "חיפוש פוסטים…",
+        "searchPlaceholderKbd": "חיפוש פוסטים… (Ctrl+K)",
+        "searchAria": "חיפוש פוסטים",
+        "searchClear": "ניקוי חיפוש",
+        "searchOpen": "פתיחת חיפוש",
+        "search": "חיפוש",
+        "themeToggleAria": "החלפת ערכת נושא",
+        "themeToggleTitle": "מעבר בין מצב בהיר לכהה",
+        "menuAria": "תפריט",
+        "menuTitle": "תפריט צד",
+        "backToTop": "חזרה לראש הדף",
+        "languageAria": "בחירת שפת ממשק",
+        "writeArticle": "כתיבה",
+        "writeArticleTitle": "פתיחת עוזר הכתיבה"
+    },
+    "sidebar": {
+        "categories": "קטגוריות",
+        "tags": "תגיות",
+        "archives": "ארכיון",
+        "reset": "הצגת כל הפוסטים",
+        "empty": "אין תוכן עדיין"
+    },
+    "list": {
+        "latest": "פוסטים אחרונים",
+        "searchTitle": "חיפוש: \"{keyword}\"",
+        "categoryTitle": "קטגוריה: {name}",
+        "tagTitle": "תגית: {name}",
+        "archiveTitle": "ארכיון: {name}",
+        "resultCount": "{n} פוסטים בסך הכל",
+        "resultCount_one": "פוסט אחד בסך הכל",
+        "readingTime": "{n} דק' קריאה",
+        "sticky": "נעוץ",
+        "readAria": "קריאה: {title}",
+        "fallbackChar": "פ",
+        "prevPage": "הדף הקודם",
+        "nextPage": "הדף הבא",
+        "paginationAria": "ניווט עמודים",
+        "emptySearchTitle": "לא נמצאו פוסטים תואמים",
+        "emptySearchHint": "נסו מילת מפתח אחרת, או נקו את החיפוש",
+        "emptySearchHintIndexing": "נסו מילת מפתח אחרת, או המתינו לסיום יצירת האינדקס",
+        "emptySearchAction": "ניקוי חיפוש",
+        "emptyTitle": "אין פוסטים עדיין",
+        "emptyHint": "הוסיפו קובץ .md תחת תיקיית posts/ ועדכנו את posts/manifest.json כדי לפרסם פוסט חדש",
+        "emptyEditor": "פתיחת עוזר הכתיבה",
+        "emptyShowAll": "הצג הכל",
+        "errorTitle": "הטעינה נכשלה",
+        "errorHint": "ודאו שהקבצים config.json ו-posts/manifest.json קיימים ומכילים מבנה JSON תקין",
+        "retry": "טעינה מחדש"
+    },
+    "article": {
+        "back": "חזרה לרשימת הפוסטים",
+        "prev": "הקודם",
+        "next": "הבא",
+        "noPrev": "אין פוסטים ישנים יותר",
+        "noNext": "זהו הפוסט העדכני ביותר",
+        "readingTime": "{n} דק' קריאה",
+        "wordCount": "{n} מילים",
+        "wordCount_one": "מילה אחת",
+        "sticky": "נעוץ",
+        "imgFallback": "לא ניתן לטעון את התמונה",
+        "imgFallbackAlt": "לא ניתן לטעון את התמונה: {alt}",
+        "copy": "העתקה",
+        "copied": "הועתק",
+        "copyFailed": "ההעתקה נכשלה, אנא בחרו והעתיקו ידנית",
+        "errorTitle": "טעינת הפוסט נכשלה",
+        "errorFileHint": "נראה שפתחתם את הקובץ בלחיצה כפולה: דפדפנים חוסמים גישה לקבצים מקומיים מטעמי אבטחה. אנא השתמשו בשרת מקומי או פרסמו ב-GitHub Pages.",
+        "errorMissingHint": "הפוסט \"{slug}\" לא נמצא. בדקו שקובץ ה-.md התואם קיים תחת תיקיית posts/.",
+        "retry": "נסה שוב",
+        "home": "חזרה לדף הבית"
+    },
+    "lightbox": {
+        "close": "סגירה",
+        "prev": "התמונה הקודמת",
+        "next": "התמונה הבאה"
+    },
+    "boot": {
+        "errorTitle": "הפעלת הבלוג נכשלה",
+        "errorFileHint": "פתחתם את index.html בלחיצה כפולה: מנגנוני אבטחה של הדפדפן חוסמים קריאת נתוני פוסטים מקומיים.",
+        "errorHint": "לא ניתן לטעון את config.json או את posts/manifest.json. בדקו שהקבצים קיימים ושה-JSON תקין.",
+        "localPreviewHint": "לתצוגה מקדימה בסביבה מקומית, הריצו בתיקיית הפרויקט: python3 -m http.server 8000",
+        "retry": "נסה שוב",
+        "partialFail": "טעינת {n} פוסטים נכשלה, אנא בדקו את תיקיית posts/",
+        "partialFail_one": "טעינת פוסט אחד נכשלה, אנא בדקו את תיקיית posts/"
+    }
+}
