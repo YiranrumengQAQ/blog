@@ -1,0 +1,119 @@
+{
+    "meta": {
+        "name": "Русский",
+        "htmlLang": "ru",
+        "dir": "ltr"
+    },
+    "format": {
+        "dateLong": "{d} {mon} {y} г.",
+        "monthLong": "{mon} {y} г.",
+        "months": [
+            "января",
+            "февраля",
+            "марта",
+            "апреля",
+            "мая",
+            "июня",
+            "июля",
+            "августа",
+            "сентября",
+            "октября",
+            "ноября",
+            "декабря"
+        ],
+        "charsPerMinute": 900,
+        "countMode": "words"
+    },
+    "site": {
+        "blogName": "Воспоминания кота",
+        "defaultBlogName": "Мой блог",
+        "description": "Статический блог для теплых и уютных моментов",
+        "slogan": "Написано с душой, момент за моментом"
+    },
+    "nav": {
+        "backHome": "На главную",
+        "searchPlaceholder": "Поиск по статьям…",
+        "searchPlaceholderKbd": "Поиск по статьям… (Ctrl+K)",
+        "searchAria": "Поиск по статьям",
+        "searchClear": "Очистить поиск",
+        "searchOpen": "Открыть поиск",
+        "search": "Поиск",
+        "themeToggleAria": "Сменить тему",
+        "themeToggleTitle": "Переключить светлую/темную тему",
+        "menuAria": "Меню",
+        "menuTitle": "Боковое меню",
+        "backToTop": "Наверх",
+        "languageAria": "Выбрать язык интерфейса",
+        "writeArticle": "Написать",
+        "writeArticleTitle": "Открыть редактор статей"
+    },
+    "sidebar": {
+        "categories": "Категории",
+        "tags": "Теги",
+        "archives": "Архив",
+        "reset": "Все статьи",
+        "empty": "Пока ничего нет"
+    },
+    "list": {
+        "latest": "Свежие публикации",
+        "searchTitle": "Поиск: «{keyword}»",
+        "categoryTitle": "Категория: {name}",
+        "tagTitle": "Тег: {name}",
+        "archiveTitle": "Архив: {name}",
+        "resultCount": "Всего статей: {n}",
+        "resultCount_one": "Всего статей: {n}",
+        "readingTime": "Чтение: ~{n} мин",
+        "sticky": "Закреплено",
+        "readAria": "Читать: {title}",
+        "fallbackChar": "С",
+        "prevPage": "Предыдущая страница",
+        "nextPage": "Следующая страница",
+        "paginationAria": "Навигация по страницам",
+        "emptySearchTitle": "Подходящих статей не найдено",
+        "emptySearchHint": "Попробуйте изменить запрос или очистить строку поиска",
+        "emptySearchHintIndexing": "Попробуйте изменить запрос или дождитесь окончания индексации",
+        "emptySearchAction": "Очистить поиск",
+        "emptyTitle": "Публикаций пока нет",
+        "emptyHint": "Добавьте файл .md в папку posts/ и обновите posts/manifest.json для публикации",
+        "emptyEditor": "Открыть редактор статей",
+        "emptyShowAll": "Показать все",
+        "errorTitle": "Ошибка загрузки",
+        "errorHint": "Убедитесь, что файлы config.json и posts/manifest.json существуют и содержат корректный JSON",
+        "retry": "Обновить"
+    },
+    "article": {
+        "back": "Назад к списку",
+        "prev": "Предыдущая",
+        "next": "Следующая",
+        "noPrev": "Более ранних статей нет",
+        "noNext": "Это самая свежая статья",
+        "readingTime": "Чтение: ~{n} мин",
+        "wordCount": "{n} слов",
+        "wordCount_one": "{n} слово",
+        "sticky": "Закреплено",
+        "imgFallback": "Не удалось загрузить изображение",
+        "imgFallbackAlt": "Не удалось загрузить изображение: {alt}",
+        "copy": "Копировать",
+        "copied": "Скопировано",
+        "copyFailed": "Не удалось скопировать, пожалуйста, выделите и скопируйте вручную",
+        "errorTitle": "Не удалось загрузить статью",
+        "errorFileHint": "Похоже, страница была открыта двойным кликом: браузеры блокируют локальный доступ к файлам. Запустите локальный сервер или разверните блог на GitHub Pages.",
+        "errorMissingHint": "Статья «{slug}» не найдена. Проверьте наличие соответствующего .md файла в папке posts/.",
+        "retry": "Повторить попытку",
+        "home": "На главную"
+    },
+    "lightbox": {
+        "close": "Закрыть",
+        "prev": "Предыдущее изображение",
+        "next": "Следующее изображение"
+    },
+    "boot": {
+        "errorTitle": "Не удалось запустить блог",
+        "errorFileHint": "Вы открыли index.html двойным щелчком: настройки безопасности браузера запрещают чтение локальных файлов данных.",
+        "errorHint": "Не удалось загрузить config.json или posts/manifest.json. Проверьте наличие файлов и правильность синтаксиса JSON.",
+        "localPreviewHint": "Для локального предпросмотра выполните в терминале в папке проекта: python3 -m http.server 8000",
+        "retry": "Повторить попытку",
+        "partialFail": "Не удалось загрузить статей: {n}, проверьте папку posts/",
+        "partialFail_one": "Не удалось загрузить {n} статью, проверьте папку posts/"
+    }
+}
