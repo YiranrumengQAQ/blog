@@ -1,0 +1,119 @@
+{
+    "meta": {
+        "name": "فارسی",
+        "htmlLang": "fa",
+        "dir": "rtl"
+    },
+    "format": {
+        "dateLong": "{d} {mon} {y}",
+        "monthLong": "{mon} {y}",
+        "months": [
+            "ژانویه",
+            "فوریه",
+            "مارس",
+            "آوریل",
+            "مه",
+            "ژوئن",
+            "ژوئیه",
+            "اوت",
+            "سپتامبر",
+            "اکتبر",
+            "نوامبر",
+            "دسامبر"
+        ],
+        "charsPerMinute": 800,
+        "countMode": "words"
+    },
+    "site": {
+        "blogName": "خاطرات گربه",
+        "defaultBlogName": "وبلاگ من",
+        "description": "یک وبلاگ ایستا برای ثبت لحظات گرم و آرام",
+        "slogan": "نگاشته‌شده با دل، لحظه به لحظه"
+    },
+    "nav": {
+        "backHome": "صفحه اصلی",
+        "searchPlaceholder": "جستجوی نوشته‌ها…",
+        "searchPlaceholderKbd": "جستجوی نوشته‌ها… (Ctrl+K)",
+        "searchAria": "جستجوی نوشته‌ها",
+        "searchClear": "پاک کردن جستجو",
+        "searchOpen": "باز کردن جستجو",
+        "search": "جستجو",
+        "themeToggleAria": "تغییر پوسته",
+        "themeToggleTitle": "تغییر حالت روشن/تاریک",
+        "menuAria": "منو",
+        "menuTitle": "منوی کناری",
+        "backToTop": "بازگشت به بالا",
+        "languageAria": "انتخاب زبان واسط کاربری",
+        "writeArticle": "نوشتن",
+        "writeArticleTitle": "باز کردن دستیار نویسندگی"
+    },
+    "sidebar": {
+        "categories": "دسته‌بندی‌ها",
+        "tags": "برچسب‌ها",
+        "archives": "بایگانی",
+        "reset": "نمایش همه نوشته‌ها",
+        "empty": "هنوز محتوایی نیست"
+    },
+    "list": {
+        "latest": "تازه‌ترین نوشته‌ها",
+        "searchTitle": "جستجو: «{keyword}»",
+        "categoryTitle": "دسته‌بندی: {name}",
+        "tagTitle": "برچسب: {name}",
+        "archiveTitle": "بایگانی: {name}",
+        "resultCount": "در مجموع {n} نوشته یافت شد",
+        "resultCount_one": "در مجموع {n} نوشته یافت شد",
+        "readingTime": "{n} دقیقه مطالعه",
+        "sticky": "سنجاق‌شده",
+        "readAria": "خواندن: {title}",
+        "fallbackChar": "ن",
+        "prevPage": "صفحه پیشین",
+        "nextPage": "صفحه پسین",
+        "paginationAria": "صفحه‌بندی",
+        "emptySearchTitle": "نوشته‌ای یافت نشد",
+        "emptySearchHint": "کلیدواژه دیگری را امتحان کنید یا جستجو را پاک کنید",
+        "emptySearchHintIndexing": "کلیدواژه دیگری را امتحان کنید یا منتظر اتمام نمایه‌سازی بمانید",
+        "emptySearchAction": "پاک کردن جستجو",
+        "emptyTitle": "هنوز نوشته‌ای وجود ندارد",
+        "emptyHint": "یک فایل .md در پوشه posts/ اضافه کرده و posts/manifest.json را به‌روزرسانی کنید",
+        "emptyEditor": "باز کردن دستیار نویسندگی",
+        "emptyShowAll": "نمایش همه",
+        "errorTitle": "بارگذاری ناموفق بود",
+        "errorHint": "مطمئن شوید config.json و posts/manifest.json موجود بوده و ساختار JSON معتبر دارند",
+        "retry": "بارگذاری مجدد"
+    },
+    "article": {
+        "back": "بازگشت به فهرست نوشته‌ها",
+        "prev": "پیشین",
+        "next": "پسین",
+        "noPrev": "نوشته قدیمی‌تری وجود ندارد",
+        "noNext": "این تازه‌ترین نوشته است",
+        "readingTime": "{n} دقیقه مطالعه",
+        "wordCount": "{n} واژه",
+        "wordCount_one": "{n} واژه",
+        "sticky": "سنجاق‌شده",
+        "imgFallback": "بارگذاری تصویر ممکن نشد",
+        "imgFallbackAlt": "بارگذاری تصویر ممکن نشد: {alt}",
+        "copy": "کپی",
+        "copied": "کپی شد",
+        "copyFailed": "کپی انجام نشد، لطفاً دستی انتخاب و کپی کنید",
+        "errorTitle": "بارگذاری این نوشته با شکست مواجه شد",
+        "errorFileHint": "به نظر می‌رسد فایل را با دوبار کلیک باز کرده‌اید: مرورگرها به دلایل امنیتی دسترسی به فایل‌های محلی را مسدود می‌کنند. لطفاً از یک سرور محلی استفاده کنید یا در GitHub Pages مستقر کنید.",
+        "errorMissingHint": "نوشته «{slug}» پیدا نشد. بررسی کنید که فایل .md منطبق در پوشه posts/ وجود داشته باشد.",
+        "retry": "تلاش مجدد",
+        "home": "صفحه اصلی"
+    },
+    "lightbox": {
+        "close": "بستن",
+        "prev": "تصویر قبلی",
+        "next": "تصویر بعدی"
+    },
+    "boot": {
+        "errorTitle": "اجرای وبلاگ با شکست مواجه شد",
+        "errorFileHint": "شما index.html را با دوبار کلیک باز کرده‌اید: محدودیت‌های امنیتی مرورگر مانع خواندن داده‌های محلی می‌شود.",
+        "errorHint": "فایل‌های config.json یا posts/manifest.json بارگذاری نشدند. بررسی کنید که فایل‌ها موجود و JSON معتبر باشد.",
+        "localPreviewHint": "برای پیش‌نمایش در سیستم خود، این دستور را در پوشه پروژه اجرا کنید: python3 -m http.server 8000",
+        "retry": "تلاش مجدد",
+        "partialFail": "بارگذاری {n} نوشته ناموفق بود، لطفاً پوشه posts/ را بررسی کنید",
+        "partialFail_one": "بارگذاری {n} نوشته ناموفق بود، لطفاً پوشه posts/ را بررسی کنید"
+    }
+}
