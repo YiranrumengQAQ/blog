@@ -1,0 +1,119 @@
+{
+    "meta": {
+        "name": "日本語",
+        "htmlLang": "ja",
+        "dir": "ltr"
+    },
+    "format": {
+        "dateLong": "{y}年{mon}月{d}日",
+        "monthLong": "{y}年{mon}月",
+        "months": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12"
+        ],
+        "charsPerMinute": 400,
+        "countMode": "chars"
+    },
+    "site": {
+        "blogName": "猫の思い出",
+        "defaultBlogName": "私のブログ",
+        "description": "温かいひとときを記録する静的ブログ",
+        "slogan": "心に残る瞬間を、一つひとつ丁寧に"
+    },
+    "nav": {
+        "backHome": "ホームに戻る",
+        "searchPlaceholder": "記事を検索…",
+        "searchPlaceholderKbd": "記事を検索… (Ctrl+K)",
+        "searchAria": "記事を検索",
+        "searchClear": "検索をクリア",
+        "searchOpen": "検索を開く",
+        "search": "検索",
+        "themeToggleAria": "テーマを切り替え",
+        "themeToggleTitle": "ライト/ダークテーマを切り替え",
+        "menuAria": "メニュー",
+        "menuTitle": "サイドバーメニュー",
+        "backToTop": "トップへ戻る",
+        "languageAria": "表示言語を選択",
+        "writeArticle": "投稿",
+        "writeArticleTitle": "執筆アシスタントを開く"
+    },
+    "sidebar": {
+        "categories": "カテゴリー",
+        "tags": "タグ",
+        "archives": "アーカイブ",
+        "reset": "すべての記事を表示",
+        "empty": "コンテンツがありません"
+    },
+    "list": {
+        "latest": "最新の記事",
+        "searchTitle": "検索：\"{keyword}\"",
+        "categoryTitle": "カテゴリー：{name}",
+        "tagTitle": "タグ：{name}",
+        "archiveTitle": "アーカイブ：{name}",
+        "resultCount": "合計 {n} 件の記事",
+        "resultCount_one": "合計 {n} 件の記事",
+        "readingTime": "読了目安：約 {n} 分",
+        "sticky": "ピン留め",
+        "readAria": "読む：{title}",
+        "fallbackChar": "記",
+        "prevPage": "前のページ",
+        "nextPage": "次のページ",
+        "paginationAria": "ページネーション",
+        "emptySearchTitle": "該当する記事が見つかりませんでした",
+        "emptySearchHint": "別のキーワードで検索するか、検索条件をクリアしてください",
+        "emptySearchHintIndexing": "別のキーワードで試すか、インデックス作成が完了するまでお待ちください",
+        "emptySearchAction": "検索をクリア",
+        "emptyTitle": "記事がまだありません",
+        "emptyHint": "posts/ フォルダに .md ファイルを追加し、posts/manifest.json を更新して公開してください",
+        "emptyEditor": "執筆アシスタントを開く",
+        "emptyShowAll": "すべて表示",
+        "errorTitle": "読み込みに失敗しました",
+        "errorHint": "config.json と posts/manifest.json が存在し、正しい JSON 形式であることを確認してください",
+        "retry": "再読み込み"
+    },
+    "article": {
+        "back": "記事一覧に戻る",
+        "prev": "前の記事",
+        "next": "次の記事",
+        "noPrev": "これより前の記事はありません",
+        "noNext": "これが最新の記事です",
+        "readingTime": "読了目安：約 {n} 分",
+        "wordCount": "{n} 文字",
+        "wordCount_one": "{n} 文字",
+        "sticky": "ピン留め",
+        "imgFallback": "画像を読み込めませんでした",
+        "imgFallbackAlt": "画像を読み込めませんでした：{alt}",
+        "copy": "コピー",
+        "copied": "コピー完了",
+        "copyFailed": "コピーに失敗しました。手動で選択してコピーしてください",
+        "errorTitle": "記事の読み込みに失敗しました",
+        "errorFileHint": "ファイルをダブルクリックして直接開いた可能性があります。ブラウザのセキュリティ制限によりローカルファイルへのアクセスが遮断されています。ローカルサーバーを使用するか、GitHub Pages にデプロイしてください。",
+        "errorMissingHint": "記事 \"{slug}\" が見つかりません。posts/ 内に対応する .md ファイルが存在するか確認してください。",
+        "retry": "再試行",
+        "home": "ホームに戻る"
+    },
+    "lightbox": {
+        "close": "閉じる",
+        "prev": "前の画像",
+        "next": "次の画像"
+    },
+    "boot": {
+        "errorTitle": "ブログの起動に失敗しました",
+        "errorFileHint": "index.html をダブルクリックして開いたようです。ブラウザのセキュリティ制限により、ローカル環境の記事データの読み込みがブロックされています。",
+        "errorHint": "config.json または posts/manifest.json を読み込めませんでした。ファイルが存在し、JSON の記述が正しいか確認してください。",
+        "localPreviewHint": "ローカル環境でプレビューするには、プロジェクトフォルダで次のコマンドを実行してください：python3 -m http.server 8000",
+        "retry": "再試行",
+        "partialFail": "{n} 件の記事の読み込みに失敗しました。posts/ フォルダを確認してください",
+        "partialFail_one": "{n} 件の記事の読み込みに失敗しました。posts/ フォルダを確認してください"
+    }
+}
