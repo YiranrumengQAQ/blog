@@ -7,8 +7,9 @@
 (function () {
     'use strict';
     const Blog = (window.Blog = window.Blog || {});
-    const { $ } = Blog.utils;
+    const { $, escapeHTML, escapeAttr } = Blog.utils;
     const { toast } = Blog.ui;
+    const t = (key, vars) => Blog.i18n.t(key, vars);
 
     /* ---------------- 内核与全局状态 ---------------- */
 
@@ -72,7 +73,7 @@
                 state.view = 'list';
                 el.skeleton.hidden = true;
                 Blog.ui.article.setProgressVisible(ctx, false);
-                document.title = ctx.config ? ctx.config.blogName : '博客';
+                document.title = ctx.config ? ctx.config.blogName : t('site.defaultTitle');
                 Blog.ui.postlist.render(ctx);
             }
         },
@@ -118,6 +119,42 @@
     };
     ctx.actions = actions;
 
+    /* ---------------- 多语言 ---------------- */
+
+    /** 顶栏语言下拉框：选项来自 config.json 的 languages */
+    function setupLangSwitcher() {
+        const wrap = $('#langWrap');
+        const select = $('#langSelect');
+        const list = Blog.i18n.available();
+        if (!wrap || !select) return;
+        if (!list.length) { wrap.hidden = true; return; }
+
+        select.innerHTML = list.map((item) =>
+            `<option value="${escapeAttr(item.code)}">${escapeHTML(item.name)}</option>`
+        ).join('');
+        select.value = Blog.i18n.locale();
+        wrap.hidden = false;
+
+        select.addEventListener('change', () => {
+            Blog.i18n.setLocale(select.value).then((code) => {
+                // 语言包加载失败时会保持原语言，这里把下拉框同步回真实值
+                if (select.value !== code) select.value = code;
+            });
+        });
+    }
+
+    /** 切换语言后：重算与语言有关的数字，再重绘整个界面（无需刷新页面） */
+    function onLocaleChanged() {
+        if (typeof blog.recalcStats === 'function') blog.recalcStats();
+        const select = $('#langSelect');
+        if (select) select.value = Blog.i18n.locale();
+        if (!ctx.config) return;                 // 还没初始化完，boot() 会负责首次渲染
+        Blog.ui.sidebar.render(ctx);             // 归档月份等文案随语言变化
+        actions.refreshAll();
+    }
+
+    document.addEventListener(Blog.i18n.EVENT, onLocaleChanged);
+
     /* ---------------- 模块初始化 ---------------- */
 
     Blog.ui.theme.initTheme();
@@ -154,17 +191,15 @@
     function showErrorScreen(err) {
         el.skeleton.hidden = true;
         const isFile = window.location.protocol === 'file:';
-        const why = isFile
-            ? '你是直接双击打开的 index.html：浏览器安全策略不允许本地页面读取文章数据。'
-            : '无法加载 config.json 或 posts/manifest.json，请检查文件是否存在、JSON 格式是否正确。';
+        const why = isFile ? t('boot.errorFileHint') : t('boot.errorHint');
         el.contentHeader.hidden = true;
         el.contentBody.innerHTML = `
           <div class="empty-state">
             <div class="empty-icon">🐱</div>
-            <h3>博客初始化失败</h3>
-            <p>${why}</p>
-            <p style="font-size:0.8rem;margin-top:0.6rem;opacity:0.75;">本地预览可在仓库目录运行：python3 -m http.server 8000</p>
-            <div class="empty-actions"><button class="sidebar-reset" id="initRetryBtn">重试</button></div>
+            <h3>${escapeHTML(t('boot.errorTitle'))}</h3>
+            <p>${escapeHTML(why)}</p>
+            <p style="font-size:0.8rem;margin-top:0.6rem;opacity:0.75;">${escapeHTML(t('boot.localPreviewHint'))}</p>
+            <div class="empty-actions"><button class="sidebar-reset" id="initRetryBtn">${escapeHTML(t('boot.retry'))}</button></div>
           </div>`;
         const retry = $('#initRetryBtn');
         if (retry) retry.addEventListener('click', () => window.location.reload());
@@ -172,6 +207,11 @@
     }
 
     async function boot() {
+        // 先初始化多语言（i18n 自己会读一次 config.json，浏览器缓存会复用，几乎不额外耗时）
+        // 这样即使后面博客数据加载失败，错误提示也能显示成用户的语言
+        await Blog.i18n.init({ configUrl: './config.json' });
+        setupLangSwitcher();
+
         Blog.ui.router.parseHash(state);
         try {
             await blog.init();
@@ -203,7 +243,7 @@
             Blog.ui.sidebar.updateActive(ctx);
             if (state.view === 'list') Blog.ui.postlist.render(ctx);
             if (blog.failedSlugs.length) {
-                toast.show(`有 ${blog.failedSlugs.length} 篇文章加载失败，请检查 posts/ 目录`, 'error');
+                toast.show(t('boot.partialFail', { n: blog.failedSlugs.length }), 'error');
             }
         }).catch((err) => console.warn('[blog] 预取失败:', err));
 

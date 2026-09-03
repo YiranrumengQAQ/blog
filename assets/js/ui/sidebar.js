@@ -11,7 +11,7 @@
     function render(ctx) {
         const { el, state } = ctx;
         const tax = ctx.blog.getTaxonomyData();
-        const emptyTip = '<span class="sidebar-empty">暂无内容</span>';
+        const emptyTip = `<span class="sidebar-empty">${escapeHTML(Blog.i18n.t('sidebar.empty'))}</span>`;
 
         el.sidebarCategories.innerHTML = tax.categories.length
             ? tax.categories.map((c) =>
@@ -25,9 +25,10 @@
             ).join('')
             : emptyTip;
 
+        // a.name 是稳定 key（"2026-05"），显示文字才跟语言走
         el.sidebarArchives.innerHTML = tax.archives.length
             ? tax.archives.map((a) =>
-                `<div class="sidebar-archive-item${state.archive === a.name ? ' active' : ''}" data-archive="${escapeAttr(a.name)}" role="button" tabindex="0">${escapeHTML(a.name)}<span class="count">${a.count}</span></div>`
+                `<div class="sidebar-archive-item${state.archive === a.name ? ' active' : ''}" data-archive="${escapeAttr(a.name)}" role="button" tabindex="0">${escapeHTML(Blog.i18n.formatMonth(a.name))}<span class="count">${a.count}</span></div>`
             ).join('')
             : emptyTip;
     }

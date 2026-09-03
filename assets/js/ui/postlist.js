@@ -12,14 +12,16 @@
     const Blog = (window.Blog = window.Blog || {});
     Blog.ui = Blog.ui || {};
 
-    const { $, $$, escapeHTML, escapeAttr, formatDate } = Blog.utils;
+    const { $, $$, escapeHTML, escapeAttr } = Blog.utils;
+    // 文案全部走 i18n：t() 每次调用都取"当前语言"，所以切换语言后重新渲染即可
+    const t = (key, vars) => Blog.i18n.t(key, vars);
 
     function titleFor(state) {
-        if (state.keyword) return `搜索："${state.keyword}"`;
-        if (state.category) return `分类：${state.category}`;
-        if (state.tag) return `标签：${state.tag}`;
-        if (state.archive) return `归档：${state.archive}`;
-        return '最新文章';
+        if (state.keyword) return t('list.searchTitle', { keyword: state.keyword });
+        if (state.category) return t('list.categoryTitle', { name: state.category });
+        if (state.tag) return t('list.tagTitle', { name: state.tag });
+        if (state.archive) return t('list.archiveTitle', { name: Blog.i18n.formatMonth(state.archive) });
+        return t('list.latest');
     }
 
     function coverHTML(item, detail) {
@@ -27,28 +29,29 @@
         if (cover) {
             return `<img src="${escapeAttr(cover)}" alt="${escapeAttr(item.title || '')}" loading="lazy" referrerpolicy="no-referrer">`;
         }
-        return `<div class="card-cover-placeholder">${escapeHTML((item.title || '文').charAt(0))}</div>`;
+        const fallback = item.title || t('list.fallbackChar');
+        return `<div class="card-cover-placeholder">${escapeHTML(fallback.charAt(0))}</div>`;
     }
 
     function cardHTML(item, detail) {
         const summary = (detail && detail.summary) || item.summary || '';
         const readingTime = (detail && detail.readingTime) || item.readingTime || null;
         const tags = item.tags || [];
-        const date = formatDate(item.date);
+        const date = Blog.i18n.formatDate(item.date);
 
         return `
-        <article class="post-card${item.sticky ? ' sticky-post' : ''}" data-slug="${escapeAttr(item.slug)}" role="link" tabindex="0" aria-label="阅读：${escapeAttr(item.title || '')}">
+        <article class="post-card${item.sticky ? ' sticky-post' : ''}" data-slug="${escapeAttr(item.slug)}" role="link" tabindex="0" aria-label="${escapeAttr(t('list.readAria', { title: item.title || '' }))}">
           <div class="card-cover">${coverHTML(item, detail)}</div>
           <div class="card-body">
             <div class="card-meta-top">
-              ${item.sticky ? '<span class="card-sticky-badge">置顶</span>' : ''}
+              ${item.sticky ? `<span class="card-sticky-badge">${escapeHTML(t('list.sticky'))}</span>` : ''}
               ${item.category ? `<span class="card-category">${escapeHTML(item.category)}</span>` : ''}
               <span>${escapeHTML(date)}</span>
             </div>
             <h2 class="card-title">${escapeHTML(item.title || '')}</h2>
             ${summary ? `<p class="card-summary">${escapeHTML(summary)}</p>` : ''}
             ${tags.length ? `<div class="card-tags-row">${tags.map((t) => `<span class="card-tag">${escapeHTML(t)}</span>`).join('')}</div>` : ''}
-            ${readingTime ? `<div class="card-footer-info"><span>约 ${readingTime} 分钟阅读</span></div>` : ''}
+            ${readingTime ? `<div class="card-footer-info"><span>${escapeHTML(t('list.readingTime', { n: readingTime }))}</span></div>` : ''}
           </div>
         </article>`;
     }
@@ -58,19 +61,19 @@
             return `
             <div class="empty-state">
               <div class="empty-icon">🔍</div>
-              <h3>没有找到相关文章</h3>
-              <p>换个关键词试试，或者${searchEnabled ? '等待文章索引建立完成' : '清除搜索条件'}</p>
-              <div class="empty-actions"><button class="sidebar-reset" data-empty-action="reset">清除搜索</button></div>
+              <h3>${escapeHTML(t('list.emptySearchTitle'))}</h3>
+              <p>${escapeHTML(t(searchEnabled ? 'list.emptySearchHintIndexing' : 'list.emptySearchHint'))}</p>
+              <div class="empty-actions"><button class="sidebar-reset" data-empty-action="reset">${escapeHTML(t('list.emptySearchAction'))}</button></div>
             </div>`;
         }
         return `
         <div class="empty-state">
           <div class="empty-icon">📄</div>
-          <h3>这里还没有文章</h3>
-          <p>在 posts/ 目录添加 .md 文件并更新 posts/manifest.json 就能发布新文章</p>
+          <h3>${escapeHTML(t('list.emptyTitle'))}</h3>
+          <p>${escapeHTML(t('list.emptyHint'))}</p>
           <div class="empty-actions">
-            <button class="sidebar-reset" data-empty-action="editor">✍️ 打开写作助手</button>
-            <button class="sidebar-reset" data-empty-action="reset">显示全部</button>
+            <button class="sidebar-reset" data-empty-action="editor">${escapeHTML(t('list.emptyEditor'))}</button>
+            <button class="sidebar-reset" data-empty-action="reset">${escapeHTML(t('list.emptyShowAll'))}</button>
           </div>
         </div>`;
     }
@@ -79,9 +82,9 @@
         return `
         <div class="empty-state">
           <div class="empty-icon">⚠️</div>
-          <h3>加载失败</h3>
-          <p>请确认 config.json 与 posts/manifest.json 存在且格式正确</p>
-          <div class="empty-actions"><button class="sidebar-reset" data-empty-action="retry">重新加载</button></div>
+          <h3>${escapeHTML(t('list.errorTitle'))}</h3>
+          <p>${escapeHTML(t('list.errorHint'))}</p>
+          <div class="empty-actions"><button class="sidebar-reset" data-empty-action="retry">${escapeHTML(t('list.retry'))}</button></div>
         </div>`;
     }
 
@@ -91,7 +94,7 @@
             el.pagination.innerHTML = '';
             return;
         }
-        let html = `<button class="page-btn" ${pg.hasPrev ? '' : 'disabled'} data-page="${pg.currentPage - 1}" aria-label="上一页">&lsaquo;</button>`;
+        let html = `<button class="page-btn" ${pg.hasPrev ? '' : 'disabled'} data-page="${pg.currentPage - 1}" aria-label="${escapeAttr(t('list.prevPage'))}">&lsaquo;</button>`;
 
         const maxVisible = 5;
         let startPage = Math.max(1, pg.currentPage - Math.floor(maxVisible / 2));
@@ -109,7 +112,7 @@
             if (endPage < pg.totalPages - 1) html += `<span class="page-ellipsis">&hellip;</span>`;
             html += `<button class="page-btn" data-page="${pg.totalPages}">${pg.totalPages}</button>`;
         }
-        html += `<button class="page-btn" ${pg.hasNext ? '' : 'disabled'} data-page="${pg.currentPage + 1}" aria-label="下一页">&rsaquo;</button>`;
+        html += `<button class="page-btn" ${pg.hasNext ? '' : 'disabled'} data-page="${pg.currentPage + 1}" aria-label="${escapeAttr(t('list.nextPage'))}">&rsaquo;</button>`;
         el.pagination.innerHTML = html;
         void state;
     }
@@ -131,7 +134,7 @@
                 perPage: state.perPage
             });
 
-            el.resultCount.textContent = `共 ${qr.pagination.totalItems} 篇文章`;
+            el.resultCount.textContent = t('list.resultCount', { n: qr.pagination.totalItems });
 
             if (qr.items.length === 0) {
                 el.contentBody.innerHTML = emptyHTML(state, true);
@@ -198,7 +201,7 @@
             if (coverBox) {
                 const card = img.closest('.post-card');
                 const title = (card && card.querySelector('.card-title')?.textContent) || '';
-                coverBox.innerHTML = `<div class="card-cover-placeholder">${escapeHTML(title.charAt(0) || '?')}</div>`;
+                coverBox.innerHTML = `<div class="card-cover-placeholder">${escapeHTML(title.charAt(0) || t('list.fallbackChar'))}</div>`;
             }
         }, true);
     }
