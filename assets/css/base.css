@@ -57,11 +57,38 @@ body {
     border-radius: var(--md-sys-shape-corner-small);
 }
 
+/* ================================================================
+   图标 (Icon) — 全站统一的内联 SVG
+   路径由 assets/js/ui/icons.js 提供，这里只管尺寸与描边，
+   颜色一律跟随 currentColor，所以亮/暗主题自动适配。
+   ================================================================ */
+.icon,
+svg[data-icon] {
+    width: 1.1em;
+    height: 1.1em;
+    flex: none;
+    display: inline-block;
+    vertical-align: -0.18em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 /* 无脚本提示 */
 .nojs-tip {
     text-align: center;
     padding: 3rem 1rem;
     color: var(--md-sys-color-on-surface-variant);
+}
+.nojs-tip .icon {
+    width: 2.2rem;
+    height: 2.2rem;
+    display: block;
+    margin: 0 auto 0.8rem;
+    color: var(--md-sys-color-primary);
+    stroke-width: 1.6;
 }
 
 /* ================================================================
@@ -86,12 +113,16 @@ body {
     color: var(--md-sys-color-primary);
     text-decoration: none;
     transition: color var(--md-sys-transition-short);
+    /* 链接里可能带图标（如页脚的"写文章"入口） */
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
 }
 .site-footer a:hover {
     text-decoration: underline;
     text-underline-offset: 3px;
 }
-/* 页脚口号整句走 i18n（含 ❤ 字符），所以这里只给整句一点弱化色 */
+/* 页脚口号整句走 i18n，这里只给整句一点弱化色 */
 .site-footer [data-i18n="site.slogan"] {
     color: var(--md-sys-color-tertiary);
 }

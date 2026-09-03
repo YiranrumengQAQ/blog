@@ -215,10 +215,16 @@
     color: var(--md-sys-color-on-surface-variant);
 }
 .empty-state .empty-icon {
-    font-size: 3rem;
     margin-bottom: 1rem;
-    opacity: 0.5;
-    font-family: var(--md-sys-font-family-serif);
+    opacity: 0.55;
+    color: var(--md-sys-color-primary);
+    line-height: 1;
+}
+/* 空状态图标改成内联 SVG 后，尺寸由这里统一控制 */
+.empty-state .empty-icon .icon {
+    width: 3.2rem;
+    height: 3.2rem;
+    stroke-width: 1.5;
 }
 .empty-state h3 {
     font-size: var(--md-sys-typescale-headline-small);
@@ -234,6 +240,11 @@
     gap: 0.6rem;
     justify-content: center;
     flex-wrap: wrap;
+}
+.empty-state .empty-actions .sidebar-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
 }
 
 /* ----- 加载骨架 ----- */
@@ -357,4 +368,9 @@
     box-shadow: var(--md-sys-elevation-4);
     transform: translateY(-3px);
     color: var(--md-sys-color-primary);
+}
+.back-to-top .icon {
+    width: 1.15rem;
+    height: 1.15rem;
+    stroke-width: 2.2;
 }

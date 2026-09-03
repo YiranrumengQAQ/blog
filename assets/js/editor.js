@@ -3,6 +3,7 @@
  *
  * 面向零基础用户：
  * - 填表单 + 写正文 → 一键生成标准 .md 文件和 manifest.json
+ * - 界面图标统一使用 assets/js/ui/icons.js 里的内联 SVG（不使用 emoji）
  * - 导入现有 posts 文件夹后可编辑旧文章，manifest 自动合并（防止覆盖丢失）
  * - 草稿自动保存在浏览器 localStorage
  * - 纯前端实现，双击打开或部署后都能用（无需服务器、无需构建）
@@ -182,7 +183,7 @@
         if (post.date) meta.push(post.date);
         if (post.category) meta.push(post.category);
         if (post.tags.length) meta.push(post.tags.join(' / '));
-        if (post.sticky) meta.push('📌 置顶');
+        if (post.sticky) meta.push('置顶');
         els.previewMeta.textContent = meta.join(' · ');
 
         // 封面
@@ -199,7 +200,8 @@
         if (post.content.trim()) {
             els.previewContent.innerHTML = Blog.core.renderPreview(post.content);
         } else {
-            els.previewContent.innerHTML = '<div class="preview-empty">开始输入，这里会实时显示文章在博客里的效果 ✨</div>';
+            els.previewContent.innerHTML = '<div class="preview-empty">' +
+                Blog.ui.icons.svg('eye') + '开始输入，这里会实时显示文章在博客里的效果</div>';
         }
 
         // 字数
@@ -265,9 +267,9 @@
 
     function refreshImportUI() {
         const slugs = Object.keys(existingPosts);
-        els.importNote.textContent = slugs.length
-            ? `✅ 已导入 ${slugs.length} 篇现有文章，下载 manifest.json 时会自动包含它们（放心不会丢）。在下方下拉框可以随时调出旧文章修改。`
-            : '尚未导入。导入后：这里会记住博客里已有的文章，下载的 manifest.json 会自动包含它们。';
+        els.importNote.innerHTML = slugs.length
+            ? `${Blog.ui.icons.svg('check-circle')}<span>已导入 ${slugs.length} 篇现有文章，下载 manifest.json 时会自动包含它们（放心不会丢）。在下方下拉框可以随时调出旧文章修改。</span>`
+            : `${Blog.ui.icons.svg('info')}<span>尚未导入。导入后：这里会记住博客里已有的文章，下载的 manifest.json 会自动包含它们。</span>`;
         els.manifestWarn.classList.toggle('visible', slugs.length === 0);
 
         // 下拉框
@@ -472,7 +474,7 @@
             }
             if (Object.keys(existingPosts).length === 0) {
                 const ok = confirm(
-                    '⚠️ 你还没有导入现有的 posts 文件夹。\n\n' +
+                    '注意：你还没有导入现有的 posts 文件夹。\n\n' +
                     '下载的 manifest.json 将只包含当前这一篇文章。\n' +
                     '如果博客里已有其他文章，它们会从首页消失！\n\n' +
                     '确定要继续下载吗？（建议先点「导入 posts 文件夹」）'
@@ -558,11 +560,14 @@
 
         els.fDate.value = todayStr();
         bindEvents();
+        // 先按"还没导入"的状态刷一次导入区：警示条、提示文案（带图标）与下拉框都要就位。
+        // 以前只有恢复草稿时才会执行 refreshImportUI，第一次打开页面看不到未导入的警示。
+        refreshImportUI();
 
         const hasDraft = restoreDraft();
         if (!hasDraft) {
             renderPreview();
-            toast('👋 欢迎使用写作助手！先导入 posts 文件夹，再开始写新文章', 'info', 5000);
+            toast('欢迎使用写作助手！先导入 posts 文件夹，再开始写新文章', 'info', 5000);
         } else {
             renderPreview();
             toast('已恢复上次未发布的草稿', 'success');

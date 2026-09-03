@@ -25,10 +25,10 @@
         "countMode": "words"
     },
     "site": {
-        "defaultTitle": "Blog",
+        "blogName": "Cat's Memories",
         "defaultBlogName": "My Blog",
         "description": "A static blog for warm little moments",
-        "slogan": "Made with ❤ , one moment at a time"
+        "slogan": "Made with care, one moment at a time"
     },
     "nav": {
         "backHome": "Back to home",
@@ -44,7 +44,7 @@
         "menuTitle": "Sidebar menu",
         "backToTop": "Back to top",
         "languageAria": "Choose interface language",
-        "writeArticle": "✍️ Write",
+        "writeArticle": "Write",
         "writeArticleTitle": "Open the writing assistant"
     },
     "sidebar": {
@@ -75,7 +75,7 @@
         "emptySearchAction": "Clear search",
         "emptyTitle": "No posts yet",
         "emptyHint": "Add a .md file under posts/ and update posts/manifest.json to publish a new post",
-        "emptyEditor": "✍️ Open the writing assistant",
+        "emptyEditor": "Open the writing assistant",
         "emptyShowAll": "Show all",
         "errorTitle": "Failed to load",
         "errorHint": "Make sure config.json and posts/manifest.json exist and are valid JSON",
@@ -91,10 +91,10 @@
         "wordCount": "{n} words",
         "wordCount_one": "{n} word",
         "sticky": "Pinned",
-        "imgFallback": "🖼 Image could not be loaded",
-        "imgFallbackAlt": "🖼 Image could not be loaded: {alt}",
+        "imgFallback": "Image could not be loaded",
+        "imgFallbackAlt": "Image could not be loaded: {alt}",
         "copy": "Copy",
-        "copied": "Copied ✓",
+        "copied": "Copied",
         "copyFailed": "Copy failed, please select and copy manually",
         "errorTitle": "Failed to load this post",
         "errorFileHint": "It looks like this page was opened by double-clicking the file: browsers block local file access. Please use a local server or deploy to GitHub Pages.",

@@ -28,6 +28,12 @@
     color: var(--md-sys-color-on-surface);
     white-space: nowrap;
 }
+.editor-brand > .icon {
+    width: 1.25em;
+    height: 1.25em;
+    color: var(--md-sys-color-primary);
+    stroke-width: 1.8;
+}
 .editor-brand .badge {
     font-size: 0.65rem;
     font-family: var(--md-sys-font-family);
@@ -44,6 +50,9 @@
     flex-wrap: wrap;
 }
 .editor-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     font-size: var(--md-sys-typescale-body-medium);
     color: var(--md-sys-color-primary);
     text-decoration: none;
@@ -92,6 +101,12 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
+}
+.panel-title > .icon {
+    width: 1.15em;
+    height: 1.15em;
+    color: var(--md-sys-color-primary);
+    stroke-width: 1.9;
 }
 .panel-hint {
     font-size: var(--md-sys-typescale-body-small);
@@ -168,6 +183,9 @@
     accent-color: var(--md-sys-color-primary);
     cursor: pointer;
 }
+.form-check .icon {
+    color: var(--md-sys-color-on-surface-variant);
+}
 
 /* Markdown 工具栏 */
 .md-toolbar {
@@ -176,6 +194,9 @@
     gap: 0.35rem;
 }
 .md-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
     font-size: var(--md-sys-typescale-label-large);
     padding: 0.3rem 0.65rem;
     border-radius: var(--md-sys-shape-corner-full);
@@ -192,6 +213,15 @@
     color: var(--md-sys-color-primary);
     background: var(--md-sys-color-primary-container);
 }
+.md-btn .icon {
+    width: 1.05em;
+    height: 1.05em;
+}
+
+/* 顶栏主题按钮：亮色显示太阳、暗色显示月亮（与阅读页一致） */
+.theme-btn .moon-icon { display: none; }
+[data-theme="dark"] .theme-btn .sun-icon { display: none; }
+[data-theme="dark"] .theme-btn .moon-icon { display: inline-block; }
 
 /* 主按钮区 */
 .editor-actions {
@@ -254,8 +284,17 @@
     align-items: center;
 }
 .import-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
     font-size: var(--md-sys-typescale-label-medium);
     color: var(--md-sys-color-on-surface-variant);
+}
+.import-note > .icon {
+    width: 1.1em;
+    height: 1.1em;
+    margin-top: 0.25em;
+    color: var(--md-sys-color-primary);
 }
 #existingSelect {
     max-width: 100%;
@@ -274,6 +313,11 @@
 }
 .warn-banner.visible {
     display: flex;
+}
+.warn-banner > .icon {
+    width: 1.15em;
+    height: 1.15em;
+    margin-top: 0.15em;
 }
 
 /* 已有文章列表 */
@@ -368,6 +412,15 @@
     padding: 3rem 1rem;
     font-size: var(--md-sys-typescale-body-medium);
 }
+.preview-empty .icon {
+    display: block;
+    width: 2.2rem;
+    height: 2.2rem;
+    margin: 0 auto 0.8rem;
+    color: var(--md-sys-color-primary);
+    opacity: 0.6;
+    stroke-width: 1.6;
+}
 
 /* 帮助折叠面板 */
 .help-details {
@@ -403,6 +456,19 @@
     margin: 0.4rem 0;
 }
 .help-body a {
+    color: var(--md-sys-color-primary);
+}
+.help-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+    color: var(--md-sys-color-on-surface-variant);
+}
+.help-tip > .icon {
+    width: 1.1em;
+    height: 1.1em;
+    margin-top: 0.35em;
     color: var(--md-sys-color-primary);
 }
 .help-body code {
