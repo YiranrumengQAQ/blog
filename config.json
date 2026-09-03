@@ -9,6 +9,7 @@
     { "code": "zh-HK", "name": "繁體中文（香港）" },
     { "code": "ja", "name": "日本語" },
     { "code": "en", "name": "English" },
+    { "code": "fr", "name": "Français" },
     { "code": "bo", "name": "བོད་ཡིག" },
     { "code": "mn", "name": "Монгол" },
     { "code": "mn-Mong", "name": "ᠮᠣᠩᠭᠣᠯ ᠬᠡᠯᠡ" },
