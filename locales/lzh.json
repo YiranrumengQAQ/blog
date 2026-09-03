@@ -1,0 +1,119 @@
+{
+    "meta": {
+        "name": "文言",
+        "htmlLang": "lzh",
+        "dir": "ltr"
+    },
+    "format": {
+        "dateLong": "{y}年{mon}月{d}日",
+        "monthLong": "{y}年{mon}月",
+        "months": [
+            "正",
+            "二",
+            "三",
+            "四",
+            "五",
+            "六",
+            "七",
+            "八",
+            "九",
+            "十",
+            "冬",
+            "腊"
+        ],
+        "charsPerMinute": 300,
+        "countMode": "words"
+    },
+    "site": {
+        "blogName": "狸奴旧事",
+        "defaultBlogName": "吾之文存",
+        "description": "记片刻温存之微志",
+        "slogan": "心有所感，逐字而书"
+    },
+    "nav": {
+        "backHome": "归卷",
+        "searchPlaceholder": "索文…",
+        "searchPlaceholderKbd": "索文… (Ctrl+K)",
+        "searchAria": "搜寻篇章",
+        "searchClear": "清空检字",
+        "searchOpen": "开卷检字",
+        "search": "检索",
+        "themeToggleAria": "更替色度",
+        "themeToggleTitle": "更白昼玄夜之设",
+        "menuAria": "篇目",
+        "menuTitle": "卷旁目录",
+        "backToTop": "升顶",
+        "languageAria": "择雅言",
+        "writeArticle": "执笔",
+        "writeArticleTitle": "起草撰篇"
+    },
+    "sidebar": {
+        "categories": "门类",
+        "tags": "词签",
+        "archives": "岁帙",
+        "reset": "尽列篇章",
+        "empty": "尚无片卷"
+    },
+    "list": {
+        "latest": "新撰篇什",
+        "searchTitle": "所索：\"{keyword}\"",
+        "categoryTitle": "类目：{name}",
+        "tagTitle": "词签：{name}",
+        "archiveTitle": "岁帙：{name}",
+        "resultCount": "得文共 {n} 篇",
+        "resultCount_one": "得文共 {n} 篇",
+        "readingTime": "需览 {n} 刻",
+        "sticky": "卷首置顶",
+        "readAria": "敬启：{title}",
+        "fallbackChar": "文",
+        "prevPage": "前页",
+        "nextPage": "后页",
+        "paginationAria": "翻检页册",
+        "emptySearchTitle": "未觅得相合之篇",
+        "emptySearchHint": "宜更易词字再探，亦或拂除所索",
+        "emptySearchHintIndexing": "宜更易词字再探，或俟索引毕备",
+        "emptySearchAction": "拂净检所",
+        "emptyTitle": "箧中无篇",
+        "emptyHint": "请纳 .md 简卷于 posts/ 下，并修 posts/manifest.json 告于世",
+        "emptyEditor": "起草撰篇",
+        "emptyShowAll": "尽现所存",
+        "errorTitle": "展阅失手",
+        "errorHint": "请勘验 config.json 与 posts/manifest.json 犹在否，其章法符制否",
+        "retry": "复启"
+    },
+    "article": {
+        "back": "复返篇目",
+        "prev": "前章",
+        "next": "次章",
+        "noPrev": "前无更旧之作",
+        "noNext": "此卷已属最新",
+        "readingTime": "需览 {n} 刻",
+        "wordCount": "{n} 言",
+        "wordCount_one": "{n} 言",
+        "sticky": "卷首置顶",
+        "imgFallback": "丹青难显",
+        "imgFallbackAlt": "丹青难显：{alt}",
+        "copy": "誊写",
+        "copied": "已录",
+        "copyFailed": "传录未谐，烦请亲手抄截",
+        "errorTitle": "展读此章受阻",
+        "errorFileHint": "疑以双击启之故，览器禁私窥内地书卷。请假以微肆之侍（Local Server），或托诸 GitHub Pages 上载。",
+        "errorMissingHint": "不见 \"{slug}\" 之篇。请察 posts/ 内有无相契合之 .md 卷轴。",
+        "retry": "重探",
+        "home": "归卷"
+    },
+    "lightbox": {
+        "close": "阖卷",
+        "prev": "前幅",
+        "next": "次幅"
+    },
+    "boot": {
+        "errorTitle": "起首不成",
+        "errorFileHint": "盖因径自双击 index.html 之故，览器关防重重，阻隔内地文牍之阅。",
+        "errorHint": "不能省识 config.json 或 posts/manifest.json。请勘察简卷在否、制式合宜否。",
+        "localPreviewHint": "欲于本肆临摹阅览，可于案牍之下行此令：python3 -m http.server 8000",
+        "retry": "再试",
+        "partialFail": "有 {n} 篇未可展读，乞细检 posts/ 囊袋",
+        "partialFail_one": "有 {n} 篇未可展读，乞细检 posts/ 囊袋"
+    }
+}
