@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>写作助手 - 让写文章像填表格一样简单</title>
     <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#FDFBF7">
+    <script>
+        // 防止主题闪烁（FOUC）：与 index.html 相同的内联脚本。
+        // editor.js 在 DOMContentLoaded 之后才恢复主题，没有这段会先闪一帧亮色。
+        // 键名与 assets/js/ui/theme.js、editor.js 使用的 blog-theme 保持一致。
+        (function () {
+            try {
+                var saved = localStorage.getItem('blog-theme');
+                var dark = saved === 'dark' ||
+                    (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (dark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    var meta = document.querySelector('meta[name="theme-color"]');
+                    if (meta) meta.setAttribute('content', '#141218');
+                }
+            } catch (e) { /* localStorage 不可用时按默认亮色 */ }
+        })();
+    </script>
     <link rel="stylesheet" href="assets/css/tokens.css">
     <link rel="stylesheet" href="assets/css/base.css">
     <link rel="stylesheet" href="assets/css/editor.css">

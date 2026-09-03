@@ -411,6 +411,48 @@
         hr: () => insertBlock('---\n')
     };
 
+    /* ---------------- 编辑区与预览区滚动同步 ---------------- */
+
+    /**
+     * Markdown 输入框与右侧预览面板按百分比双向同步滚动。
+     * - 只在宽屏双栏布局（>1024px）下启用；窄屏上下堆叠时同步反而干扰阅读。
+     * - lock + 定时释放：程序赋值 scrollTop 也会触发对方的 scroll 事件，
+     *   不加锁会来回"打架"产生抖动。
+     */
+    function bindScrollSync() {
+        const ta = els.fContent;
+        const panel = document.querySelector('.preview-panel');
+        if (!ta || !panel) return;
+
+        let lock = false;
+        let lockTimer = null;
+        const holdLock = () => {
+            lock = true;
+            clearTimeout(lockTimer);
+            lockTimer = setTimeout(() => { lock = false; }, 80);
+        };
+        const ratioOf = (el) => {
+            const max = el.scrollHeight - el.clientHeight;
+            return max > 1 ? el.scrollTop / max : null;
+        };
+        const applyRatio = (el, r) => {
+            const max = el.scrollHeight - el.clientHeight;
+            el.scrollTop = (r == null) ? 0 : r * max;
+        };
+        const dualColumn = () => window.matchMedia('(min-width: 1025px)').matches;
+
+        ta.addEventListener('scroll', () => {
+            if (lock || !dualColumn()) return;
+            holdLock();
+            applyRatio(panel, ratioOf(ta));
+        });
+        panel.addEventListener('scroll', () => {
+            if (lock || !dualColumn()) return;
+            holdLock();
+            applyRatio(ta, ratioOf(panel));
+        });
+    }
+
     /* ---------------- 事件绑定 ---------------- */
 
     function bindEvents() {
@@ -528,11 +570,14 @@
             if (slug) loadExistingIntoForm(slug);
         });
 
-        // 主题
+        // 主题（首帧主题已由 <head> 内联脚本恢复，这里只负责切换；
+        //   切换时同步 meta theme-color，让移动端地址栏颜色跟着变）
         $('#themeToggle').addEventListener('click', () => {
             const html = document.documentElement;
             const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             html.setAttribute('data-theme', next);
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', next === 'dark' ? '#141218' : '#FDFBF7');
             try { localStorage.setItem('blog-theme', next); } catch (e) { /* 忽略 */ }
         });
 
@@ -560,6 +605,7 @@
 
         els.fDate.value = todayStr();
         bindEvents();
+        bindScrollSync();
         // 先按"还没导入"的状态刷一次导入区：警示条、提示文案（带图标）与下拉框都要就位。
         // 以前只有恢复草稿时才会执行 refreshImportUI，第一次打开页面看不到未导入的警示。
         refreshImportUI();

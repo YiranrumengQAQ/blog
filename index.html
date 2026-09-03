@@ -7,6 +7,24 @@
     <title data-i18n="site.blogName">猫猫的回忆</title>
     <meta name="description" content="记录温暖时光的静态博客" data-i18n-attr="content:site.description">
     <meta name="theme-color" content="#FDFBF7">
+    <script>
+        // 防止主题闪烁（FOUC）：必须放在 <head> 内、首帧渲染前同步执行。
+        // theme.js 在页面底部 defer 加载，若用户偏好暗色，等它执行时页面已经
+        // 按默认的亮色画过一帧了。这里提前读 localStorage 把暗色写到 <html> 上。
+        // 键名与 assets/js/ui/theme.js 的 STORAGE_KEY（blog-theme）保持一致。
+        (function () {
+            try {
+                var saved = localStorage.getItem('blog-theme');
+                var dark = saved === 'dark' ||
+                    (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (dark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    var meta = document.querySelector('meta[name="theme-color"]');
+                    if (meta) meta.setAttribute('content', '#141218'); // 与 theme.js 的暗色同步
+                }
+            } catch (e) { /* 隐私模式等 localStorage 不可用时按默认亮色 */ }
+        })();
+    </script>
     <link rel="stylesheet" href="assets/css/tokens.css">
     <link rel="stylesheet" href="assets/css/base.css">
     <link rel="stylesheet" href="assets/css/layout.css">

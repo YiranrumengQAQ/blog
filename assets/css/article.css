@@ -129,6 +129,39 @@
 .article-content img:hover {
     box-shadow: var(--md-sys-elevation-3);
 }
+/* 嵌入视频 / 音频播放器：等比缩放，绝不横向撑破布局 */
+.article-content iframe,
+.article-content video,
+.article-content embed,
+.article-content object {
+    display: block;
+    max-width: 100%;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    max-height: 520px;
+    border: 0;
+    border-radius: var(--md-sys-shape-corner-medium);
+    margin: 1.2rem 0;
+    background: var(--md-sys-color-surface-variant);
+}
+/* 文章里的长链接 / 长代码串：允许在任意字符处换行，避免撑出横向滚动 */
+.article-content code,
+.article-content a {
+    overflow-wrap: anywhere;
+}
+
+/* 任务列表复选框（GFM "- [ ]"）：去掉列表圆点，复选框跟主题色 */
+.article-content li input[type="checkbox"] {
+    margin: 0 0.4em 0 -1.3em;
+    vertical-align: middle;
+    accent-color: var(--md-sys-color-primary);
+    width: 1em;
+    height: 1em;
+}
+.article-content li:has(> input[type="checkbox"]) {
+    list-style: none;
+}
 .article-content blockquote {
     border-left: 3px solid var(--md-sys-color-primary);
     padding: 0.8rem 1.2rem;
@@ -337,6 +370,8 @@
 .lightbox-img {
     max-width: 92vw;
     max-height: 82vh;
+    /* dvh：移动端工具栏弹出时图片仍完整可见 */
+    max-height: 82dvh;
     object-fit: contain;
     border-radius: var(--md-sys-shape-corner-medium);
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);

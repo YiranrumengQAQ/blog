@@ -266,6 +266,8 @@
     padding: 1.5rem 1.5rem 3rem;
     flex: 1;
     min-height: calc(100vh - var(--header-height) - 80px);
+    /* dvh：移动端浏览器工具栏弹出/收起时不再出现多余滚动条 */
+    min-height: calc(100dvh - var(--header-height) - 80px);
 }
 
 /* ----- M3 侧边栏 (Navigation Drawer) ----- */
@@ -277,7 +279,11 @@
     flex-direction: column;
     gap: 1.2rem;
     max-height: calc(100vh - var(--header-height) - 40px);
+    /* dvh：地址栏弹出时侧栏底部不被遮住 */
+    max-height: calc(100dvh - var(--header-height) - 40px);
     overflow-y: auto;
+    /* 滚到侧栏边界时不再带动主页面滚动（滚动穿透） */
+    overscroll-behavior: contain;
     padding-right: 0.5rem;
     transition: all var(--md-sys-transition-medium);
 }

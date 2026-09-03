@@ -62,6 +62,10 @@
                 e.stopPropagation(); // 不要冒泡到全局快捷键（如退出文章）
                 clearSearch(ctx);
                 el.searchInput.blur();
+                // 移动端：Esc 除清空外还要收起展开的搜索栏（弹层快捷键退出）
+                if (window.innerWidth <= 768) {
+                    el.searchWrap.classList.remove('mobile-visible');
+                }
             }
         });
 
@@ -109,7 +113,9 @@
             }
             // Esc 退出文章详情（目标不是输入框、且灯箱未打开时）
             const lightbox = document.getElementById('lightbox');
-            if (e.key === 'Escape' && !typing && ctx.state.view === 'detail' &&
+            // 移动端抽屉打开时，Esc 的职责是先收起抽屉（sidebar.js 处理），不退出文章
+            const drawerOpen = el.sidebar && el.sidebar.classList.contains('mobile-open');
+            if (e.key === 'Escape' && !typing && !drawerOpen && ctx.state.view === 'detail' &&
                 (!lightbox || lightbox.hidden)) {
                 ctx.actions.navigateToList();
             }

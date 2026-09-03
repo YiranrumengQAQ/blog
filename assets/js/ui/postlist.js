@@ -6,6 +6,8 @@
  * - 每张卡片单独 fetch 全文（N+1 请求）→ 直接使用内核预取的数据
  * - 内联 onerror 处理器（引号嵌套易碎）→ 统一的事件委托处理图片加载失败
  * - 分页越界（URL 里 page 超过总页数）→ 内核自动收敛到最后一页
+ * - 搜索结果里的关键词用 <mark class="search-hl"> 高亮（highlightHTML，
+ *   先转义后高亮，不做任何绕过 XSS 转义的事）
  */
 (function () {
     'use strict';
@@ -35,7 +37,24 @@
         return `<div class="card-cover-placeholder">${escapeHTML(fallback.charAt(0))}</div>`;
     }
 
-    function cardHTML(item, detail) {
+    /**
+     * 搜索关键词高亮：先把整段文本 HTML 转义（防 XSS），
+     * 再把「同样转义过的关键词」包上 <mark>。正则特殊字符全部转义，
+     * 不区分大小写；关键词里的空白匹配任意连续空白。
+     */
+    function highlightHTML(text, keyword) {
+        const safe = escapeHTML(String(text == null ? '' : text));
+        const kw = escapeHTML(String(keyword || '').trim());
+        if (!kw) return safe;
+        const pattern = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+        try {
+            return safe.replace(new RegExp('(' + pattern + ')', 'gi'), '<mark class="search-hl">$1</mark>');
+        } catch (e) {
+            return safe; // 非常规关键词导致正则非法时退回纯转义
+        }
+    }
+
+    function cardHTML(item, detail, keyword) {
         const summary = (detail && detail.summary) || item.summary || '';
         const readingTime = (detail && detail.readingTime) || item.readingTime || null;
         const tags = item.tags || [];
@@ -47,12 +66,12 @@
           <div class="card-body">
             <div class="card-meta-top">
               ${item.sticky ? `<span class="card-sticky-badge">${escapeHTML(t('list.sticky'))}</span>` : ''}
-              ${item.category ? `<span class="card-category">${escapeHTML(item.category)}</span>` : ''}
+              ${item.category ? `<span class="card-category">${highlightHTML(item.category, keyword)}</span>` : ''}
               <span>${escapeHTML(date)}</span>
             </div>
-            <h2 class="card-title">${escapeHTML(item.title || '')}</h2>
-            ${summary ? `<p class="card-summary">${escapeHTML(summary)}</p>` : ''}
-            ${tags.length ? `<div class="card-tags-row">${tags.map((t) => `<span class="card-tag">${escapeHTML(t)}</span>`).join('')}</div>` : ''}
+            <h2 class="card-title">${highlightHTML(item.title || '', keyword)}</h2>
+            ${summary ? `<p class="card-summary">${highlightHTML(summary, keyword)}</p>` : ''}
+            ${tags.length ? `<div class="card-tags-row">${tags.map((t) => `<span class="card-tag">${highlightHTML(t, keyword)}</span>`).join('')}</div>` : ''}
             ${readingTime ? `<div class="card-footer-info"><span>${escapeHTML(t('list.readingTime', { n: readingTime }))}</span></div>` : ''}
           </div>
         </article>`;
@@ -144,7 +163,9 @@
                 return;
             }
 
-            const cards = qr.items.map((item) => cardHTML(item, blog.getCachedDetail(item.slug))).join('');
+            const cards = qr.items.map((item) =>
+                cardHTML(item, blog.getCachedDetail(item.slug), state.keyword)
+            ).join('');
             el.contentBody.innerHTML = `<div class="posts-list">${cards}</div>`;
             renderPagination(ctx, qr.pagination);
         } catch (err) {
