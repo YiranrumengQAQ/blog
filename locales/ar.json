@@ -1,0 +1,119 @@
+{
+    "meta": {
+        "name": "العربية",
+        "htmlLang": "ar",
+        "dir": "rtl"
+    },
+    "format": {
+        "dateLong": "{d} {mon} {y}",
+        "monthLong": "{mon} {y}",
+        "months": [
+            "يناير",
+            "فبراير",
+            "مارس",
+            "أبريل",
+            "مايو",
+            "يونيو",
+            "يوليو",
+            "أغسطس",
+            "سبتمبر",
+            "أكتوبر",
+            "نوفمبر",
+            "ديسمبر"
+        ],
+        "charsPerMinute": 800,
+        "countMode": "words"
+    },
+    "site": {
+        "blogName": "ذكريات القطة",
+        "defaultBlogName": "مدونتي",
+        "description": "مدونة ساكنة لتوثيق اللحظات الدافئة واللطيفة",
+        "slogan": "كُتبت بعناية، لحظة بلحظة"
+    },
+    "nav": {
+        "backHome": "الرئيسية",
+        "searchPlaceholder": "البحث في المقالات…",
+        "searchPlaceholderKbd": "البحث في المقالات… (Ctrl+K)",
+        "searchAria": "البحث في المقالات",
+        "searchClear": "مسح البحث",
+        "searchOpen": "فتح شريط البحث",
+        "search": "بحث",
+        "themeToggleAria": "تغيير المظهر",
+        "themeToggleTitle": "التبديل بين الوضع الفاتح والداكن",
+        "menuAria": "القائمة",
+        "menuTitle": "القائمة الجانبية",
+        "backToTop": "العودة إلى الأعلى",
+        "languageAria": "اختيار لغة الواجهة",
+        "writeArticle": "كتابة",
+        "writeArticleTitle": "فتح مساعد الكتابة"
+    },
+    "sidebar": {
+        "categories": "التصنيفات",
+        "tags": "الوسوم",
+        "archives": "الأرشيف",
+        "reset": "عرض جميع المقالات",
+        "empty": "لا يوجد محتوى بعد"
+    },
+    "list": {
+        "latest": "أحدث المقالات",
+        "searchTitle": "نتائج البحث: \"{keyword}\"",
+        "categoryTitle": "التصنيف: {name}",
+        "tagTitle": "الوسم: {name}",
+        "archiveTitle": "الأرشيف: {name}",
+        "resultCount": "إجمالي {n} مقالات",
+        "resultCount_one": "مقالة واحدة في الإجمالي",
+        "readingTime": "وقت القراءة: {n} دقيقة",
+        "sticky": "مثبت",
+        "readAria": "قراءة: {title}",
+        "fallbackChar": "م",
+        "prevPage": "الصفحة السابقة",
+        "nextPage": "الصفحة التالية",
+        "paginationAria": "التنقل بين الصفحات",
+        "emptySearchTitle": "لم يتم العثور على مقالات مطابقة",
+        "emptySearchHint": "جرّب استخدام كلمات مفتاحية أخرى، أو امسح البحث",
+        "emptySearchHintIndexing": "جرّب كلمة مفتاحية أخرى، أو انتظر حتى يكتمل الفهرس",
+        "emptySearchAction": "مسح البحث",
+        "emptyTitle": "لا توجد مقالات حتى الآن",
+        "emptyHint": "أضف ملف .md داخل مجلد posts/ وقم بتحديث posts/manifest.json لنشر مقال جديد",
+        "emptyEditor": "فتح مساعد الكتابة",
+        "emptyShowAll": "عرض الكل",
+        "errorTitle": "فشل التحميل",
+        "errorHint": "تأكد من وجود config.json و posts/manifest.json وصحة تنسيق JSON",
+        "retry": "إعادة التحميل"
+    },
+    "article": {
+        "back": "العودة إلى قائمة المقالات",
+        "prev": "السابق",
+        "next": "التالي",
+        "noPrev": "لا توجد مقالات أقدم",
+        "noNext": "هذا أحدث مقال",
+        "readingTime": "وقت القراءة: {n} دقيقة",
+        "wordCount": "{n} كلمة",
+        "wordCount_one": "كلمة واحدة",
+        "sticky": "مثبت",
+        "imgFallback": "تعذر تحميل الصورة",
+        "imgFallbackAlt": "تعذر تحميل الصورة: {alt}",
+        "copy": "نسخ",
+        "copied": "تم النسخ",
+        "copyFailed": "فشل النسخ، يرجى التحديد والنسخ يدويًا",
+        "errorTitle": "فشل تحميل هذا المقال",
+        "errorFileHint": "يبدو أنك فتحت الملف بالنقر المزدوج: تحظر المتصفحات الوصول للملفات المحلية لأسباب أمنية. يرجى استخدام خادم محلي أو النشر عبر GitHub Pages.",
+        "errorMissingHint": "المقال \"{slug}\" غير موجود. يرجى التأكد من وجود ملف الـ .md المطابق داخل posts/.",
+        "retry": "إعادة المحاولة",
+        "home": "الرئيسية"
+    },
+    "lightbox": {
+        "close": "إغلاق",
+        "prev": "الصورة السابقة",
+        "next": "الصورة التالية"
+    },
+    "boot": {
+        "errorTitle": "فشل تشغيل المدونة",
+        "errorFileHint": "قمت بفتح index.html بالنقر المزدوج: تمنع تدابير أمان المتصفح قراءة بيانات المقالات محليًا.",
+        "errorHint": "تعذر تحميل config.json أو posts/manifest.json. تأكد من وجود الملفات وصحة تنسيق الـ JSON.",
+        "localPreviewHint": "للمعاينة محليًا، شغّل الأمر التالي داخل مجلد المشروع: python3 -m http.server 8000",
+        "retry": "إعادة المحاولة",
+        "partialFail": "فشل تحميل {n} من المقالات، يرجى فحص مجلد posts/",
+        "partialFail_one": "فشل تحميل مقال واحد، يرجى فحص مجلد posts/"
+    }
+}
