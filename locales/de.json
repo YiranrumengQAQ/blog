@@ -1,0 +1,119 @@
+{
+    "meta": {
+        "name": "Deutsch",
+        "htmlLang": "de",
+        "dir": "ltr"
+    },
+    "format": {
+        "dateLong": "{d}. {mon} {y}",
+        "monthLong": "{mon} {y}",
+        "months": [
+            "Januar",
+            "Februar",
+            "März",
+            "April",
+            "Mai",
+            "Juni",
+            "Juli",
+            "August",
+            "September",
+            "Oktober",
+            "November",
+            "Dezember"
+        ],
+        "charsPerMinute": 1000,
+        "countMode": "words"
+    },
+    "site": {
+        "blogName": "Katzen-Erinnerungen",
+        "defaultBlogName": "Mein Blog",
+        "description": "Ein statischer Blog für warme, kleine Momente",
+        "slogan": "Mit Bedacht geschrieben, Moment für Moment"
+    },
+    "nav": {
+        "backHome": "Zurück zur Startseite",
+        "searchPlaceholder": "Beiträge suchen…",
+        "searchPlaceholderKbd": "Beiträge suchen… (Strg+K)",
+        "searchAria": "Beiträge suchen",
+        "searchClear": "Suche löschen",
+        "searchOpen": "Suche öffnen",
+        "search": "Suchen",
+        "themeToggleAria": "Design wechseln",
+        "themeToggleTitle": "Helles/Dunkles Design umschalten",
+        "menuAria": "Menü",
+        "menuTitle": "Seitenleisten-Menü",
+        "backToTop": "Nach oben",
+        "languageAria": "Sprache auswählen",
+        "writeArticle": "Schreiben",
+        "writeArticleTitle": "Schreibassistenten öffnen"
+    },
+    "sidebar": {
+        "categories": "Kategorien",
+        "tags": "Schlagwörter",
+        "archives": "Archiv",
+        "reset": "Alle Beiträge anzeigen",
+        "empty": "Noch keine Inhalte vorhanden"
+    },
+    "list": {
+        "latest": "Neueste Beiträge",
+        "searchTitle": "Suche: \"{keyword}\"",
+        "categoryTitle": "Kategorie: {name}",
+        "tagTitle": "Schlagwort: {name}",
+        "archiveTitle": "Archiv: {name}",
+        "resultCount": "Insgesamt {n} Beiträge",
+        "resultCount_one": "Insgesamt {n} Beitrag",
+        "readingTime": "{n} Min. Lesezeit",
+        "sticky": "Angepinnt",
+        "readAria": "Lesen: {title}",
+        "fallbackChar": "B",
+        "prevPage": "Vorherige Seite",
+        "nextPage": "Nächste Seite",
+        "paginationAria": "Seitennavigation",
+        "emptySearchTitle": "Keine passenden Beiträge gefunden",
+        "emptySearchHint": "Versuchen Sie einen anderen Begriff oder löschen Sie die Suche",
+        "emptySearchHintIndexing": "Versuchen Sie es erneut oder warten Sie, bis der Index fertiggestellt ist",
+        "emptySearchAction": "Suche zurücksetzen",
+        "emptyTitle": "Noch keine Beiträge vorhanden",
+        "emptyHint": "Fügen Sie eine .md-Datei unter posts/ hinzu und aktualisieren Sie posts/manifest.json",
+        "emptyEditor": "Schreibassistenten öffnen",
+        "emptyShowAll": "Alle anzeigen",
+        "errorTitle": "Laden fehlgeschlagen",
+        "errorHint": "Stellen Sie sicher, dass config.json und posts/manifest.json existieren und gültiges JSON enthalten",
+        "retry": "Neu laden"
+    },
+    "article": {
+        "back": "Zurück zur Übersicht",
+        "prev": "Vorheriger",
+        "next": "Nächster",
+        "noPrev": "Keine älteren Beiträge",
+        "noNext": "Dies ist der neueste Beitrag",
+        "readingTime": "{n} Min. Lesezeit",
+        "wordCount": "{n} Wörter",
+        "wordCount_one": "{n} Wort",
+        "sticky": "Angepinnt",
+        "imgFallback": "Bild konnte nicht geladen werden",
+        "imgFallbackAlt": "Bild konnte nicht geladen werden: {alt}",
+        "copy": "Kopieren",
+        "copied": "Kopiert",
+        "copyFailed": "Kopieren fehlgeschlagen, bitte manuell auswählen und kopieren",
+        "errorTitle": "Beitrag konnte nicht geladen werden",
+        "errorFileHint": "Die Datei wurde möglicherweise per Doppelklick geöffnet: Browser blockieren den lokalen Dateizugriff. Bitte verwenden Sie einen lokalen Server oder GitHub Pages.",
+        "errorMissingHint": "Beitrag \"{slug}\" nicht gefunden. Überprüfen Sie, ob die entsprechende .md-Datei unter posts/ existiert.",
+        "retry": "Wiederholen",
+        "home": "Zurück zur Startseite"
+    },
+    "lightbox": {
+        "close": "Schließen",
+        "prev": "Vorheriges Bild",
+        "next": "Nächstes Bild"
+    },
+    "boot": {
+        "errorTitle": "Blog konnte nicht gestartet werden",
+        "errorFileHint": "index.html wurde per Doppelklick geöffnet: Sicherheitsrichtlinien verhindern das Auslesen lokaler Daten.",
+        "errorHint": "config.json oder posts/manifest.json konnte nicht geladen werden. Bitte Dateipfade und JSON-Syntax überprüfen.",
+        "localPreviewHint": "Für eine lokale Vorschau im Projektordner ausführen: python3 -m http.server 8000",
+        "retry": "Wiederholen",
+        "partialFail": "{n} Beiträge konnten nicht geladen werden, bitte den Ordner posts/ überprüfen",
+        "partialFail_one": "{n} Beitrag konnte nicht geladen werden, bitte den Ordner posts/ überprüfen"
+    }
+}
