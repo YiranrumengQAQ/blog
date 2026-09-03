@@ -329,7 +329,11 @@
 .preview-panel {
     min-height: 400px;
     max-height: calc(100vh - 100px);
+    /* dvh：移动端地址栏弹出时不再遮挡面板底部 */
+    max-height: calc(100dvh - 100px);
     overflow-y: auto;
+    /* 预览滚到底不再带动页面滚动 */
+    overscroll-behavior: contain;
 }
 .preview-meta {
     font-size: var(--md-sys-typescale-label-medium);
@@ -374,6 +378,32 @@
     border-radius: var(--md-sys-shape-corner-medium);
     margin: 0.6rem 0;
 }
+/* 嵌入视频预览：与文章页一致，等比缩放不撑破面板 */
+.preview-content iframe,
+.preview-content video {
+    display: block;
+    max-width: 100%;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    border: 0;
+    border-radius: var(--md-sys-shape-corner-medium);
+    margin: 0.6rem 0;
+    background: var(--md-sys-color-surface-variant);
+}
+.preview-content code,
+.preview-content a {
+    overflow-wrap: anywhere;
+}
+/* 任务列表复选框 */
+.preview-content li input[type="checkbox"] {
+    margin: 0 0.4em 0 -1.3em;
+    vertical-align: middle;
+    accent-color: var(--md-sys-color-primary);
+}
+.preview-content li:has(> input[type="checkbox"]) {
+    list-style: none;
+}
 .preview-content blockquote {
     border-left: 3px solid var(--md-sys-color-primary);
     background: var(--md-sys-color-surface-variant);
@@ -400,7 +430,14 @@
     margin: 0.8rem 0;
 }
 .preview-content pre code { background: none; padding: 0; color: inherit; }
-.preview-content table { border-collapse: collapse; margin: 0.8rem 0; }
+/* 宽表格在面板内横向滚动，而不是把整栏撑宽 */
+.preview-content table {
+    border-collapse: collapse;
+    margin: 0.8rem 0;
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+}
 .preview-content th, .preview-content td {
     border: 1px solid var(--md-sys-color-outline-variant);
     padding: 0.4rem 0.7rem;
@@ -499,12 +536,12 @@
     font-family: var(--md-sys-font-family-mono);
 }
 
-/* Toast 复用博客样式 */
+/* Toast 复用博客样式（z-index 与 components.css 保持一致，压过所有浮层） */
 .toast-container {
     position: fixed;
     bottom: 1.5rem;
     right: 1.5rem;
-    z-index: 9999;
+    z-index: 10100;
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
@@ -554,6 +591,7 @@
     }
     .preview-panel {
         max-height: 70vh;
+        max-height: 70dvh;
         min-height: 300px;
     }
 }

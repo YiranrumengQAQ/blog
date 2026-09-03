@@ -153,6 +153,17 @@
     color: var(--md-sys-color-on-surface-variant);
 }
 
+/* 搜索关键词高亮（postlist.js 的 highlightHTML 生成）。
+   覆盖 <mark> 默认的黄底色，改用主题色，暗色主题自动适配。 */
+mark.search-hl {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border-radius: 3px;
+    padding: 0 0.1em;
+    /* inherit 保持卡片标题的行高/字重，避免撑高文本行 */
+    font: inherit;
+}
+
 /* ----- 分页 ----- */
 .pagination {
     display: flex;
@@ -292,11 +303,13 @@
 }
 
 /* ----- Toast 提示 ----- */
+/* z-index 压过所有浮层（灯箱 10000 / 进度条 200 / 顶栏 100 / 抽屉 95），
+   保证"复制成功 / 保存失败"等反馈永远不会被遮挡 */
 .toast-container {
     position: fixed;
     bottom: 1.5rem;
     right: 1.5rem;
-    z-index: 9999;
+    z-index: 10100;
     display: flex;
     flex-direction: column;
     gap: 0.6rem;

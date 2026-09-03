@@ -113,6 +113,9 @@
         transform: translateX(-100%);
         transition: transform var(--md-sys-transition-spring);
         overflow-y: auto;
+        /* 抽屉滚到底/顶时，触摸滑动不再带动底层主页面（滚动穿透）。
+           iOS 16+ / Android Chrome 支持；配合 sidebar.js 的 body 滚动锁双保险。 */
+        overscroll-behavior: contain;
         max-height: none;
         border-right: none;
         box-shadow: var(--md-sys-elevation-4);

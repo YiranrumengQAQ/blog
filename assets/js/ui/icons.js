@@ -84,6 +84,11 @@
      * 返回一个完整的 <svg> 字符串。
      * @param {string} name 图标名
      * @param {object} [opts] { class: '额外类名', title: '无障碍标题' }
+     *
+     * 尺寸兜底：显式写 width/height="24"（等于 viewBox 的设计稿尺寸），
+     * 样式表未加载 / 被剥离（RSS、邮件、复制到别处）时图标也只是 24px 方块，
+     * 不会膨胀成容器大小或缩成 1px；正常情况下 base.css 的 .icon { 1.1em }
+     * 会覆盖它们，不影响显示效果。
      */
     function svg(name, opts) {
         const body = PATHS[name];
@@ -97,7 +102,7 @@
             ? `<title>${String(o.title).replace(/</g, '&lt;')}</title>`
             : '';
         const aria = o.title ? 'role="img"' : 'aria-hidden="true"';
-        return `<svg class="${cls}" viewBox="0 0 24 24" ${aria} focusable="false" ` +
+        return `<svg class="${cls}" width="24" height="24" viewBox="0 0 24 24" ${aria} focusable="false" ` +
             `fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" ` +
             `stroke-linejoin="round">${label}${body}</svg>`;
     }
@@ -120,6 +125,9 @@
             const extra = node.getAttribute('data-icon-class');
             node.setAttribute('class', ('icon' + (extra ? ' ' + extra : '') +
                 ' ' + (node.getAttribute('class') || '')).trim());
+            // 尺寸兜底：见上方 svg() 的注释。CSS 的 .icon 规则会覆盖这两个属性。
+            node.setAttribute('width', '24');
+            node.setAttribute('height', '24');
             node.setAttribute('viewBox', '0 0 24 24');
             node.setAttribute('fill', 'none');
             node.setAttribute('stroke', 'currentColor');

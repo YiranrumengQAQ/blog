@@ -46,12 +46,36 @@
         });
     }
 
+    /* ---------------- 移动端抽屉：底层滚动穿透治理 ---------------- */
+
+    // iOS Safari 对 body { overflow: hidden } 视而不见，穿透滚动要用
+    // 「body 定位到固定 + 记住滚动位置」的经典方案才能锁住。
+    let savedScrollY = 0;
+    let bodyLocked = false;
+
+    function lockBodyScroll() {
+        if (bodyLocked) return;
+        bodyLocked = true;
+        savedScrollY = window.scrollY;
+        document.body.style.top = (-savedScrollY) + 'px';
+        document.body.classList.add('scroll-locked');
+    }
+
+    function unlockBodyScroll() {
+        if (!bodyLocked) return;
+        bodyLocked = false;
+        document.body.classList.remove('scroll-locked');
+        document.body.style.top = '';
+        window.scrollTo(0, savedScrollY);
+    }
+
     function openMobile(ctx) {
         const { el } = ctx;
         el.sidebar.classList.add('mobile-open');
         el.sidebarOverlay.classList.add('active');
         el.mobileMenuBtn.classList.add('active');
         el.mobileMenuBtn.setAttribute('aria-expanded', 'true');
+        lockBodyScroll();
     }
 
     function closeMobile(ctx) {
@@ -60,6 +84,7 @@
         el.sidebarOverlay.classList.remove('active');
         el.mobileMenuBtn.classList.remove('active');
         el.mobileMenuBtn.setAttribute('aria-expanded', 'false');
+        unlockBodyScroll();
     }
 
     function toggleMobile(ctx) {
@@ -110,6 +135,25 @@
 
         el.mobileMenuBtn.addEventListener('click', () => toggleMobile(ctx));
         el.sidebarOverlay.addEventListener('click', () => closeMobile(ctx));
+
+        // Esc 关闭抽屉（与灯箱、搜索框的 Esc 行为一致）
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            if (el.sidebar.classList.contains('mobile-open')) {
+                e.stopPropagation();
+                closeMobile(ctx);
+            }
+        });
+
+        // 旋转屏幕 / 拖宽窗口回到桌面布局时，收起抽屉并解除滚动锁，
+        // 否则 body 会一直停留在 position: fixed 上无法滚动。
+        window.addEventListener('resize', Blog.utils.debounce(() => {
+            if (window.innerWidth > 768 && el.sidebar.classList.contains('mobile-open')) {
+                closeMobile(ctx);
+            }
+            // 兜底：任何情况下窗口变宽都确保解锁
+            if (window.innerWidth > 768) unlockBodyScroll();
+        }, 200));
     }
 
     Blog.ui.sidebar = { render, updateActive, init, openMobile, closeMobile, toggleMobile };
