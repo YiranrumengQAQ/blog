@@ -1,10 +1,11 @@
 {
-  "blogName": "猫猫的回忆",
-  "author": "猫猫",
+  "blogName": "貓貓的回憶",
+  "author": "貓貓",
   "perPage": 5,
   "defaultLanguage": "zh-CN",
   "languages": [
     { "code": "zh-CN", "name": "简体中文" },
+    { "code": "zh-TW", "name": "繁體中文" },
     { "code": "en", "name": "English" },
     { "code": "bo", "name": "བོད་ཡིག" },
     { "code": "mn", "name": "Монгол" },
