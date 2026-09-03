@@ -8,6 +8,7 @@
     { "code": "en", "name": "English" },
     { "code": "bo", "name": "བོད་ཡིག" },
     { "code": "mn", "name": "Монгол" },
-    { "code": "mn-Mong", "name": "ᠮᠣᠩᠭᠣᠯ ᠬᠡᠯᠡ" }
+    { "code": "mn-Mong", "name": "ᠮᠣᠩᠭᠣᠯ ᠬᠡᠯᠡ" },
+    { "code": "lzh", "name": "文言" }
   ]
 }
