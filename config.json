@@ -13,6 +13,7 @@
     { "code": "de", "name": "Deutsch" },
     { "code": "he", "name": "עברית" },
     { "code": "ar", "name": "العربية" },
+    { "code": "fa", "name": "فارسی" },
     { "code": "bo", "name": "བོད་ཡིག" },
     { "code": "mn", "name": "Монгол" },
     { "code": "mn-Mong", "name": "ᠮᠣᠩᠭᠣᠯ ᠬᠡᠯᠡ" },
