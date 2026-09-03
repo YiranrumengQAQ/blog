@@ -5,7 +5,8 @@
   "defaultLanguage": "zh-CN",
   "languages": [
     { "code": "zh-CN", "name": "简体中文" },
-    { "code": "zh-TW", "name": "繁體中文" },
+    { "code": "zh-TW", "name": "繁體中文（台灣）" },
+    { "code": "zh-HK", "name": "繁體中文（香港）" },
     { "code": "en", "name": "English" },
     { "code": "bo", "name": "བོད་ཡིག" },
     { "code": "mn", "name": "Монгол" },
