@@ -1,0 +1,119 @@
+{
+    "meta": {
+        "name": "繁體中文（香港）",
+        "htmlLang": "zh-HK",
+        "dir": "ltr"
+    },
+    "format": {
+        "dateLong": "{y}年{mon}月{d}日",
+        "monthLong": "{y}年{mon}月",
+        "months": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12"
+        ],
+        "charsPerMinute": 400,
+        "countMode": "chars"
+    },
+    "site": {
+        "blogName": "貓貓的回憶",
+        "defaultBlogName": "我嘅 Blog",
+        "description": "記錄溫暖日常與微小瞬間嘅靜態網誌",
+        "slogan": "用心寫好每個時刻"
+    },
+    "nav": {
+        "backHome": "返首頁",
+        "searchPlaceholder": "搜尋文章…",
+        "searchPlaceholderKbd": "搜尋文章… (Ctrl+K)",
+        "searchAria": "搜尋文章",
+        "searchClear": "清除搜尋",
+        "searchOpen": "開啟搜尋",
+        "search": "搜尋",
+        "themeToggleAria": "切換外觀風格",
+        "themeToggleTitle": "切換淺色/深色模式",
+        "menuAria": "選單",
+        "menuTitle": "側邊欄選單",
+        "backToTop": "返去頂部",
+        "languageAria": "選擇介面語言",
+        "writeArticle": "寫作",
+        "writeArticleTitle": "打開寫作助手"
+    },
+    "sidebar": {
+        "categories": "分類",
+        "tags": "標籤",
+        "archives": "歸檔",
+        "reset": "顯示所有文章",
+        "empty": "暫時未有內容"
+    },
+    "list": {
+        "latest": "最新文章",
+        "searchTitle": "搜尋：\"{keyword}\"",
+        "categoryTitle": "分類：{name}",
+        "tagTitle": "標籤：{name}",
+        "archiveTitle": "歸檔：{name}",
+        "resultCount": "合共搵到 {n} 篇文章",
+        "resultCount_one": "合共搵到 {n} 篇文章",
+        "readingTime": "約需閱讀 {n} 分鐘",
+        "sticky": "置頂",
+        "readAria": "閱讀：{title}",
+        "fallbackChar": "文",
+        "prevPage": "上一頁",
+        "nextPage": "下一頁",
+        "paginationAria": "分頁導航",
+        "emptySearchTitle": "搵唔到吻合嘅文章",
+        "emptySearchHint": "試下換第個關鍵字，或者清空搜尋字眼",
+        "emptySearchHintIndexing": "試下換第個關鍵字，或者等文章索引搞掂先",
+        "emptySearchAction": "清空搜尋",
+        "emptyTitle": "仲未有任何文章",
+        "emptyHint": "請喺 posts/ 資料夾入面加個 .md 檔案，並更新 posts/manifest.json 嚟發佈新文章",
+        "emptyEditor": "打開寫作助手",
+        "emptyShowAll": "睇晒全部",
+        "errorTitle": "載入失敗",
+        "errorHint": "請檢查 config.json 同 posts/manifest.json 係咪存在，同埋係咪合規嘅 JSON 格式",
+        "retry": "重新整理"
+    },
+    "article": {
+        "back": "返去文章列表",
+        "prev": "上一篇",
+        "next": "下一篇",
+        "noPrev": "冇更早嘅文章喇",
+        "noNext": "呢篇已經係最新嘅文章",
+        "readingTime": "約需閱讀 {n} 分鐘",
+        "wordCount": "{n} 字",
+        "wordCount_one": "{n} 字",
+        "sticky": "置頂",
+        "imgFallback": "張圖載入唔到",
+        "imgFallbackAlt": "張圖載入唔到：{alt}",
+        "copy": "複製",
+        "copied": "搞掂！已複製",
+        "copyFailed": "複製失敗，請手動 highlight 揀選嚟複製",
+        "errorTitle": "載入呢篇文章嗰陣出咗事",
+        "errorFileHint": "睇嚟你係直接 double-click 撳開個檔案：瀏覽器基於安全性會 block 咗本機檔案讀取。請起個本地伺服器（Local Server）或者直接 host 上 GitHub Pages。",
+        "errorMissingHint": "搵唔到文章 \"{slug}\"。請 check 下 posts/ 資料夾係咪真係有對應嘅 .md 檔案。",
+        "retry": "再試一次",
+        "home": "返首頁"
+    },
+    "lightbox": {
+        "close": "閂咗佢",
+        "prev": "上一張相",
+        "next": "下一張相"
+    },
+    "boot": {
+        "errorTitle": "Blog 啟動失敗",
+        "errorFileHint": "你係直接 double-click 撳開 index.html 嘅：瀏覽器安全機制阻止咗網頁讀取本機嘅文章資料。",
+        "errorHint": "載入唔到 config.json 或者 posts/manifest.json。請 check 下啲檔案喺唔喺度，同埋 JSON 格式有冇出錯。",
+        "localPreviewHint": "想喺本地預覽嘅話，請喺 project 資料夾開 terminal 行呢句：python3 -m http.server 8000",
+        "retry": "再試一次",
+        "partialFail": "有 {n} 篇文章載入唔到，請 check 下 posts/ 資料夾",
+        "partialFail_one": "有 {n} 篇文章載入唔到，請 check 下 posts/ 資料夾"
+    }
+}
