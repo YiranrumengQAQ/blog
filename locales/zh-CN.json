@@ -25,10 +25,10 @@
         "countMode": "chars"
     },
     "site": {
-        "defaultTitle": "博客",
+        "blogName": "猫猫的回忆",
         "defaultBlogName": "我的博客",
         "description": "记录温暖时光的静态博客",
-        "slogan": "用 ❤ 记录每一刻"
+        "slogan": "用心记录每一刻"
     },
     "nav": {
         "backHome": "返回首页",
@@ -44,7 +44,7 @@
         "menuTitle": "侧边栏菜单",
         "backToTop": "回到顶部",
         "languageAria": "选择界面语言",
-        "writeArticle": "✍️ 写文章",
+        "writeArticle": "写文章",
         "writeArticleTitle": "打开写作助手"
     },
     "sidebar": {
@@ -75,7 +75,7 @@
         "emptySearchAction": "清除搜索",
         "emptyTitle": "这里还没有文章",
         "emptyHint": "在 posts/ 目录添加 .md 文件并更新 posts/manifest.json 就能发布新文章",
-        "emptyEditor": "✍️ 打开写作助手",
+        "emptyEditor": "打开写作助手",
         "emptyShowAll": "显示全部",
         "errorTitle": "加载失败",
         "errorHint": "请确认 config.json 与 posts/manifest.json 存在且格式正确",
@@ -91,10 +91,10 @@
         "wordCount": "{n} 字",
         "wordCount_one": "{n} 字",
         "sticky": "置顶",
-        "imgFallback": "🖼 图片暂时无法加载",
-        "imgFallbackAlt": "🖼 图片暂时无法加载：{alt}",
+        "imgFallback": "图片暂时无法加载",
+        "imgFallbackAlt": "图片暂时无法加载：{alt}",
         "copy": "复制",
-        "copied": "已复制 ✓",
+        "copied": "已复制",
         "copyFailed": "复制失败，请手动选择复制",
         "errorTitle": "文章加载失败",
         "errorFileHint": "检测到你直接双击打开了本页面：浏览器安全策略禁止本地读取文件，请使用本地服务器或部署到 GitHub Pages 后访问。",

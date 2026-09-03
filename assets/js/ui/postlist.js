@@ -15,6 +15,8 @@
     const { $, $$, escapeHTML, escapeAttr } = Blog.utils;
     // 文案全部走 i18n：t() 每次调用都取"当前语言"，所以切换语言后重新渲染即可
     const t = (key, vars) => Blog.i18n.t(key, vars);
+    // 图标全部走统一的内联 SVG 图标库（不使用 emoji）
+    const icon = (name) => Blog.ui.icons.svg(name);
 
     function titleFor(state) {
         if (state.keyword) return t('list.searchTitle', { keyword: state.keyword });
@@ -60,7 +62,7 @@
         if (state.keyword) {
             return `
             <div class="empty-state">
-              <div class="empty-icon">🔍</div>
+              <div class="empty-icon">${icon('search')}</div>
               <h3>${escapeHTML(t('list.emptySearchTitle'))}</h3>
               <p>${escapeHTML(t(searchEnabled ? 'list.emptySearchHintIndexing' : 'list.emptySearchHint'))}</p>
               <div class="empty-actions"><button class="sidebar-reset" data-empty-action="reset">${escapeHTML(t('list.emptySearchAction'))}</button></div>
@@ -68,11 +70,11 @@
         }
         return `
         <div class="empty-state">
-          <div class="empty-icon">📄</div>
+          <div class="empty-icon">${icon('file-text')}</div>
           <h3>${escapeHTML(t('list.emptyTitle'))}</h3>
           <p>${escapeHTML(t('list.emptyHint'))}</p>
           <div class="empty-actions">
-            <button class="sidebar-reset" data-empty-action="editor">${escapeHTML(t('list.emptyEditor'))}</button>
+            <button class="sidebar-reset" data-empty-action="editor">${icon('feather')}<span>${escapeHTML(t('list.emptyEditor'))}</span></button>
             <button class="sidebar-reset" data-empty-action="reset">${escapeHTML(t('list.emptyShowAll'))}</button>
           </div>
         </div>`;
@@ -81,7 +83,7 @@
     function errorHTML() {
         return `
         <div class="empty-state">
-          <div class="empty-icon">⚠️</div>
+          <div class="empty-icon">${icon('alert-triangle')}</div>
           <h3>${escapeHTML(t('list.errorTitle'))}</h3>
           <p>${escapeHTML(t('list.errorHint'))}</p>
           <div class="empty-actions"><button class="sidebar-reset" data-empty-action="retry">${escapeHTML(t('list.retry'))}</button></div>

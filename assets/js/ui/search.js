@@ -5,7 +5,7 @@
  * （事件冒泡到 document 触发了两次处理），现在在输入框内按 Esc
  * 只处理搜索框自身的逻辑。
  *
- * 快捷键：Ctrl/⌘+K 或 / 聚焦搜索框；Esc 清空并失焦。
+ * 快捷键：Ctrl/Cmd+K 或 / 聚焦搜索框；Esc 清空并失焦。
  * 搜索关键词写入 hash 使用 replaceState，不制造历史记录。
  */
 (function () {
@@ -91,7 +91,7 @@
             el.searchWrap.classList.remove('mobile-visible');
         });
 
-        // 全局快捷键：Ctrl/⌘+K 或 "/" 聚焦搜索
+        // 全局快捷键：Ctrl/Cmd+K 或 "/" 聚焦搜索
         document.addEventListener('keydown', (e) => {
             const target = e.target;
             const typing = target instanceof HTMLInputElement ||

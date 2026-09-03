@@ -56,10 +56,37 @@
         readingProgress: $('#readingProgress'),
         readingProgressBar: $('#readingProgressBar'),
         footerName: $('#footerName'),
-        footerYear: $('#footerYear')
+        footerYear: $('#footerYear'),
+        headerBlogName: $('#headerBlogName')
     };
 
     const ctx = { blog, state, el, config: null, actions: {} };
+
+    /* ---------------- 站点名 ---------------- */
+
+    /**
+     * 站点名（左上角标题 / <title> / 页脚版权）：
+     *   1. 语言包 site.blogName —— 每门语言可以有自己的写法（如 "猫猫的回忆" / "Cat's Memories"）
+     *   2. config.json 的 blogName —— 语言包没写时的默认值
+     *   3. 语言包 site.defaultBlogName —— 连 config.json 都读不到时的兜底
+     * 以前这里只读 config.json，所以站点名永远不跟随语言切换（i18n 里根本没有这条文案）。
+     */
+    function siteName() {
+        return Blog.i18n.get('site.blogName') ||
+            (ctx.config && ctx.config.blogName) ||
+            t('site.defaultBlogName');
+    }
+    ctx.getSiteName = siteName;
+
+    /** 把站点名同步到 <title>、顶栏与页脚（切换语言后也要重新执行一次） */
+    function applySiteName() {
+        const name = siteName();
+        if (el.headerBlogName) el.headerBlogName.textContent = name;
+        if (el.footerName) el.footerName.textContent = name;
+        // 文章页的标题由 article.js 负责（"文章名 - 站点名"），这里只管列表页
+        if (state.view !== 'detail' || !state.slug) document.title = name;
+    }
+    ctx.applySiteName = applySiteName;
 
     /* ---------------- 动作 ---------------- */
 
@@ -73,7 +100,7 @@
                 state.view = 'list';
                 el.skeleton.hidden = true;
                 Blog.ui.article.setProgressVisible(ctx, false);
-                document.title = ctx.config ? ctx.config.blogName : t('site.defaultTitle');
+                applySiteName();
                 Blog.ui.postlist.render(ctx);
             }
         },
@@ -145,6 +172,7 @@
 
     /** 切换语言后：重算与语言有关的数字，再重绘整个界面（无需刷新页面） */
     function onLocaleChanged() {
+        applySiteName();
         if (typeof blog.recalcStats === 'function') blog.recalcStats();
         const select = $('#langSelect');
         if (select) select.value = Blog.i18n.locale();
@@ -195,7 +223,7 @@
         el.contentHeader.hidden = true;
         el.contentBody.innerHTML = `
           <div class="empty-state">
-            <div class="empty-icon">🐱</div>
+            <div class="empty-icon">${Blog.ui.icons.svg('alert-triangle')}</div>
             <h3>${escapeHTML(t('boot.errorTitle'))}</h3>
             <p>${escapeHTML(why)}</p>
             <p style="font-size:0.8rem;margin-top:0.6rem;opacity:0.75;">${escapeHTML(t('boot.localPreviewHint'))}</p>
@@ -222,11 +250,8 @@
 
         ctx.config = blog.config;
         state.perPage = blog.config.perPage || 5;
-        document.title = blog.config.blogName;
-        const headerName = $('#headerBlogName');
-        if (headerName) headerName.textContent = blog.config.blogName;
-        if (el.footerName) el.footerName.textContent = blog.config.blogName;
         if (el.footerYear) el.footerYear.textContent = String(new Date().getFullYear());
+        applySiteName();          // <title> + 顶栏 + 页脚（跟随当前语言）
 
         Blog.ui.sidebar.render(ctx);
         Blog.ui.search.syncInput(ctx);
@@ -271,6 +296,6 @@
         getTaxonomyData: () => blog.getTaxonomyData()
     };
 
-    console.log('%c🐱 Blog 已就绪（模块化版）', 'font-size:1.1em;color:#8D6E63;');
+    console.log('%cBlog 已就绪（模块化版）', 'font-size:1.1em;color:#8D6E63;');
     console.log('%c调试 API：window.__blogKernel / window.__blogApp', 'font-size:0.75em;color:#aaa;');
 })();

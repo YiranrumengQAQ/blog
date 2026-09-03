@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>博客</title>
+    <!-- 站点名走语言包 site.blogName（缺失时回退 config.json 的 blogName） -->
+    <title data-i18n="site.blogName">猫猫的回忆</title>
     <meta name="description" content="记录温暖时光的静态博客" data-i18n-attr="content:site.description">
     <meta name="theme-color" content="#FDFBF7">
     <link rel="stylesheet" href="assets/css/tokens.css">
@@ -15,8 +16,17 @@
 </head>
 <body>
     <!-- noscript 里的内容只有在"禁用 JS"时才会显示，而 i18n 本身要靠 JS 运行，
-         所以这句话无法走语言包，这里直接中英双语写死 -->
-    <noscript><p class="nojs-tip">🐱 这个博客需要启用 JavaScript 才能阅读哦～ / This blog needs JavaScript enabled.</p></noscript>
+         所以这句话无法走语言包，这里直接中英双语写死；
+         图标也直接内联（JS 关掉时 icons.js 不会执行，不能用 data-icon 占位符） -->
+    <noscript>
+        <p class="nojs-tip">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
+                stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="6.6" cy="10.6" rx="1.9" ry="2.5"/><ellipse cx="10.4" cy="7" rx="1.9" ry="2.6"/><ellipse cx="14.6" cy="7" rx="1.9" ry="2.6"/><ellipse cx="18.4" cy="10.6" rx="1.9" ry="2.5"/><path d="M12.5 12.6c-3 0-5.9 2.4-5.9 5 0 1.7 1.4 2.9 3.1 2.9 1.1 0 1.9-.5 2.8-.5s1.7.5 2.8.5c1.7 0 3.1-1.2 3.1-2.9 0-2.6-2.9-5-5.9-5z"/>
+            </svg>
+            这个博客需要启用 JavaScript 才能阅读哦～ / This blog needs JavaScript enabled.
+        </p>
+    </noscript>
 
     <!-- 阅读进度条（文章页显示） -->
     <div class="reading-progress" id="readingProgress" hidden>
@@ -27,7 +37,7 @@
     <header class="site-header" id="siteHeader">
         <div class="header-inner">
             <a class="blog-name" href="#/" title="返回首页" data-i18n-attr="title:nav.backHome">
-                <span id="headerBlogName">博客</span>
+                <span id="headerBlogName" data-i18n="site.blogName">猫猫的回忆</span>
                 <span class="paw-dot"></span>
                 <span class="paw-dot"></span>
                 <span class="paw-dot"></span>
@@ -38,13 +48,13 @@
                         autocomplete="off" aria-label="搜索文章"
                         data-i18n-attr="placeholder:nav.searchPlaceholder;aria-label:nav.searchAria">
                     <button class="search-clear" id="searchClear" aria-label="清除搜索"
-                        data-i18n-attr="aria-label:nav.searchClear">&#10005;</button>
+                        data-i18n-attr="aria-label:nav.searchClear"><svg class="icon" data-icon="x"></svg></button>
                     <span class="search-kbd" aria-hidden="true">/</span>
-                    <span class="search-icon" aria-hidden="true">&#8981;</span>
+                    <span class="search-icon" aria-hidden="true"><svg class="icon" data-icon="search"></svg></span>
                 </div>
                 <button class="mobile-search-btn" id="mobileSearchBtn" aria-label="打开搜索" title="搜索"
                     data-i18n-attr="aria-label:nav.searchOpen;title:nav.search">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <svg class="icon" data-icon="search"></svg>
                 </button>
                 <!-- 语言切换：选项由 config.json 的 languages 自动生成 -->
                 <div class="lang-wrap" id="langWrap" hidden>
@@ -53,8 +63,8 @@
                 </div>
                 <button class="m3-icon-btn theme-toggle" id="themeToggle" aria-label="切换主题" title="切换亮色/暗色主题"
                     data-i18n-attr="aria-label:nav.themeToggleAria;title:nav.themeToggleTitle">
-                    <svg class="sun-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                    <svg class="moon-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <svg class="sun-icon" data-icon="sun"></svg>
+                    <svg class="moon-icon" data-icon="moon"></svg>
                 </button>
                 <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="菜单" title="侧边栏菜单" aria-expanded="false"
                     data-i18n-attr="aria-label:nav.menuAria;title:nav.menuTitle">
@@ -105,18 +115,19 @@
     <!-- 页脚 -->
     <footer class="site-footer">
         <div class="footer-line">
-            <span>© <span id="footerYear">2026</span> <span id="footerName">博客</span></span>
+            <span>© <span id="footerYear">2026</span> <span id="footerName" data-i18n="site.blogName">猫猫的回忆</span></span>
             <span>·</span>
-            <span data-i18n="site.slogan">用 ❤ 记录每一刻</span>
+            <span data-i18n="site.slogan">用心记录每一刻</span>
             <span>·</span>
-            <a href="editor.html" title="打开写作助手" data-i18n="nav.writeArticle"
-                data-i18n-attr="title:nav.writeArticleTitle">✍️ 写文章</a>
+            <a href="editor.html" title="打开写作助手" data-i18n-attr="title:nav.writeArticleTitle">
+                <svg class="icon" data-icon="feather"></svg><span data-i18n="nav.writeArticle">写文章</span>
+            </a>
         </div>
     </footer>
 
     <!-- 回到顶部 -->
     <button class="back-to-top" id="backToTop" aria-label="回到顶部" title="回到顶部"
-        data-i18n-attr="aria-label:nav.backToTop;title:nav.backToTop">&#8593;</button>
+        data-i18n-attr="aria-label:nav.backToTop;title:nav.backToTop"><svg class="icon" data-icon="arrow-up"></svg></button>
 
     <!-- Toast 容器 -->
     <div class="toast-container" id="toastContainer"></div>
@@ -128,6 +139,8 @@
     <!-- 工具 -->
     <script src="assets/js/utils/dom.js" defer></script>
     <script src="assets/js/utils/format.js" defer></script>
+    <!-- 图标（全站统一的内联 SVG，替代 emoji） -->
+    <script src="assets/js/ui/icons.js" defer></script>
     <!-- 多语言 -->
     <script src="assets/js/core/i18n.js" defer></script>
     <!-- 内核 -->

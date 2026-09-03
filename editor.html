@@ -14,12 +14,20 @@
     <header class="editor-header">
         <div class="editor-header-inner">
             <div class="editor-brand">
-                 写作助手
+                <svg class="icon" data-icon="feather"></svg>
+                <span>写作助手</span>
                 <span class="badge">零代码写博客</span>
             </div>
             <div class="editor-header-actions">
-                <button class="md-btn" id="themeToggle" type="button" title="切换亮色/暗色主题">🌓 主题</button>
-                <a class="editor-back-link" href="index.html">← 返回博客</a>
+                <button class="md-btn theme-btn" id="themeToggle" type="button" title="切换亮色/暗色主题"
+                    aria-label="切换亮色/暗色主题">
+                    <svg class="icon sun-icon" data-icon="sun"></svg>
+                    <svg class="icon moon-icon" data-icon="moon"></svg>
+                    <span>主题</span>
+                </button>
+                <a class="editor-back-link" href="index.html">
+                    <svg class="icon" data-icon="arrow-left"></svg><span>返回博客</span>
+                </a>
             </div>
         </div>
     </header>
@@ -29,19 +37,23 @@
         <div class="editor-panel-col">
             <!-- 发布三步走 -->
             <div class="editor-panel">
-                <div class="panel-title">🚀 三步发布一篇文章</div>
+                <div class="panel-title">
+                    <svg class="icon" data-icon="upload-cloud"></svg><span>三步发布一篇文章</span>
+                </div>
                 <div class="help-body">
                     <ol>
-                        <li><b>① 填写</b>：在下面填标题、写正文（支持 Markdown）</li>
-                        <li><b>② 下载</b>：点 <b>「下载文章 .md」</b> 和 <b>「下载 manifest.json」</b> 两个文件</li>
-                        <li><b>③ 上传</b>：到 GitHub 仓库点 <code>Add file → Upload files</code>，把两个文件拖进去：.md 放到 <code>posts</code> 文件夹，manifest.json 覆盖 <code>posts/manifest.json</code>，最后点 <code>Commit changes</code> ✅</li>
+                        <li><b>填写</b>：在下面填标题、写正文（支持 Markdown）</li>
+                        <li><b>下载</b>：点 <b>「下载文章 .md」</b> 和 <b>「下载 manifest.json」</b> 两个文件</li>
+                        <li><b>上传</b>：到 GitHub 仓库点 <code>Add file → Upload files</code>，把两个文件拖进去：.md 放到 <code>posts</code> 文件夹，manifest.json 覆盖 <code>posts/manifest.json</code>，最后点 <code>Commit changes</code></li>
                     </ol>
                 </div>
             </div>
 
             <!-- 基本信息 -->
             <div class="editor-panel">
-                <div class="panel-title">📝 文章信息</div>
+                <div class="panel-title">
+                    <svg class="icon" data-icon="file-text"></svg><span>文章信息</span>
+                </div>
                 <div class="form-grid">
                     <div class="form-field full">
                         <label for="fTitle">标题 <span class="req">*</span></label>
@@ -67,13 +79,16 @@
                         <label for="fSummary">摘要 <span class="tip">（可不填，会自动截取正文开头）</span></label>
                         <div style="display:flex;gap:0.5rem;">
                             <textarea class="form-textarea" id="fSummary" rows="2" maxlength="200" placeholder="一句话介绍这篇文章…"></textarea>
-                            <button class="md-btn" id="btnGenSummary" type="button" style="align-self:flex-start;white-space:nowrap;">✨ 自动生成</button>
+                            <button class="md-btn" id="btnGenSummary" type="button" style="align-self:flex-start;white-space:nowrap;">
+                                <svg class="icon" data-icon="sparkles"></svg><span>自动生成</span>
+                            </button>
                         </div>
                     </div>
                     <div class="form-field full">
                         <label class="form-check">
                             <input type="checkbox" id="fSticky">
-                            📌 置顶这篇文章（显示在列表最前面）
+                            <svg class="icon" data-icon="pin"></svg>
+                            <span>置顶这篇文章（显示在列表最前面）</span>
                         </label>
                     </div>
                 </div>
@@ -81,18 +96,21 @@
 
             <!-- 正文 -->
             <div class="editor-panel">
-                <div class="panel-title">📄 正文内容 <span class="panel-hint">（支持 Markdown，右边实时预览）</span></div>
+                <div class="panel-title">
+                    <svg class="icon" data-icon="pen"></svg><span>正文内容</span>
+                    <span class="panel-hint">（支持 Markdown，右边实时预览）</span>
+                </div>
                 <div class="md-toolbar" id="mdToolbar">
-                    <button class="md-btn" data-md="bold" type="button" title="加粗">B 加粗</button>
-                    <button class="md-btn" data-md="italic" type="button" title="斜体"><i>I 斜体</i></button>
-                    <button class="md-btn" data-md="h2" type="button" title="大标题">H2</button>
-                    <button class="md-btn" data-md="h3" type="button" title="小标题">H3</button>
-                    <button class="md-btn" data-md="quote" type="button" title="引用">❝ 引用</button>
-                    <button class="md-btn" data-md="code" type="button" title="代码块">&lt;/&gt; 代码</button>
-                    <button class="md-btn" data-md="link" type="button" title="插入链接">🔗 链接</button>
-                    <button class="md-btn" data-md="image" type="button" title="插入图片">🖼 图片</button>
-                    <button class="md-btn" data-md="list" type="button" title="列表">• 列表</button>
-                    <button class="md-btn" data-md="hr" type="button" title="分割线">— 分割线</button>
+                    <button class="md-btn" data-md="bold" type="button" title="加粗"><b>B</b><span>加粗</span></button>
+                    <button class="md-btn" data-md="italic" type="button" title="斜体"><i>I</i><span>斜体</span></button>
+                    <button class="md-btn" data-md="h2" type="button" title="大标题"><span>H2</span></button>
+                    <button class="md-btn" data-md="h3" type="button" title="小标题"><span>H3</span></button>
+                    <button class="md-btn" data-md="quote" type="button" title="引用"><svg class="icon" data-icon="quote"></svg><span>引用</span></button>
+                    <button class="md-btn" data-md="code" type="button" title="代码块"><svg class="icon" data-icon="code"></svg><span>代码</span></button>
+                    <button class="md-btn" data-md="link" type="button" title="插入链接"><svg class="icon" data-icon="link"></svg><span>链接</span></button>
+                    <button class="md-btn" data-md="image" type="button" title="插入图片"><svg class="icon" data-icon="image"></svg><span>图片</span></button>
+                    <button class="md-btn" data-md="list" type="button" title="列表"><svg class="icon" data-icon="list"></svg><span>列表</span></button>
+                    <button class="md-btn" data-md="hr" type="button" title="分割线"><svg class="icon" data-icon="minus"></svg><span>分割线</span></button>
                 </div>
                 <textarea class="form-textarea content" id="fContent" placeholder="在这里写文章正文…&#10;&#10;不会 Markdown？点下方的「Markdown 速查表」30 秒学会！"></textarea>
                 <div class="panel-hint" id="wordCount">0 字 · 约 1 分钟读完</div>
@@ -100,34 +118,55 @@
 
             <!-- 文件名与下载 -->
             <div class="editor-panel">
-                <div class="panel-title">💾 保存与发布</div>
+                <div class="panel-title">
+                    <svg class="icon" data-icon="save"></svg><span>保存与发布</span>
+                </div>
                 <div class="form-field">
                     <label for="fSlug">文件名（英文/数字/横杠）</label>
                     <input class="form-input" id="fSlug" type="text" placeholder="自动生成，可修改">
                     <span class="tip">这是文章的“身份证”，发布后尽量不要改；留空会自动按日期生成</span>
                 </div>
                 <div class="editor-actions">
-                    <button class="btn btn-primary" id="btnDownloadMd" type="button">📄 下载文章 .md</button>
-                    <button class="btn btn-tertiary" id="btnDownloadManifest" type="button">📋 下载 manifest.json</button>
-                    <button class="btn" id="btnSaveDraft" type="button">💾 存草稿</button>
-                    <button class="btn btn-danger-ghost" id="btnClear" type="button">🗑 清空</button>
+                    <button class="btn btn-primary" id="btnDownloadMd" type="button">
+                        <svg class="icon" data-icon="file-down"></svg><span>下载文章 .md</span>
+                    </button>
+                    <button class="btn btn-tertiary" id="btnDownloadManifest" type="button">
+                        <svg class="icon" data-icon="braces"></svg><span>下载 manifest.json</span>
+                    </button>
+                    <button class="btn" id="btnSaveDraft" type="button">
+                        <svg class="icon" data-icon="save"></svg><span>存草稿</span>
+                    </button>
+                    <button class="btn btn-danger-ghost" id="btnClear" type="button">
+                        <svg class="icon" data-icon="trash"></svg><span>清空</span>
+                    </button>
                 </div>
                 <div class="warn-banner" id="manifestWarn">
-                    ⚠️ 你还没有导入现有的 posts 文件夹。现在下载的 manifest.json 只包含当前这一篇文章——
-                    如果博客里已经有别的文章，请先点下面的「导入 posts 文件夹」，否则旧文章会从首页消失！
+                    <svg class="icon" data-icon="alert-triangle"></svg>
+                    <span>你还没有导入现有的 posts 文件夹。现在下载的 manifest.json 只包含当前这一篇文章——
+                        如果博客里已经有别的文章，请先点下面的「导入 posts 文件夹」，否则旧文章会从首页消失！</span>
                 </div>
             </div>
 
             <!-- 导入现有文章 -->
             <div class="editor-panel">
-                <div class="panel-title">📂 导入现有文章 <span class="panel-hint">（编辑旧文章 / 防止丢失，强烈推荐先导入）</span></div>
+                <div class="panel-title">
+                    <svg class="icon" data-icon="folder-open"></svg><span>导入现有文章</span>
+                    <span class="panel-hint">（编辑旧文章 / 防止丢失，强烈推荐先导入）</span>
+                </div>
                 <div class="import-row">
-                    <button class="btn" id="btnImportDir" type="button">📁 选择 posts 文件夹</button>
-                    <button class="btn" id="btnImportFiles" type="button">📄 选择文件…</button>
+                    <button class="btn" id="btnImportDir" type="button">
+                        <svg class="icon" data-icon="folder-open"></svg><span>选择 posts 文件夹</span>
+                    </button>
+                    <button class="btn" id="btnImportFiles" type="button">
+                        <svg class="icon" data-icon="file-plus"></svg><span>选择文件…</span>
+                    </button>
                     <input type="file" id="importDirInput" webkitdirectory multiple hidden>
                     <input type="file" id="importFilesInput" accept=".md,.markdown,.json" multiple hidden>
                 </div>
-                <div class="import-note" id="importNote">尚未导入。导入后：这里会记住博客里已有的文章，下载的 manifest.json 会自动包含它们。</div>
+                <div class="import-note" id="importNote">
+                    <svg class="icon" data-icon="info"></svg>
+                    <span>尚未导入。导入后：这里会记住博客里已有的文章，下载的 manifest.json 会自动包含它们。</span>
+                </div>
                 <div class="form-field">
                     <label for="existingSelect">编辑已有文章</label>
                     <select class="form-input" id="existingSelect">
@@ -138,7 +177,9 @@
 
             <!-- 帮助 -->
             <div class="editor-panel">
-                <div class="panel-title">❓ 帮助</div>
+                <div class="panel-title">
+                    <svg class="icon" data-icon="help-circle"></svg><span>帮助</span>
+                </div>
                 <details class="help-details">
                     <summary>Markdown 速查表（30 秒入门）</summary>
                     <div class="help-body">
@@ -155,7 +196,7 @@
                             <tr><td>分割线</td><td>单独一行写 <code>---</code></td></tr>
                             <tr><td>空一行</td><td>段落之间要空一行，才会分段</td></tr>
                         </table>
-                        <p>💡 也可以直接点正文上方的工具栏按钮，自动帮你写好格式。</p>
+                        <p class="help-tip"><svg class="icon" data-icon="info"></svg><span>也可以直接点正文上方的工具栏按钮，自动帮你写好格式。</span></p>
                     </div>
                 </details>
                 <details class="help-details">
@@ -165,9 +206,9 @@
                             <li>打开免费图床 <a href="https://imgbb.com" target="_blank" rel="noopener">imgbb.com</a>（本博客示例图片就在用）</li>
                             <li>把手机/电脑里的照片拖上去上传</li>
                             <li>上传后点「直接链接 / Direct link」，复制得到的网址</li>
-                            <li>在正文里点工具栏「🖼 图片」，粘贴这个网址即可</li>
+                            <li>在正文里点工具栏「图片」，粘贴这个网址即可</li>
                         </ol>
-                        <p>💡 封面图链接同理，粘贴到上方「封面图链接」输入框。</p>
+                        <p class="help-tip"><svg class="icon" data-icon="info"></svg><span>封面图链接同理，粘贴到上方「封面图链接」输入框。</span></p>
                     </div>
                 </details>
                 <details class="help-details">
@@ -178,11 +219,11 @@
                             <li>打开你的 GitHub 博客仓库页面</li>
                             <li>点右上角 <code>Add file → Upload files</code></li>
                             <li>把两个文件拖到上传区（.md 和 manifest.json 都要传）</li>
-                            <li>⚠️ 注意：如果页面上传的是 .md 文件，它会被放到仓库根目录——传完后把文件名输入框里的路径改成 <code>posts/你的文件名.md</code>；manifest.json 改成 <code>posts/manifest.json</code></li>
+                            <li><b>注意</b>：如果页面上传的是 .md 文件，它会被放到仓库根目录——传完后把文件名输入框里的路径改成 <code>posts/你的文件名.md</code>；manifest.json 改成 <code>posts/manifest.json</code></li>
                             <li>拉到最下面点绿色的 <code>Commit changes</code> 按钮</li>
-                            <li>等 1 分钟刷新博客，新文章就出现啦 🎉</li>
+                            <li>等 1 分钟刷新博客，新文章就出现啦</li>
                         </ol>
-                        <p>💡 更省事的办法：用 GitHub 桌面版 / 网页端进入 posts 文件夹后再点 Upload files，就不用改路径。</p>
+                        <p class="help-tip"><svg class="icon" data-icon="info"></svg><span>更省事的办法：用 GitHub 桌面版 / 网页端进入 posts 文件夹后再点 Upload files，就不用改路径。</span></p>
                     </div>
                 </details>
                 <details class="help-details">
@@ -202,12 +243,17 @@
         <!-- 右栏：实时预览 -->
         <div class="editor-panel-col">
             <div class="editor-panel preview-panel">
-                <div class="panel-title">👀 实时预览 <span class="panel-hint">（博客里的样子）</span></div>
+                <div class="panel-title">
+                    <svg class="icon" data-icon="eye"></svg><span>实时预览</span>
+                    <span class="panel-hint">（博客里的样子）</span>
+                </div>
                 <div class="preview-meta" id="previewMeta"></div>
                 <div class="preview-title" id="previewTitle">（文章标题）</div>
                 <img class="preview-cover" id="previewCover" alt="封面预览" hidden>
                 <div class="preview-content" id="previewContent">
-                    <div class="preview-empty">开始输入，这里会实时显示文章在博客里的效果 ✨</div>
+                    <div class="preview-empty">
+                        <svg class="icon" data-icon="eye"></svg>开始输入，这里会实时显示文章在博客里的效果
+                    </div>
                 </div>
             </div>
         </div>
@@ -220,6 +266,8 @@
     <script src="assets/vendor/purify.min.js"></script>
     <script src="assets/js/utils/dom.js" defer></script>
     <script src="assets/js/utils/format.js" defer></script>
+    <!-- 图标（与阅读页共用同一套内联 SVG，替代 emoji） -->
+    <script src="assets/js/ui/icons.js" defer></script>
     <script src="assets/js/core/frontmatter.js" defer></script>
     <script src="assets/js/core/markdown.js" defer></script>
     <script src="assets/js/editor.js" defer></script>

@@ -37,7 +37,8 @@
     background: var(--md-sys-color-surface);
 }
 .article-back-arrow {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     transition: transform var(--md-sys-transition-short);
 }
 .article-back:hover .article-back-arrow {
@@ -168,6 +169,9 @@
     right: 0.5rem;
     font-size: 0.7rem;
     font-family: var(--md-sys-font-family);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
     padding: 0.2rem 0.6rem;
     border-radius: var(--md-sys-shape-corner-full);
     border: 1px solid var(--md-sys-color-outline-variant);
@@ -222,7 +226,10 @@
     margin: 2rem 0;
 }
 .img-fallback {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
     margin: 1.2rem 0;
     padding: 1.2rem;
     text-align: center;
@@ -231,6 +238,12 @@
     color: var(--md-sys-color-on-surface-variant);
     font-size: var(--md-sys-typescale-body-medium);
     background: var(--md-sys-color-surface-variant);
+}
+.img-fallback .icon {
+    width: 1.3em;
+    height: 1.3em;
+    stroke-width: 1.8;
+    opacity: 0.8;
 }
 
 /* ----- 上一篇 / 下一篇 ----- */

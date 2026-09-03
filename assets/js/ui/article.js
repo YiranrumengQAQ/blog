@@ -17,6 +17,8 @@
     const { renderMarkdown } = Blog.core;
     // 所有界面文案走 i18n，切换语言后重新 render 即可
     const t = (key, vars) => Blog.i18n.t(key, vars);
+    // 图标统一走内联 SVG 图标库（不使用 emoji）
+    const icon = (name) => Blog.ui.icons.svg(name);
 
     /* ---------------- 渲染 ---------------- */
 
@@ -44,8 +46,10 @@
     }
 
     function paint(ctx, post) {
-        const { blog, el, config } = ctx;
-        document.title = `${post.title} - ${config.blogName}`;
+        const { blog, el } = ctx;
+        // 站点名由 main.js 统一解析（语言包 site.blogName > config.blogName > 兜底文案）
+        const siteName = ctx.getSiteName ? ctx.getSiteName() : (ctx.config && ctx.config.blogName) || '';
+        document.title = siteName ? `${post.title} - ${siteName}` : post.title;
 
         const adjacent = blog.getAdjacentPosts(post.slug);
 
@@ -72,7 +76,7 @@
         el.contentBody.innerHTML = `
           <div class="article-view">
             <button class="article-back" id="articleBackBtn" type="button">
-              <span class="article-back-arrow">&larr;</span> ${escapeHTML(t('article.back'))}
+              <span class="article-back-arrow">${icon('arrow-left')}</span> ${escapeHTML(t('article.back'))}
             </button>
             ${coverHTML}
             <h1 class="article-title">${escapeHTML(post.title || '')}</h1>
@@ -105,7 +109,7 @@
             : t('article.errorMissingHint', { slug });
         el.contentBody.innerHTML = `
           <div class="empty-state">
-            <div class="empty-icon">😿</div>
+            <div class="empty-icon">${icon('alert-circle')}</div>
             <h3>${escapeHTML(t('article.errorTitle'))}</h3>
             <p>${escapeHTML(hint)}</p>
             <div class="empty-actions">
@@ -140,9 +144,10 @@
             img.addEventListener('error', () => {
                 const tip = document.createElement('span');
                 tip.className = 'img-fallback';
-                tip.textContent = img.alt
+                const text = img.alt
                     ? t('article.imgFallbackAlt', { alt: img.alt })
                     : t('article.imgFallback');
+                tip.innerHTML = `${icon('image')}<span>${escapeHTML(text)}</span>`;
                 img.replaceWith(tip);
             });
             img.addEventListener('click', () => openLightbox(ctx, i));
@@ -154,7 +159,11 @@
             const btn = document.createElement('button');
             btn.className = 'copy-code-btn';
             btn.type = 'button';
-            btn.textContent = t('article.copy');
+            const setLabel = (copied) => {
+                btn.innerHTML = `${icon(copied ? 'check' : 'copy')}<span>${escapeHTML(t(copied ? 'article.copied' : 'article.copy'))}</span>`;
+                btn.classList.toggle('copied', copied);
+            };
+            setLabel(false);
             // 取代码时先摘掉按钮，避免把按钮文字（"复制"/"Copy"）也复制进去
             const codeOf = () => {
                 const clone = pre.cloneNode(true);
@@ -164,12 +173,8 @@
             btn.addEventListener('click', async () => {
                 try {
                     await copyText(codeOf());
-                    btn.textContent = t('article.copied');
-                    btn.classList.add('copied');
-                    setTimeout(() => {
-                        btn.textContent = t('article.copy');
-                        btn.classList.remove('copied');
-                    }, 1500);
+                    setLabel(true);
+                    setTimeout(() => setLabel(false), 1500);
                 } catch (e) {
                     Blog.ui.toast.show(t('article.copyFailed'), 'error');
                 }
@@ -218,12 +223,12 @@
         root.id = 'lightbox';
         root.hidden = true;
         root.innerHTML = `
-          <button class="lightbox-close" type="button" data-i18n-attr="aria-label:lightbox.close" aria-label="关闭">✕</button>
-          <button class="lightbox-prev" type="button" data-i18n-attr="aria-label:lightbox.prev" aria-label="上一张">&#8249;</button>
+          <button class="lightbox-close" type="button" data-i18n-attr="aria-label:lightbox.close" aria-label="关闭">${icon('x')}</button>
+          <button class="lightbox-prev" type="button" data-i18n-attr="aria-label:lightbox.prev" aria-label="上一张">${icon('chevron-left')}</button>
           <img class="lightbox-img" alt="">
           <div class="lightbox-caption"></div>
           <div class="lightbox-counter"></div>
-          <button class="lightbox-next" type="button" data-i18n-attr="aria-label:lightbox.next" aria-label="下一张">&#8250;</button>`;
+          <button class="lightbox-next" type="button" data-i18n-attr="aria-label:lightbox.next" aria-label="下一张">${icon('chevron-right')}</button>`;
         Blog.i18n.applyToDOM(root);
         document.body.appendChild(root);
         lbElements = {
