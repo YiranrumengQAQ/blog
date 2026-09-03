@@ -1,0 +1,122 @@
+/* ================================================================
+   设计令牌 (Design Tokens) — Material 3 风格
+   修改这里的变量即可全站换肤
+   ================================================================ */
+:root {
+    /* ----- 颜色 (亮色) ----- */
+    --md-sys-color-primary: #8D6E63;
+    --md-sys-color-on-primary: #FFFFFF;
+    --md-sys-color-primary-container: #F5E6D3;
+    --md-sys-color-on-primary-container: #3E2C23;
+
+    --md-sys-color-secondary: #6D5D4E;
+    --md-sys-color-on-secondary: #FFFFFF;
+    --md-sys-color-secondary-container: #E8DED3;
+    --md-sys-color-on-secondary-container: #241A12;
+
+    --md-sys-color-tertiary: #7D5260;
+    --md-sys-color-on-tertiary: #FFFFFF;
+    --md-sys-color-tertiary-container: #FFD8E4;
+    --md-sys-color-on-tertiary-container: #31111D;
+
+    --md-sys-color-error: #BA1A1A;
+    --md-sys-color-on-error: #FFFFFF;
+    --md-sys-color-error-container: #FFDAD6;
+    --md-sys-color-on-error-container: #410002;
+
+    --md-sys-color-surface: #FDFBF7;
+    --md-sys-color-on-surface: #1D1B20;
+    --md-sys-color-surface-variant: #F0EDE8;
+    --md-sys-color-on-surface-variant: #49454F;
+    --md-sys-color-surface-container: #F0EDE8;
+    --md-sys-color-surface-container-high: #FDFBF7;
+
+    --md-sys-color-outline: #79747E;
+    --md-sys-color-outline-variant: #CAC4D0;
+    --md-sys-color-shadow: #000000;
+
+    /* ----- 形状 (Shape) ----- */
+    --md-sys-shape-corner-small: 4px;
+    --md-sys-shape-corner-medium: 12px;
+    --md-sys-shape-corner-large: 20px;
+    --md-sys-shape-corner-extra-large: 28px;
+    --md-sys-shape-corner-full: 9999px;
+
+    /* ----- 排版 (Typography) ----- */
+    --md-sys-typescale-display-large: 3.5rem;
+    --md-sys-typescale-display-medium: 2.8rem;
+    --md-sys-typescale-display-small: 2.2rem;
+
+    --md-sys-typescale-headline-large: 2.0rem;
+    --md-sys-typescale-headline-medium: 1.6rem;
+    --md-sys-typescale-headline-small: 1.25rem;
+
+    --md-sys-typescale-title-large: 1.15rem;
+    --md-sys-typescale-title-medium: 1.0rem;
+    --md-sys-typescale-title-small: 0.9rem;
+
+    --md-sys-typescale-body-large: 1.0rem;
+    --md-sys-typescale-body-medium: 0.9rem;
+    --md-sys-typescale-body-small: 0.8rem;
+
+    --md-sys-typescale-label-large: 0.9rem;
+    --md-sys-typescale-label-medium: 0.75rem;
+    --md-sys-typescale-label-small: 0.65rem;
+
+    /* ----- 间距 (Spacing) ----- */
+    --md-space-1: 4px;
+    --md-space-2: 8px;
+    --md-space-3: 12px;
+    --md-space-4: 16px;
+    --md-space-5: 20px;
+    --md-space-6: 24px;
+    --md-space-7: 32px;
+    --md-space-8: 40px;
+
+    /* ----- 阴影 (Elevation) ----- */
+    --md-sys-elevation-0: none;
+    --md-sys-elevation-1: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 1px 1px 0 rgba(0, 0, 0, 0.08);
+    --md-sys-elevation-2: 0 2px 6px 0 rgba(0, 0, 0, 0.12), 0 1px 4px 0 rgba(0, 0, 0, 0.08);
+    --md-sys-elevation-3: 0 4px 12px 0 rgba(0, 0, 0, 0.12), 0 2px 8px 0 rgba(0, 0, 0, 0.08);
+    --md-sys-elevation-4: 0 8px 24px 0 rgba(0, 0, 0, 0.12), 0 4px 16px 0 rgba(0, 0, 0, 0.08);
+
+    /* ----- 字体 (Fonts) ----- */
+    --md-sys-font-family: 'Inter', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+    --md-sys-font-family-serif: 'Georgia', 'Noto Serif SC', 'STSong', 'Songti SC', serif;
+    --md-sys-font-family-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+
+    /* ----- 过渡 (Transitions) ----- */
+    --md-sys-transition-short: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --md-sys-transition-medium: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --md-sys-transition-long: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    --md-sys-transition-spring: 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+
+    /* ----- 布局 ----- */
+    --header-height: 64px;
+    --content-max-width: 1280px;
+}
+
+/* ================================================================
+   暗色主题 (Dark Theme)
+   ================================================================ */
+[data-theme="dark"] {
+    --md-sys-color-primary: #D4A77C;
+    --md-sys-color-on-primary: #3E2C23;
+    --md-sys-color-primary-container: #5A4237;
+    --md-sys-color-on-primary-container: #FCE4EC;
+
+    --md-sys-color-secondary: #CCC2DC;
+    --md-sys-color-on-secondary: #332D41;
+    --md-sys-color-secondary-container: #4A4458;
+    --md-sys-color-on-secondary-container: #E8DEF8;
+
+    --md-sys-color-surface: #141218;
+    --md-sys-color-on-surface: #E6E0E9;
+    --md-sys-color-surface-variant: #49454F;
+    --md-sys-color-on-surface-variant: #CAC4D0;
+    --md-sys-color-surface-container: #211F26;
+    --md-sys-color-surface-container-high: #2B2933;
+
+    --md-sys-color-outline: #938F99;
+    --md-sys-color-outline-variant: #49454F;
+}
