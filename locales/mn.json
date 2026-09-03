@@ -1,0 +1,119 @@
+{
+    "meta": {
+        "name": "Монгол",
+        "htmlLang": "mn",
+        "dir": "ltr"
+    },
+    "format": {
+        "dateLong": "{y} оны {mon}-р сарын {d}",
+        "monthLong": "{y} оны {mon}-р сар",
+        "months": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12"
+        ],
+        "charsPerMinute": 800,
+        "countMode": "words"
+    },
+    "site": {
+        "blogName": "Муурын дурсамж",
+        "defaultBlogName": "Миний блог",
+        "description": "Эгэл даруу, дулаахан мөчүүдийг хадгалах хувийн блог",
+        "slogan": "Сэтгэл шингэсэн хором бүхний дурсамж"
+    },
+    "nav": {
+        "backHome": "Нүүр хуудас",
+        "searchPlaceholder": "Нийтлэл хайх…",
+        "searchPlaceholderKbd": "Нийтлэл хайх… (Ctrl+K)",
+        "searchAria": "Нийтлэл хайх",
+        "searchClear": "Хайлтыг цэвэрлэх",
+        "searchOpen": "Хайлт нээх",
+        "search": "Хайх",
+        "themeToggleAria": "Загвар солих",
+        "themeToggleTitle": "Гэгээлэг/Харанхуй горимд шилжих",
+        "menuAria": "Цэс",
+        "menuTitle": "Хажуугийн цэс",
+        "backToTop": "Дээш очих",
+        "languageAria": "Хэл сонгох",
+        "writeArticle": "Нийтлэл бичих",
+        "writeArticleTitle": "Бичлэгийн туслахыг нээх"
+    },
+    "sidebar": {
+        "categories": "Ангилал",
+        "tags": "Шошго",
+        "archives": "Архив",
+        "reset": "Бүх нийтлэлийг харуулах",
+        "empty": "Хоосон байна"
+    },
+    "list": {
+        "latest": "Сүүлийн нийтлэлүүд",
+        "searchTitle": "Хайлт: \"{keyword}\"",
+        "categoryTitle": "Ангилал: {name}",
+        "tagTitle": "Шошго: {name}",
+        "archiveTitle": "Архив: {name}",
+        "resultCount": "Нийт {n} нийтлэл олдлоо",
+        "resultCount_one": "Нийт {n} нийтлэл олдлоо",
+        "readingTime": "{n} мин уншина",
+        "sticky": "Онцолсон",
+        "readAria": "Унших: {title}",
+        "fallbackChar": "П",
+        "prevPage": "Өмнөх хуудас",
+        "nextPage": "Дараагийн хуудас",
+        "paginationAria": "Хуудаслалт",
+        "emptySearchTitle": "Тохирох нийтлэл олдсонгүй",
+        "emptySearchHint": "Өөр түлхүүр үгээр хайх эсвэл хайлтыг цэвэрлэнэ үү",
+        "emptySearchHintIndexing": "Өөр түлхүүр үгээр хайх эсвэл индекс үүсэж дуусахыг хүлээнэ үү",
+        "emptySearchAction": "Хайлтыг цэвэрлэх",
+        "emptyTitle": "Одоогоор нийтлэл алга байна",
+        "emptyHint": "posts/ хавтсанд .md файл нэмж, posts/manifest.json файлыг шинэчилнэ үү",
+        "emptyEditor": "Бичлэгийн туслахыг нээх",
+        "emptyShowAll": "Бүгдийг харуулах",
+        "errorTitle": "Ачааллахад алдаа гарлаа",
+        "errorHint": "config.json болон posts/manifest.json файлууд байгаа эсэх, JSON формат зөв эсэхийг шалгана уу",
+        "retry": "Дахин ачааллах"
+    },
+    "article": {
+        "back": "Нийтлэлийн жагсаалт руу буцах",
+        "prev": "Өмнөх",
+        "next": "Дараах",
+        "noPrev": "Өмнөх нийтлэл байхгүй",
+        "noNext": "Энэ бол хамгийн сүүлийн нийтлэл",
+        "readingTime": "{n} мин уншина",
+        "wordCount": "{n} үг",
+        "wordCount_one": "{n} үг",
+        "sticky": "Онцолсон",
+        "imgFallback": "Зургийг ачааллаж чадсангүй",
+        "imgFallbackAlt": "Зургийг ачааллаж чадсангүй: {alt}",
+        "copy": "Хуулах",
+        "copied": "Хууллаа",
+        "copyFailed": "Хуулж чадсангүй, гараар сонгож хуулна уу",
+        "errorTitle": "Нийтлэлийг ачааллахад алдаа гарлаа",
+        "errorFileHint": "Файлыг шууд дарж нээсэн бололтой. Хөтөч орон нутгийн файлд хандахыг хориглодог тул Local Server эсвэл GitHub Pages ашиглана уу.",
+        "errorMissingHint": "\"{slug}\" нийтлэл олдсонгүй. posts/ хавтаст тохирох .md файл байгаа эсэхийг шалгана уу.",
+        "retry": "Дахин оролдох",
+        "home": "Нүүр хуудас руу буцах"
+    },
+    "lightbox": {
+        "close": "Хаах",
+        "prev": "Өмнөх зураг",
+        "next": "Дараагийн зураг"
+    },
+    "boot": {
+        "errorTitle": "Блогийг эхлүүлэх боломжгүй боллоо",
+        "errorFileHint": "Та index.html-г шууд хоёр товшиж нээсэн байна. Хөтчийн аюулгүй байдлын үүднээс орон нутгийн өгөгдлийг уншихыг хориглодог.",
+        "errorHint": "config.json эсвэл posts/manifest.json-ийг ачааллаж чадсангүй. Файлууд байгаа эсэх, JSON формат хүчинтэй эсэхийг шалгана уу.",
+        "localPreviewHint": "Орон нутагт шалгахын тулд дараах тушаалыг ажиллуулна уу: python3 -m http.server 8000",
+        "retry": "Дахин оролдох",
+        "partialFail": "{n} нийтлэлийг ачааллаж чадсангүй, posts/ хавтсыг шалгана уу",
+        "partialFail_one": "{n} нийтлэлийг ачааллаж чадсангүй, posts/ хавтсыг шалгана уу"
+    }
+}
