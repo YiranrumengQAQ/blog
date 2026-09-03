@@ -11,6 +11,7 @@
     { "code": "en", "name": "English" },
     { "code": "fr", "name": "Français" },
     { "code": "de", "name": "Deutsch" },
+    { "code": "he", "name": "עברית" },
     { "code": "bo", "name": "བོད་ཡིག" },
     { "code": "mn", "name": "Монгол" },
     { "code": "mn-Mong", "name": "ᠮᠣᠩᠭᠣᠯ ᠬᠡᠯᠡ" },
