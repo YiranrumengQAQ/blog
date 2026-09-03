@@ -11,6 +11,7 @@
     { "code": "en", "name": "English" },
     { "code": "fr", "name": "Français" },
     { "code": "de", "name": "Deutsch" },
+    { "code": "ru", "name": "Русский" },
     { "code": "he", "name": "עברית" },
     { "code": "ar", "name": "العربية" },
     { "code": "fa", "name": "فارسی" },
