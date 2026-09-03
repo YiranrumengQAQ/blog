@@ -1,0 +1,119 @@
+{
+    "meta": {
+        "name": "Français",
+        "htmlLang": "fr",
+        "dir": "ltr"
+    },
+    "format": {
+        "dateLong": "{d} {mon} {y}",
+        "monthLong": "{mon} {y}",
+        "months": [
+            "janvier",
+            "février",
+            "mars",
+            "avril",
+            "mai",
+            "juin",
+            "juillet",
+            "août",
+            "septembre",
+            "octobre",
+            "novembre",
+            "décembre"
+        ],
+        "charsPerMinute": 1000,
+        "countMode": "words"
+    },
+    "site": {
+        "blogName": "Souvenirs de Chat",
+        "defaultBlogName": "Mon Blog",
+        "description": "Un blog statique pour capturer de doux instants",
+        "slogan": "Écrit avec soin, un instant à la fois"
+    },
+    "nav": {
+        "backHome": "Retour à l'accueil",
+        "searchPlaceholder": "Rechercher des articles…",
+        "searchPlaceholderKbd": "Rechercher des articles… (Ctrl+K)",
+        "searchAria": "Rechercher des articles",
+        "searchClear": "Effacer la recherche",
+        "searchOpen": "Ouvrir la recherche",
+        "search": "Rechercher",
+        "themeToggleAria": "Changer de thème",
+        "themeToggleTitle": "Basculer entre thème clair et sombre",
+        "menuAria": "Menu",
+        "menuTitle": "Menu latéral",
+        "backToTop": "Haut de page",
+        "languageAria": "Choisir la langue de l'interface",
+        "writeArticle": "Écrire",
+        "writeArticleTitle": "Ouvrir l'assistant de rédaction"
+    },
+    "sidebar": {
+        "categories": "Catégories",
+        "tags": "Étiquettes",
+        "archives": "Archives",
+        "reset": "Afficher tous les articles",
+        "empty": "Rien pour l'instant"
+    },
+    "list": {
+        "latest": "Derniers articles",
+        "searchTitle": "Recherche : « {keyword} »",
+        "categoryTitle": "Catégorie : {name}",
+        "tagTitle": "Étiquette : {name}",
+        "archiveTitle": "Archive : {name}",
+        "resultCount": "{n} articles au total",
+        "resultCount_one": "{n} article au total",
+        "readingTime": "{n} min de lecture",
+        "sticky": "Épinglé",
+        "readAria": "Lire : {title}",
+        "fallbackChar": "A",
+        "prevPage": "Page précédente",
+        "nextPage": "Page suivante",
+        "paginationAria": "Pagination",
+        "emptySearchTitle": "Aucun article correspondant",
+        "emptySearchHint": "Essayez un autre mot-clé ou effacez la recherche",
+        "emptySearchHintIndexing": "Essayez un autre mot-clé ou patientez pendant la fin de l'indexation",
+        "emptySearchAction": "Effacer la recherche",
+        "emptyTitle": "Aucun article pour l'instant",
+        "emptyHint": "Ajoutez un fichier .md sous posts/ et mettez à jour posts/manifest.json pour publier un article",
+        "emptyEditor": "Ouvrir l'assistant de rédaction",
+        "emptyShowAll": "Tout afficher",
+        "errorTitle": "Échec du chargement",
+        "errorHint": "Assurez-vous que config.json et posts/manifest.json existent et contiennent un JSON valide",
+        "retry": "Recharger"
+    },
+    "article": {
+        "back": "Retour aux articles",
+        "prev": "Précédent",
+        "next": "Suivant",
+        "noPrev": "Aucun article plus ancien",
+        "noNext": "Ceci est le dernier article",
+        "readingTime": "{n} min de lecture",
+        "wordCount": "{n} mots",
+        "wordCount_one": "{n} mot",
+        "sticky": "Épinglé",
+        "imgFallback": "Impossible de charger l'image",
+        "imgFallbackAlt": "Impossible de charger l'image : {alt}",
+        "copy": "Copier",
+        "copied": "Copié",
+        "copyFailed": "Échec de la copie, veuillez sélectionner et copier manuellement",
+        "errorTitle": "Impossible de charger cet article",
+        "errorFileHint": "Il semble que vous ayez ouvert ce fichier en double-cliquant dessus : les navigateurs bloquent l'accès aux fichiers locaux. Veuillez utiliser un serveur local ou déployer sur GitHub Pages.",
+        "errorMissingHint": "Article « {slug} » introuvable. Vérifiez que le fichier .md correspondant existe bien dans le dossier posts/.",
+        "retry": "Réessayer",
+        "home": "Retour à l'accueil"
+    },
+    "lightbox": {
+        "close": "Fermer",
+        "prev": "Image précédente",
+        "next": "Image suivante"
+    },
+    "boot": {
+        "errorTitle": "Le blog n'a pas pu démarrer",
+        "errorFileHint": "Vous avez ouvert index.html en double-cliquant dessus : les paramètres de sécurité du navigateur empêchent la lecture des données locales.",
+        "errorHint": "Impossible de charger config.json ou posts/manifest.json. Vérifiez que les fichiers existent et que le JSON est valide.",
+        "localPreviewHint": "Pour un aperçu en local, exécutez la commande suivante dans le dossier du projet : python3 -m http.server 8000",
+        "retry": "Réessayer",
+        "partialFail": "{n} articles n'ont pas pu être chargés, veuillez vérifier le dossier posts/",
+        "partialFail_one": "{n} article n'a pas pu être chargé, veuillez vérifier le dossier posts/"
+    }
+}
