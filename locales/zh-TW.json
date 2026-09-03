@@ -1,0 +1,119 @@
+{
+    "meta": {
+        "name": "繁體中文",
+        "htmlLang": "zh-TW",
+        "dir": "ltr"
+    },
+    "format": {
+        "dateLong": "{y}年{mon}月{d}日",
+        "monthLong": "{y}年{mon}月",
+        "months": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12"
+        ],
+        "charsPerMinute": 400,
+        "countMode": "chars"
+    },
+    "site": {
+        "blogName": "貓貓的回憶",
+        "defaultBlogName": "我的部落格",
+        "description": "記錄溫暖片刻的靜態部落格",
+        "slogan": "用心寫下每一刻的美好"
+    },
+    "nav": {
+        "backHome": "回首頁",
+        "searchPlaceholder": "搜尋文章…",
+        "searchPlaceholderKbd": "搜尋文章… (Ctrl+K)",
+        "searchAria": "搜尋文章",
+        "searchClear": "清除搜尋",
+        "searchOpen": "開啟搜尋",
+        "search": "搜尋",
+        "themeToggleAria": "切換主題",
+        "themeToggleTitle": "切換淺色/深色主題",
+        "menuAria": "選單",
+        "menuTitle": "側邊欄選單",
+        "backToTop": "回到頂部",
+        "languageAria": "選擇介面語言",
+        "writeArticle": "寫作",
+        "writeArticleTitle": "開啟寫作助理"
+    },
+    "sidebar": {
+        "categories": "分類",
+        "tags": "標籤",
+        "archives": "文章彙整",
+        "reset": "顯示所有文章",
+        "empty": "目前尚無內容"
+    },
+    "list": {
+        "latest": "最新文章",
+        "searchTitle": "搜尋：\"{keyword}\"",
+        "categoryTitle": "分類：{name}",
+        "tagTitle": "標籤：{name}",
+        "archiveTitle": "彙整：{name}",
+        "resultCount": "共 {n} 篇文章",
+        "resultCount_one": "共 {n} 篇文章",
+        "readingTime": "閱讀時間約 {n} 分鐘",
+        "sticky": "置頂",
+        "readAria": "閱讀：{title}",
+        "fallbackChar": "文",
+        "prevPage": "上一頁",
+        "nextPage": "下一頁",
+        "paginationAria": "分頁導覽",
+        "emptySearchTitle": "找不到符合條件的文章",
+        "emptySearchHint": "請嘗試更換關鍵字，或清除搜尋內容",
+        "emptySearchHintIndexing": "請嘗試更換關鍵字，或等待索引建立完成",
+        "emptySearchAction": "清除搜尋",
+        "emptyTitle": "目前尚無文章",
+        "emptyHint": "請在 posts/ 資料夾中新增 .md 檔案，並更新 posts/manifest.json 以發布新文章",
+        "emptyEditor": "開啟寫作助理",
+        "emptyShowAll": "顯示全部",
+        "errorTitle": "載入失敗",
+        "errorHint": "請確認 config.json 與 posts/manifest.json 是否存在且為合法的 JSON 格式",
+        "retry": "重新載入"
+    },
+    "article": {
+        "back": "返回文章列表",
+        "prev": "上一篇",
+        "next": "下一篇",
+        "noPrev": "沒有更早的文章了",
+        "noNext": "這已經是最新文章",
+        "readingTime": "閱讀時間約 {n} 分鐘",
+        "wordCount": "{n} 字",
+        "wordCount_one": "{n} 字",
+        "sticky": "置頂",
+        "imgFallback": "圖片載入失敗",
+        "imgFallbackAlt": "圖片載入失敗：{alt}",
+        "copy": "複製",
+        "copied": "已複製",
+        "copyFailed": "複製失敗，請手動選取並複製",
+        "errorTitle": "文章載入失敗",
+        "errorFileHint": "看起來您是以連按兩下檔案的方式開啟頁面：瀏覽器基於安全性會封鎖本機檔案存取。請使用本機伺服器（Local Server）或部署至 GitHub Pages。",
+        "errorMissingHint": "找不到文章 \"{slug}\"。請檢查 posts/ 資料夾中是否有對應的 .md 檔案。",
+        "retry": "重試",
+        "home": "回首頁"
+    },
+    "lightbox": {
+        "close": "關閉",
+        "prev": "上一張圖片",
+        "next": "下一張圖片"
+    },
+    "boot": {
+        "errorTitle": "部落格啟動失敗",
+        "errorFileHint": "您是以連按兩下 index.html 的方式開啟：瀏覽器的安全性限制會阻擋本機網頁讀取文章資料。",
+        "errorHint": "無法載入 config.json 或 posts/manifest.json。請檢查檔案是否存在且 JSON 語法正確。",
+        "localPreviewHint": "若需在本機預覽，請在專案目錄下執行指令：python3 -m http.server 8000",
+        "retry": "重試",
+        "partialFail": "有 {n} 篇文章載入失敗，請檢查 posts/ 資料夾",
+        "partialFail_one": "有 {n} 篇文章載入失敗，请檢查 posts/ 資料夾"
+    }
+}
