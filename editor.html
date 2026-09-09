@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>写作助手 - 让写文章像填表格一样简单</title>
     <meta name="robots" content="noindex">
-    <meta name="theme-color" content="#EDEBFA">
+    <meta name="theme-color" content="#FAF3E3">
     <script>
         // 防止主题闪烁（FOUC）：与 index.html 相同的内联脚本。
         // editor.js 在 DOMContentLoaded 之后才恢复主题，没有这段会先闪一帧亮色。
@@ -23,9 +23,24 @@
             } catch (e) { /* localStorage 不可用时按默认亮色 */ }
         })();
     </script>
+    <script>
+        // Neo-Brutalism 皮肤补丁（assets/css/neo-brutalism.css）的防闪烁：
+        // 补丁默认启用；只有保存过「黏土风」的用户才需要在首帧前补 ui-clay 类。
+        // 键名与 assets/js/ui/uipatch.js 的 STORAGE_KEY（blog-ui）保持一致。
+        (function () {
+            try {
+                if (localStorage.getItem('blog-ui') === 'clay') {
+                    document.documentElement.classList.add('ui-clay');
+                }
+            } catch (e) { /* localStorage 不可用时保持默认的 Neo-Brutalism */ }
+        })();
+    </script>
     <link rel="stylesheet" href="assets/css/tokens.css">
     <link rel="stylesheet" href="assets/css/base.css">
     <link rel="stylesheet" href="assets/css/editor.css">
+    <!-- ▼ Neo-Brutalism 皮肤补丁：必须加载在所有旧样式之后（整体覆盖外观，旧黏土样式原样保留） -->
+    <link rel="stylesheet" href="assets/css/neo-brutalism.css">
+    <!-- ▲ 想卸载补丁：删掉上面这一行即可，旧 UI 一行不用改 -->
 </head>
 <body>
     <!-- 顶栏 -->
@@ -289,5 +304,7 @@
     <script src="assets/js/core/frontmatter.js" defer></script>
     <script src="assets/js/core/markdown.js" defer></script>
     <script src="assets/js/editor.js" defer></script>
+    <!-- Neo-Brutalism 补丁开关（悬浮按钮 + meta 地址栏颜色校准，功能零耦合，去掉也不影响写作助手） -->
+    <script src="assets/js/ui/uipatch.js" defer></script>
 </body>
 </html>
