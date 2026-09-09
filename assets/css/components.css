@@ -1,41 +1,61 @@
 /* ================================================================
    组件：文章卡片 / 分页 / 空状态 / 骨架屏 / Toast / 回到顶部
+   —— Claymorphism 黏土拟物风
    ================================================================ */
 
-/* ----- 文章卡片 ----- */
+/* ================================================================
+   文章卡片：一整块可以捏起来的黏土
+   ================================================================ */
 .post-card {
-    background: var(--md-sys-color-surface-container-high);
-    border-radius: var(--md-sys-shape-corner-large);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    overflow: hidden;
+    background: var(--clay-surface);
+    border-radius: var(--clay-r-xl);
+    border: none;
+    box-shadow: var(--clay-2);
+    padding: 0.7rem;
     cursor: pointer;
-    transition: all var(--md-sys-transition-medium);
+    transition: transform var(--clay-t), box-shadow var(--clay-t);
     display: grid;
-    grid-template-columns: 200px 1fr;
+    grid-template-columns: 220px 1fr;
+    gap: 0.2rem;
     position: relative;
     text-decoration: none;
     color: inherit;
-    box-shadow: var(--md-sys-elevation-0);
 }
 .post-card:hover {
-    box-shadow: var(--md-sys-elevation-2);
-    border-color: var(--md-sys-color-outline);
-    transform: translateY(-2px);
-    background: var(--md-sys-color-surface);
+    box-shadow: var(--clay-3);
+    transform: translateY(-6px);
 }
 .post-card:active {
-    transform: translateY(0);
-    box-shadow: var(--md-sys-elevation-1);
+    transform: translateY(-1px) scale(0.995);
+    box-shadow: var(--clay-1);
 }
+/* 置顶：整块黏土镶一圈彩色边，并在右上角戳一颗小球 */
 .post-card.sticky-post {
-    border-left: 3px solid var(--md-sys-color-primary);
+    background: linear-gradient(140deg, var(--clay-secondary-soft), var(--clay-surface) 46%);
+}
+.post-card.sticky-post::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--clay-secondary);
+    box-shadow: 3px 4px 8px var(--clay-shade),
+                inset -2px -3px 5px rgba(0, 0, 0, 0.18),
+                inset 2px 3px 5px rgba(255, 255, 255, 0.55);
+    z-index: 3;
 }
 
+/* ----- 封面 ----- */
 .card-cover {
-    width: 200px;
+    width: 100%;
     height: 100%;
-    min-height: 150px;
-    background: var(--md-sys-color-surface-variant);
+    min-height: 168px;
+    background: var(--clay-surface-2);
+    border-radius: var(--clay-r-lg);
+    box-shadow: var(--clay-inset);
     position: relative;
     overflow: hidden;
     flex-shrink: 0;
@@ -44,10 +64,11 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform var(--md-sys-transition-medium);
+    border-radius: var(--clay-r-lg);
+    transition: transform var(--clay-t-slow);
 }
 .post-card:hover .card-cover img {
-    transform: scale(1.04);
+    transform: scale(1.06);
 }
 .card-cover-placeholder {
     width: 100%;
@@ -55,20 +76,23 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
-    font-size: 2.5rem;
-    font-family: var(--md-sys-font-family-serif);
-    opacity: 0.6;
-    letter-spacing: 0.05em;
+    border-radius: var(--clay-r-lg);
+    background: linear-gradient(140deg, var(--clay-primary-soft), var(--clay-secondary-soft));
+    color: var(--clay-on-primary-soft);
+    font-size: 2.8rem;
+    font-family: var(--clay-font-display);
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-shadow: 2px 3px 4px rgba(255, 255, 255, 0.6);
 }
 
+/* ----- 卡片正文 ----- */
 .card-body {
-    padding: 1.2rem 1.4rem;
+    padding: 1.1rem 1.3rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.55rem;
     min-width: 0;
 }
 .card-meta-top {
@@ -76,50 +100,52 @@
     align-items: center;
     gap: 0.5rem;
     flex-wrap: wrap;
-    font-size: var(--md-sys-typescale-label-medium);
-    color: var(--md-sys-color-on-surface-variant);
+    font-size: var(--clay-text-l2);
+    font-weight: 600;
+    color: var(--clay-on-surface-dim);
 }
 .card-sticky-badge {
-    font-size: var(--md-sys-typescale-label-small);
-    padding: 0.2rem 0.55rem;
-    border-radius: var(--md-sys-shape-corner-full);
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    font-size: var(--clay-text-l3);
+    padding: 0.25rem 0.7rem;
+    border-radius: var(--clay-r-full);
+    background: var(--clay-secondary);
+    color: var(--clay-on-secondary);
+    box-shadow: var(--clay-1);
+    font-weight: 800;
+    letter-spacing: 0.03em;
 }
 .card-category {
-    font-size: var(--md-sys-typescale-label-medium);
-    padding: 0.2rem 0.6rem;
-    border-radius: var(--md-sys-shape-corner-full);
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
-    font-weight: 500;
+    font-size: var(--clay-text-l2);
+    padding: 0.25rem 0.8rem;
+    border-radius: var(--clay-r-full);
+    background: var(--clay-primary-soft);
+    color: var(--clay-on-primary-soft);
+    box-shadow: var(--clay-1);
+    font-weight: 700;
 }
 .card-category.clickable {
     cursor: pointer;
-    transition: all var(--md-sys-transition-short);
+    transition: transform var(--clay-t-fast), box-shadow var(--clay-t-fast);
 }
 .card-category.clickable:hover {
-    filter: brightness(0.95);
-    text-decoration: underline;
-    text-underline-offset: 2px;
+    transform: translateY(-2px);
+    box-shadow: var(--clay-2);
 }
 .card-title {
-    font-size: var(--md-sys-typescale-title-large);
-    font-weight: 600;
-    line-height: 1.35;
-    color: var(--md-sys-color-on-surface);
-    letter-spacing: 0.01em;
+    font-family: var(--clay-font-display);
+    font-size: var(--clay-text-t1);
+    font-weight: 800;
+    line-height: 1.4;
+    color: var(--clay-on-surface);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 .card-summary {
-    font-size: var(--md-sys-typescale-body-medium);
-    color: var(--md-sys-color-on-surface-variant);
-    line-height: 1.55;
+    font-size: var(--clay-text-b2);
+    color: var(--clay-on-surface-dim);
+    line-height: 1.6;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -128,262 +154,303 @@
 .card-tags-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.35rem;
+    gap: 0.4rem;
 }
 .card-tag {
-    font-size: var(--md-sys-typescale-label-small);
-    padding: 0.2rem 0.5rem;
-    border-radius: var(--md-sys-shape-corner-full);
-    background: var(--md-sys-color-surface-variant);
-    color: var(--md-sys-color-on-surface-variant);
-    transition: all var(--md-sys-transition-short);
+    font-size: var(--clay-text-l3);
+    font-weight: 700;
+    padding: 0.22rem 0.65rem;
+    border-radius: var(--clay-r-full);
+    background: var(--clay-surface-2);
+    color: var(--clay-on-surface-dim);
+    box-shadow: var(--clay-inset);
+    transition: transform var(--clay-t-fast), background var(--clay-t-fast), color var(--clay-t-fast), box-shadow var(--clay-t-fast);
 }
 .card-tag.clickable {
     cursor: pointer;
 }
 .card-tag.clickable:hover {
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
+    background: var(--clay-tertiary-soft);
+    color: var(--clay-on-tertiary-soft);
+    box-shadow: var(--clay-1);
+    transform: translateY(-2px);
 }
 .card-footer-info {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
-    font-size: var(--md-sys-typescale-label-medium);
-    color: var(--md-sys-color-on-surface-variant);
+    gap: 0.85rem;
+    font-size: var(--clay-text-l2);
+    font-weight: 600;
+    color: var(--clay-on-surface-dim);
 }
 
-/* 搜索关键词高亮（postlist.js 的 highlightHTML 生成）。
-   覆盖 <mark> 默认的黄底色，改用主题色，暗色主题自动适配。 */
+/* 搜索关键词高亮：一小块荧光黏土 */
 mark.search-hl {
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
-    border-radius: 3px;
-    padding: 0 0.1em;
-    /* inherit 保持卡片标题的行高/字重，避免撑高文本行 */
+    background: var(--clay-warn-soft);
+    color: var(--clay-on-warn-soft);
+    border-radius: 6px;
+    padding: 0 0.22em;
+    box-shadow: var(--clay-1);
     font: inherit;
+    font-weight: 800;
 }
 
-/* ----- 分页 ----- */
+/* ================================================================
+   分页：一排黏土圆钮
+   ================================================================ */
 .pagination {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
-    margin-top: 2rem;
+    gap: 0.5rem;
+    margin-top: 2.2rem;
     flex-wrap: wrap;
 }
 .pagination:empty {
     display: none;
 }
 .page-btn {
-    min-width: 40px;
-    height: 40px;
-    border-radius: var(--md-sys-shape-corner-full);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    background: var(--md-sys-color-surface-container-high);
+    min-width: 46px;
+    height: 46px;
+    padding: 0 0.9rem;
+    border-radius: var(--clay-r-full);
+    border: none;
+    background: var(--clay-surface);
+    box-shadow: var(--clay-1);
     cursor: pointer;
-    font-size: var(--md-sys-typescale-body-medium);
-    font-family: var(--md-sys-font-family);
-    color: var(--md-sys-color-on-surface-variant);
-    transition: all var(--md-sys-transition-short);
+    font-size: var(--clay-text-b2);
+    font-family: var(--clay-font);
+    font-weight: 700;
+    color: var(--clay-on-surface-dim);
+    transition: transform var(--clay-t), box-shadow var(--clay-t), color var(--clay-t-fast), background var(--clay-t);
     display: flex;
     align-items: center;
     justify-content: center;
     user-select: none;
-    font-weight: 500;
 }
 .page-btn:hover:not(:disabled) {
-    border-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-primary);
-    background: var(--md-sys-color-primary-container);
-    box-shadow: var(--md-sys-elevation-1);
+    color: var(--clay-primary);
+    transform: translateY(-3px);
+    box-shadow: var(--clay-2);
+}
+.page-btn:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: var(--clay-inset);
 }
 .page-btn.active {
-    background: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
-    border-color: var(--md-sys-color-primary);
-    font-weight: 600;
+    background: var(--clay-primary);
+    color: var(--clay-on-primary);
+    box-shadow: var(--clay-color-raise);
+    font-weight: 800;
     pointer-events: none;
+    transform: translateY(-2px);
 }
 .page-btn:disabled {
-    opacity: 0.35;
+    opacity: 0.4;
+    box-shadow: var(--clay-inset);
     cursor: not-allowed;
     pointer-events: none;
 }
 .page-ellipsis {
-    width: 40px;
+    width: 28px;
     text-align: center;
-    color: var(--md-sys-color-on-surface-variant);
-    font-size: var(--md-sys-typescale-body-medium);
+    color: var(--clay-on-surface-dim);
+    font-weight: 800;
     user-select: none;
 }
 
-/* ----- 空状态 ----- */
+/* ================================================================
+   空状态
+   ================================================================ */
 .empty-state {
     text-align: center;
-    padding: 3rem 2rem;
-    color: var(--md-sys-color-on-surface-variant);
+    padding: 3.4rem 2rem;
+    color: var(--clay-on-surface-dim);
+    background: var(--clay-surface);
+    border-radius: var(--clay-r-xl);
+    box-shadow: var(--clay-2);
 }
 .empty-state .empty-icon {
-    margin-bottom: 1rem;
-    opacity: 0.55;
-    color: var(--md-sys-color-primary);
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--clay-surface-2);
+    box-shadow: var(--clay-inset);
+    color: var(--clay-primary);
     line-height: 1;
 }
-/* 空状态图标改成内联 SVG 后，尺寸由这里统一控制 */
 .empty-state .empty-icon .icon {
-    width: 3.2rem;
-    height: 3.2rem;
-    stroke-width: 1.5;
+    width: 3rem;
+    height: 3rem;
+    stroke-width: 1.9;
 }
 .empty-state h3 {
-    font-size: var(--md-sys-typescale-headline-small);
+    font-family: var(--clay-font-display);
+    font-size: var(--clay-text-h3);
+    font-weight: 800;
     margin-bottom: 0.5rem;
-    color: var(--md-sys-color-on-surface);
+    color: var(--clay-on-surface);
 }
 .empty-state p {
-    font-size: var(--md-sys-typescale-body-medium);
+    font-size: var(--clay-text-b2);
 }
 .empty-state .empty-actions {
-    margin-top: 1.2rem;
+    margin-top: 1.4rem;
     display: flex;
-    gap: 0.6rem;
+    gap: 0.7rem;
     justify-content: center;
     flex-wrap: wrap;
 }
 .empty-state .empty-actions .sidebar-reset {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
+    justify-content: center;
+    gap: 0.4rem;
+    width: auto;
+    padding: 0.65rem 1.6rem;
 }
 
-/* ----- 加载骨架 ----- */
+/* ================================================================
+   加载骨架：软软的黏土坯
+   ================================================================ */
 .loading-skeleton {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.4rem;
 }
 .loading-skeleton[hidden] {
     display: none;
 }
 .skeleton-card {
     display: grid;
-    grid-template-columns: 200px 1fr;
-    background: var(--md-sys-color-surface-container-high);
-    border-radius: var(--md-sys-shape-corner-large);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    overflow: hidden;
+    grid-template-columns: 220px 1fr;
+    gap: 0.2rem;
+    background: var(--clay-surface);
+    border-radius: var(--clay-r-xl);
+    box-shadow: var(--clay-2);
+    padding: 0.7rem;
 }
 .skeleton-cover {
-    width: 200px;
-    height: 150px;
-    background: var(--md-sys-color-surface-variant);
-    animation: shimmer 1.6s ease-in-out infinite;
+    width: 100%;
+    height: 168px;
+    border-radius: var(--clay-r-lg);
+    background: var(--clay-surface-2);
+    box-shadow: var(--clay-inset);
+    animation: clayBreath 1.8s ease-in-out infinite;
 }
 .skeleton-body {
-    padding: 1.2rem;
+    padding: 1.1rem 1.3rem;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    justify-content: center;
+    gap: 0.8rem;
 }
 .skeleton-line {
-    height: 14px;
-    border-radius: 7px;
-    background: var(--md-sys-color-surface-variant);
-    animation: shimmer 1.6s ease-in-out infinite;
+    height: 16px;
+    border-radius: var(--clay-r-full);
+    background: var(--clay-surface-2);
+    box-shadow: var(--clay-inset);
+    animation: clayBreath 1.8s ease-in-out infinite;
 }
-.skeleton-line.short { width: 40%; }
-.skeleton-line.medium { width: 70%; }
-.skeleton-line.long { width: 90%; }
-@keyframes shimmer {
-    0%   { opacity: 0.5; }
-    50%  { opacity: 0.9; }
-    100% { opacity: 0.5; }
+.skeleton-line.short { width: 40%; animation-delay: 0.3s; }
+.skeleton-line.medium { width: 70%; animation-delay: 0.15s; }
+.skeleton-line.long { width: 92%; }
+@keyframes clayBreath {
+    0%, 100% { opacity: 0.55; transform: scale(0.995); }
+    50%      { opacity: 1;    transform: scale(1); }
 }
 
-/* ----- Toast 提示 ----- */
-/* z-index 压过所有浮层（灯箱 10000 / 进度条 200 / 顶栏 100 / 抽屉 95），
-   保证"复制成功 / 保存失败"等反馈永远不会被遮挡 */
+/* ================================================================
+   Toast 提示：一颗弹进来的黏土药丸
+   ================================================================ */
 .toast-container {
     position: fixed;
-    bottom: 1.5rem;
-    right: 1.5rem;
+    bottom: 1.6rem;
+    right: 1.6rem;
     z-index: 10100;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.7rem;
     pointer-events: none;
 }
 .toast {
     pointer-events: auto;
-    padding: 0.7rem 1.2rem;
-    border-radius: var(--md-sys-shape-corner-full);
-    background: var(--md-sys-color-surface-container-high);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    color: var(--md-sys-color-on-surface);
-    font-size: var(--md-sys-typescale-body-medium);
-    box-shadow: var(--md-sys-elevation-3);
-    animation: toastIn 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+    padding: 0.85rem 1.5rem;
+    border-radius: var(--clay-r-full);
+    background: var(--clay-surface-3);
+    border: none;
+    color: var(--clay-on-surface);
+    font-size: var(--clay-text-b2);
+    font-weight: 700;
+    box-shadow: var(--clay-4);
+    animation: toastIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     max-width: 360px;
     text-align: center;
 }
 .toast.toast-error {
-    background: var(--md-sys-color-error-container);
-    color: var(--md-sys-color-on-error-container);
-    border-color: var(--md-sys-color-error);
+    background: var(--clay-error-soft);
+    color: var(--clay-on-error-soft);
 }
 .toast.toast-success {
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
-    border-color: var(--md-sys-color-primary);
+    background: var(--clay-tertiary-soft);
+    color: var(--clay-on-tertiary-soft);
 }
 .toast.toast-out {
-    animation: toastOut 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: toastOut 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 @keyframes toastIn {
-    from { opacity: 0; transform: translateY(20px) scale(0.9); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+    0%   { opacity: 0; transform: translateY(28px) scale(0.7); }
+    60%  { opacity: 1; transform: translateY(-6px) scale(1.05); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 @keyframes toastOut {
     from { opacity: 1; transform: translateY(0) scale(1); }
-    to   { opacity: 0; transform: translateY(-10px) scale(0.9); }
+    to   { opacity: 0; transform: translateY(-14px) scale(0.85); }
 }
 
-/* ----- 回到顶部 ----- */
+/* ================================================================
+   回到顶部
+   ================================================================ */
 .back-to-top {
     position: fixed;
     bottom: 2rem;
     left: 2rem;
-    width: 42px;
-    height: 42px;
-    border-radius: var(--md-sys-shape-corner-full);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    background: var(--md-sys-color-surface-container-high);
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: none;
+    background: var(--clay-surface-3);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: var(--md-sys-elevation-2);
-    transition: all var(--md-sys-transition-medium);
+    box-shadow: var(--clay-2);
+    transition: transform var(--clay-t), box-shadow var(--clay-t), opacity var(--clay-t), color var(--clay-t-fast);
     opacity: 0;
+    transform: translateY(16px) scale(0.8);
     pointer-events: none;
     z-index: 90;
-    color: var(--md-sys-color-on-surface-variant);
-    font-size: 1.1rem;
+    color: var(--clay-primary);
 }
 .back-to-top.visible {
     opacity: 1;
+    transform: translateY(0) scale(1);
     pointer-events: auto;
 }
 .back-to-top:hover {
-    border-color: var(--md-sys-color-primary);
-    box-shadow: var(--md-sys-elevation-4);
-    transform: translateY(-3px);
-    color: var(--md-sys-color-primary);
+    box-shadow: var(--clay-3);
+    transform: translateY(-4px) scale(1.05);
+}
+.back-to-top:active {
+    transform: translateY(1px) scale(0.97);
+    box-shadow: var(--clay-inset);
 }
 .back-to-top .icon {
-    width: 1.15rem;
-    height: 1.15rem;
-    stroke-width: 2.2;
+    width: 1.35rem;
+    height: 1.35rem;
+    stroke-width: 2.6;
 }

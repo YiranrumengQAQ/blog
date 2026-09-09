@@ -1,69 +1,199 @@
 /* ================================================================
-   设计令牌 (Design Tokens) — Material 3 风格
-   修改这里的变量即可全站换肤
+   设计令牌 (Design Tokens) — Claymorphism 黏土拟物风
+   ----------------------------------------------------------------
+   黏土风的三个关键：
+     1. 大圆角（越圆越像捏出来的黏土）
+     2. 双层柔和阴影：外侧「下沉的深影 + 上侧的高光」
+     3. 内阴影（inset）营造厚度与体积感
+     4. 低饱和马卡龙配色，几乎不用硬边框
+   改这里的变量即可全站换肤。
    ================================================================ */
 :root {
-    /* ----- 颜色 (亮色) ----- */
-    --md-sys-color-primary: #8D6E63;
-    --md-sys-color-on-primary: #FFFFFF;
-    --md-sys-color-primary-container: #F5E6D3;
-    --md-sys-color-on-primary-container: #3E2C23;
+    /* ----- 主色板 (Clay Palette · 亮色) ----- */
+    --clay-primary: #7C6CF0;            /* 主色：薰衣草紫 */
+    --clay-primary-deep: #5B49D6;
+    --clay-on-primary: #FFFFFF;
+    --clay-primary-soft: #E4E0FF;       /* 主色黏土块 */
+    --clay-on-primary-soft: #3B2F8F;
 
-    --md-sys-color-secondary: #6D5D4E;
-    --md-sys-color-on-secondary: #FFFFFF;
-    --md-sys-color-secondary-container: #E8DED3;
-    --md-sys-color-on-secondary-container: #241A12;
+    --clay-secondary: #FF9BB3;          /* 副色：草莓奶昔粉 */
+    --clay-on-secondary: #5A1F30;
+    --clay-secondary-soft: #FFE1E9;
+    --clay-on-secondary-soft: #7A2A42;
 
-    --md-sys-color-tertiary: #7D5260;
-    --md-sys-color-on-tertiary: #FFFFFF;
-    --md-sys-color-tertiary-container: #FFD8E4;
-    --md-sys-color-on-tertiary-container: #31111D;
+    --clay-tertiary: #57D6C0;           /* 点缀：薄荷绿 */
+    --clay-tertiary-soft: #D5F6EF;
+    --clay-on-tertiary-soft: #176354;
 
-    --md-sys-color-error: #BA1A1A;
-    --md-sys-color-on-error: #FFFFFF;
-    --md-sys-color-error-container: #FFDAD6;
-    --md-sys-color-on-error-container: #410002;
+    --clay-warn: #FFB865;
+    --clay-warn-soft: #FFEBD3;
+    --clay-on-warn-soft: #7A4408;
 
-    --md-sys-color-surface: #FDFBF7;
-    --md-sys-color-on-surface: #1D1B20;
-    --md-sys-color-surface-variant: #F0EDE8;
-    --md-sys-color-on-surface-variant: #49454F;
-    --md-sys-color-surface-container: #F0EDE8;
-    --md-sys-color-surface-container-high: #FDFBF7;
+    --clay-error: #FF6B6B;
+    --clay-error-soft: #FFDFDF;
+    --clay-on-error-soft: #8A1E1E;
 
-    --md-sys-color-outline: #79747E;
-    --md-sys-color-outline-variant: #CAC4D0;
-    --md-sys-color-shadow: #000000;
+    /* ----- 表面 (Surfaces) ----- */
+    --clay-bg: #EDEBFA;                 /* 页面底色（黏土需要有色底，不能纯白） */
+    --clay-bg-tint: radial-gradient(1200px 600px at 12% -8%, #F6E6FF 0%, transparent 60%),
+                    radial-gradient(1000px 520px at 100% 0%, #DDF4FF 0%, transparent 55%),
+                    radial-gradient(900px 700px at 50% 120%, #FFE9F1 0%, transparent 60%);
+    --clay-surface: #F4F2FF;            /* 抬起的黏土块 */
+    --clay-surface-2: #E9E6FA;          /* 凹陷 / 次级块 */
+    --clay-surface-3: #FBFAFF;          /* 最高层（弹窗 / 卡片内） */
+    --clay-on-surface: #2B2545;
+    --clay-on-surface-dim: #6C6590;
 
-    /* ----- 形状 (Shape) ----- */
-    --md-sys-shape-corner-small: 4px;
-    --md-sys-shape-corner-medium: 12px;
-    --md-sys-shape-corner-large: 20px;
-    --md-sys-shape-corner-extra-large: 28px;
-    --md-sys-shape-corner-full: 9999px;
+    /* 阴影用的两个基色：深影 + 高光 */
+    --clay-shade: rgba(96, 84, 160, 0.30);
+    --clay-shade-strong: rgba(70, 58, 130, 0.42);
+    --clay-light: rgba(255, 255, 255, 0.95);
 
-    /* ----- 排版 (Typography) ----- */
-    --md-sys-typescale-display-large: 3.5rem;
-    --md-sys-typescale-display-medium: 2.8rem;
-    --md-sys-typescale-display-small: 2.2rem;
+    /* ----- 黏土阴影 (Clay Elevation) ----- */
+    /* 1 = 微微抬起（小控件） */
+    --clay-1:
+        4px 4px 10px var(--clay-shade),
+        -4px -4px 10px var(--clay-light),
+        inset -2px -2px 6px rgba(255, 255, 255, 0.55),
+        inset 2px 2px 6px rgba(255, 255, 255, 0.35);
+    /* 2 = 常规黏土块（卡片 / 面板） */
+    --clay-2:
+        8px 10px 22px var(--clay-shade),
+        -6px -6px 16px var(--clay-light),
+        inset -4px -6px 12px rgba(255, 255, 255, 0.45),
+        inset 5px 5px 12px rgba(255, 255, 255, 0.60);
+    /* 3 = 悬浮 / 强调 */
+    --clay-3:
+        12px 16px 32px var(--clay-shade-strong),
+        -8px -8px 20px var(--clay-light),
+        inset -5px -8px 14px rgba(255, 255, 255, 0.45),
+        inset 6px 6px 14px rgba(255, 255, 255, 0.65);
+    /* 4 = 浮层（灯箱 / Toast / 抽屉） */
+    --clay-4:
+        18px 24px 48px var(--clay-shade-strong),
+        -10px -10px 26px var(--clay-light),
+        inset -6px -10px 18px rgba(255, 255, 255, 0.4),
+        inset 8px 8px 18px rgba(255, 255, 255, 0.6);
+    /* 按下 / 凹槽（输入框、进度槽） */
+    --clay-inset:
+        inset 5px 6px 12px var(--clay-shade),
+        inset -5px -5px 12px var(--clay-light);
+    --clay-inset-deep:
+        inset 8px 9px 18px var(--clay-shade-strong),
+        inset -6px -6px 14px var(--clay-light);
+    /* 彩色黏土块（主色按钮）专用 */
+    --clay-color-raise:
+        6px 8px 18px rgba(92, 74, 214, 0.45),
+        -4px -4px 12px rgba(255, 255, 255, 0.55),
+        inset -4px -6px 12px rgba(0, 0, 0, 0.13),
+        inset 5px 6px 12px rgba(255, 255, 255, 0.45);
 
-    --md-sys-typescale-headline-large: 2.0rem;
-    --md-sys-typescale-headline-medium: 1.6rem;
-    --md-sys-typescale-headline-small: 1.25rem;
+    /* ----- 形状 (Shape) — 黏土要圆 ----- */
+    --clay-r-xs: 10px;
+    --clay-r-sm: 16px;
+    --clay-r-md: 22px;
+    --clay-r-lg: 30px;
+    --clay-r-xl: 38px;
+    --clay-r-full: 999px;
 
-    --md-sys-typescale-title-large: 1.15rem;
-    --md-sys-typescale-title-medium: 1.0rem;
-    --md-sys-typescale-title-small: 0.9rem;
+    /* ----- 排版 ----- */
+    /* 黏土风配圆润字体最搭。全部用「系统自带的圆体」，不引 CDN 字体，
+       保持仓库「零依赖、断网也能用」的原则；本机没有就一路回退到系统 UI 字体。 */
+    --clay-font: 'Quicksand', 'Nunito', ui-rounded, 'SF Pro Rounded', 'Varela Round',
+                 'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei',
+                 system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --clay-font-display: 'Quicksand', ui-rounded, 'SF Pro Rounded', 'Varela Round',
+                 'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei',
+                 system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --clay-font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', Consolas, monospace;
 
-    --md-sys-typescale-body-large: 1.0rem;
-    --md-sys-typescale-body-medium: 0.9rem;
-    --md-sys-typescale-body-small: 0.8rem;
+    /* ----- 过渡：黏土有弹性 ----- */
+    --clay-t-fast: 0.16s cubic-bezier(0.34, 1.4, 0.64, 1);
+    --clay-t: 0.28s cubic-bezier(0.34, 1.4, 0.64, 1);
+    --clay-t-slow: 0.45s cubic-bezier(0.22, 1.2, 0.36, 1);
 
-    --md-sys-typescale-label-large: 0.9rem;
-    --md-sys-typescale-label-medium: 0.75rem;
-    --md-sys-typescale-label-small: 0.65rem;
+    /* ----- 字号 (Type Scale) ----- */
+    --clay-text-d1: 3.4rem;   /* display */
+    --clay-text-d2: 2.7rem;
+    --clay-text-d3: 2.1rem;
+    --clay-text-h1: 2.05rem;  /* headline */
+    --clay-text-h2: 1.65rem;
+    --clay-text-h3: 1.3rem;
+    --clay-text-t1: 1.18rem;  /* title */
+    --clay-text-t2: 1.02rem;
+    --clay-text-t3: 0.92rem;
+    --clay-text-b1: 1.02rem;  /* body */
+    --clay-text-b2: 0.92rem;
+    --clay-text-b3: 0.82rem;
+    --clay-text-l1: 0.9rem;   /* label */
+    --clay-text-l2: 0.78rem;
+    --clay-text-l3: 0.68rem;
 
-    /* ----- 间距 (Spacing) ----- */
+    /* ----- 布局 ----- */
+    --header-height: 76px;
+    --content-max-width: 1280px;
+
+    /* ================================================================
+       兼容别名：老的 Material 变量名全部映射到黏土令牌，
+       任何还没重写的规则也能自动获得新配色（渐进迁移用）。
+       ================================================================ */
+    --md-sys-color-primary: var(--clay-primary);
+    --md-sys-color-on-primary: var(--clay-on-primary);
+    --md-sys-color-primary-container: var(--clay-primary-soft);
+    --md-sys-color-on-primary-container: var(--clay-on-primary-soft);
+    --md-sys-color-secondary: var(--clay-secondary);
+    --md-sys-color-on-secondary: var(--clay-on-secondary);
+    --md-sys-color-secondary-container: var(--clay-secondary-soft);
+    --md-sys-color-on-secondary-container: var(--clay-on-secondary-soft);
+    --md-sys-color-tertiary: var(--clay-tertiary);
+    --md-sys-color-tertiary-container: var(--clay-tertiary-soft);
+    --md-sys-color-on-tertiary-container: var(--clay-on-tertiary-soft);
+    --md-sys-color-error: var(--clay-error);
+    --md-sys-color-error-container: var(--clay-error-soft);
+    --md-sys-color-on-error-container: var(--clay-on-error-soft);
+    --md-sys-color-surface: var(--clay-surface);
+    --md-sys-color-on-surface: var(--clay-on-surface);
+    --md-sys-color-surface-variant: var(--clay-surface-2);
+    --md-sys-color-on-surface-variant: var(--clay-on-surface-dim);
+    --md-sys-color-surface-container: var(--clay-surface);
+    --md-sys-color-surface-container-high: var(--clay-surface-3);
+    --md-sys-color-outline: transparent;
+    --md-sys-color-outline-variant: transparent;
+    --md-sys-shape-corner-small: var(--clay-r-xs);
+    --md-sys-shape-corner-medium: var(--clay-r-sm);
+    --md-sys-shape-corner-large: var(--clay-r-lg);
+    --md-sys-shape-corner-extra-large: var(--clay-r-xl);
+    --md-sys-shape-corner-full: var(--clay-r-full);
+    --md-sys-elevation-0: none;
+    --md-sys-elevation-1: var(--clay-1);
+    --md-sys-elevation-2: var(--clay-2);
+    --md-sys-elevation-3: var(--clay-3);
+    --md-sys-elevation-4: var(--clay-4);
+    --md-sys-font-family: var(--clay-font);
+    --md-sys-font-family-serif: var(--clay-font-display);
+    --md-sys-font-family-mono: var(--clay-font-mono);
+    --md-sys-transition-short: var(--clay-t-fast);
+    --md-sys-transition-medium: var(--clay-t);
+    --md-sys-transition-long: var(--clay-t-slow);
+    --md-sys-transition-spring: var(--clay-t);
+
+    /* 字号别名（旧名 → 新名） */
+    --md-sys-typescale-display-large: var(--clay-text-d1);
+    --md-sys-typescale-display-medium: var(--clay-text-d2);
+    --md-sys-typescale-display-small: var(--clay-text-d3);
+    --md-sys-typescale-headline-large: var(--clay-text-h1);
+    --md-sys-typescale-headline-medium: var(--clay-text-h2);
+    --md-sys-typescale-headline-small: var(--clay-text-h3);
+    --md-sys-typescale-title-large: var(--clay-text-t1);
+    --md-sys-typescale-title-medium: var(--clay-text-t2);
+    --md-sys-typescale-title-small: var(--clay-text-t3);
+    --md-sys-typescale-body-large: var(--clay-text-b1);
+    --md-sys-typescale-body-medium: var(--clay-text-b2);
+    --md-sys-typescale-body-small: var(--clay-text-b3);
+    --md-sys-typescale-label-large: var(--clay-text-l1);
+    --md-sys-typescale-label-medium: var(--clay-text-l2);
+    --md-sys-typescale-label-small: var(--clay-text-l3);
+
     --md-space-1: 4px;
     --md-space-2: 8px;
     --md-space-3: 12px;
@@ -72,51 +202,88 @@
     --md-space-6: 24px;
     --md-space-7: 32px;
     --md-space-8: 40px;
-
-    /* ----- 阴影 (Elevation) ----- */
-    --md-sys-elevation-0: none;
-    --md-sys-elevation-1: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 1px 1px 0 rgba(0, 0, 0, 0.08);
-    --md-sys-elevation-2: 0 2px 6px 0 rgba(0, 0, 0, 0.12), 0 1px 4px 0 rgba(0, 0, 0, 0.08);
-    --md-sys-elevation-3: 0 4px 12px 0 rgba(0, 0, 0, 0.12), 0 2px 8px 0 rgba(0, 0, 0, 0.08);
-    --md-sys-elevation-4: 0 8px 24px 0 rgba(0, 0, 0, 0.12), 0 4px 16px 0 rgba(0, 0, 0, 0.08);
-
-    /* ----- 字体 (Fonts) ----- */
-    --md-sys-font-family: 'Inter', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
-    --md-sys-font-family-serif: 'Georgia', 'Noto Serif SC', 'STSong', 'Songti SC', serif;
-    --md-sys-font-family-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
-
-    /* ----- 过渡 (Transitions) ----- */
-    --md-sys-transition-short: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    --md-sys-transition-medium: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --md-sys-transition-long: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    --md-sys-transition-spring: 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
-
-    /* ----- 布局 ----- */
-    --header-height: 64px;
-    --content-max-width: 1280px;
 }
 
 /* ================================================================
-   暗色主题 (Dark Theme)
+   暗色黏土 (Dark Clay)
+   暗色下高光要收敛、深影要加重，否则会「发灰」失去体积感
    ================================================================ */
 [data-theme="dark"] {
-    --md-sys-color-primary: #D4A77C;
-    --md-sys-color-on-primary: #3E2C23;
-    --md-sys-color-primary-container: #5A4237;
-    --md-sys-color-on-primary-container: #FCE4EC;
+    --clay-primary: #A79BFF;
+    --clay-primary-deep: #8C7BFF;
+    --clay-on-primary: #201A45;
+    --clay-primary-soft: #3B3466;
+    --clay-on-primary-soft: #DCD6FF;
 
-    --md-sys-color-secondary: #CCC2DC;
-    --md-sys-color-on-secondary: #332D41;
-    --md-sys-color-secondary-container: #4A4458;
-    --md-sys-color-on-secondary-container: #E8DEF8;
+    --clay-secondary: #FFA9BF;
+    --clay-on-secondary: #43121F;
+    --clay-secondary-soft: #55303E;
+    --clay-on-secondary-soft: #FFD9E3;
 
-    --md-sys-color-surface: #141218;
-    --md-sys-color-on-surface: #E6E0E9;
-    --md-sys-color-surface-variant: #49454F;
-    --md-sys-color-on-surface-variant: #CAC4D0;
-    --md-sys-color-surface-container: #211F26;
-    --md-sys-color-surface-container-high: #2B2933;
+    --clay-tertiary: #6FE0CB;
+    --clay-tertiary-soft: #24504A;
+    --clay-on-tertiary-soft: #C7F6EC;
 
-    --md-sys-color-outline: #938F99;
-    --md-sys-color-outline-variant: #49454F;
+    --clay-warn: #FFC183;
+    --clay-warn-soft: #5A4022;
+    --clay-on-warn-soft: #FFE4C4;
+
+    --clay-error: #FF8B8B;
+    --clay-error-soft: #5C2A2A;
+    --clay-on-error-soft: #FFD8D8;
+
+    --clay-bg: #201C2E;
+    --clay-bg-tint: radial-gradient(1200px 600px at 12% -8%, #33254A 0%, transparent 60%),
+                    radial-gradient(1000px 520px at 100% 0%, #1F3550 0%, transparent 55%),
+                    radial-gradient(900px 700px at 50% 120%, #3A2436 0%, transparent 60%);
+    --clay-surface: #2A2540;
+    --clay-surface-2: #221E35;
+    --clay-surface-3: #322C4C;
+    --clay-on-surface: #EDE9FF;
+    --clay-on-surface-dim: #ADA5CF;
+
+    --clay-shade: rgba(9, 6, 20, 0.62);
+    --clay-shade-strong: rgba(5, 3, 14, 0.78);
+    --clay-light: rgba(255, 255, 255, 0.07);
+
+    --clay-1:
+        4px 4px 10px var(--clay-shade),
+        -3px -3px 9px var(--clay-light),
+        inset -2px -2px 6px rgba(255, 255, 255, 0.05),
+        inset 2px 2px 6px rgba(255, 255, 255, 0.06);
+    --clay-2:
+        9px 11px 24px var(--clay-shade),
+        -5px -5px 14px var(--clay-light),
+        inset -4px -6px 12px rgba(0, 0, 0, 0.25),
+        inset 5px 5px 12px rgba(255, 255, 255, 0.08);
+    --clay-3:
+        14px 18px 34px var(--clay-shade-strong),
+        -7px -7px 18px var(--clay-light),
+        inset -5px -8px 14px rgba(0, 0, 0, 0.3),
+        inset 6px 6px 14px rgba(255, 255, 255, 0.09);
+    --clay-4:
+        20px 26px 52px var(--clay-shade-strong),
+        -8px -8px 22px var(--clay-light),
+        inset -6px -10px 18px rgba(0, 0, 0, 0.32),
+        inset 8px 8px 18px rgba(255, 255, 255, 0.09);
+    --clay-inset:
+        inset 5px 6px 13px var(--clay-shade),
+        inset -4px -4px 11px var(--clay-light);
+    --clay-inset-deep:
+        inset 8px 9px 20px var(--clay-shade-strong),
+        inset -5px -5px 13px var(--clay-light);
+    --clay-color-raise:
+        6px 8px 18px rgba(0, 0, 0, 0.55),
+        -4px -4px 12px rgba(255, 255, 255, 0.08),
+        inset -4px -6px 12px rgba(0, 0, 0, 0.28),
+        inset 5px 6px 12px rgba(255, 255, 255, 0.22);
+}
+
+/* 尊重「减少动态效果」偏好：黏土的弹性动画全部关掉 */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --clay-t-fast: 0.01ms linear;
+        --clay-t: 0.01ms linear;
+        --clay-t-slow: 0.01ms linear;
+    }
 }

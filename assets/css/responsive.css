@@ -1,51 +1,71 @@
 /* ================================================================
-   响应式设计 (Responsive)
+   响应式设计 (Responsive) — Claymorphism
+   小屏上要「收阴影、减圆角」，否则黏土块会互相糊在一起
    ================================================================ */
 @media (max-width: 1024px) {
     .main-container {
-        grid-template-columns: 220px 1fr;
+        grid-template-columns: 236px 1fr;
         gap: 1.2rem;
         padding: 1rem;
     }
     .post-card,
     .skeleton-card {
-        grid-template-columns: 160px 1fr;
+        grid-template-columns: 172px 1fr;
     }
     .card-cover,
     .skeleton-cover {
-        width: 160px;
-        min-height: 130px;
+        min-height: 144px;
+        height: 144px;
     }
     .card-title {
-        font-size: var(--md-sys-typescale-title-medium);
+        font-size: var(--clay-text-t2);
     }
     .card-body {
         padding: 0.9rem 1rem;
     }
     .search-input {
-        width: 160px;
+        width: 168px;
     }
     .search-input:focus {
-        width: 190px;
+        width: 200px;
     }
     .article-view {
-        padding: 1.5rem;
+        padding: 1.8rem;
     }
 }
 
 @media (max-width: 768px) {
     :root {
-        --header-height: 56px;
-    }
-    .header-inner {
-        gap: 0.5rem;
+        --header-height: 68px;
     }
     .site-header {
-        padding: 0 0.8rem;
+        padding: 0.6rem 0.7rem;
+    }
+    .header-inner {
+        /* 顶栏总高 = header-inner 高 + .site-header 上下 padding(0.6rem×2)，
+           两处必须对齐，否则移动端搜索条会和顶栏之间留缝 */
+        height: calc(var(--header-height) - 1.2rem);
+        gap: 0.4rem;
+        padding: 0 0.7rem;
+        border-radius: var(--clay-r-lg);
     }
     .blog-name {
-        font-size: 1.1rem;
+        font-size: 1.05rem;
+        gap: 0.3rem;
     }
+    .blog-name .paw-dot {
+        width: 8px;
+        height: 8px;
+    }
+    .m3-icon-btn,
+    .mobile-menu-btn,
+    .mobile-search-btn,
+    .lang-select {
+        width: 42px;
+        height: 42px;
+    }
+
+    /* ----- 移动端搜索：从顶栏下方滑出的一块黏土条 ----- */
     .search-wrap {
         display: none;
     }
@@ -53,72 +73,69 @@
         display: flex;
         position: absolute;
         top: var(--header-height);
-        left: 0;
-        right: 0;
-        padding: 0.6rem 1rem;
-        background: var(--md-sys-color-surface);
-        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        left: 0.7rem;
+        right: 0.7rem;
+        padding: 0.55rem;
+        background: var(--clay-surface);
+        border-radius: var(--clay-r-full);
+        box-shadow: var(--clay-3);
         z-index: 99;
+        animation: searchDrop 0.32s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+    @keyframes searchDrop {
+        from { opacity: 0; transform: translateY(-14px) scale(0.96); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
     }
     .search-wrap.mobile-visible .search-input,
     .search-wrap.mobile-visible .search-input:focus {
         width: 100%;
     }
+    .search-wrap.mobile-visible .search-icon { right: 20px; }
+    .search-wrap.mobile-visible .search-clear { right: 46px; }
     .search-kbd {
         display: none;
     }
-    /* 顶栏空间紧张：语言下拉框收窄，只留够看语言名的宽度 */
+
+    /* 顶栏空间紧张：语言下拉框收窄成一颗圆钮 */
     .lang-select {
-        max-width: 86px;
-        padding: 0 1.4rem 0 0.5rem;
-        font-size: 0.75rem;
-        background-position: calc(100% - 12px) 17px, calc(100% - 8px) 17px;
+        width: auto;
+        max-width: 90px;
+        padding: 0 1.5rem 0 0.7rem;
+        font-size: 0.74rem;
+        border-radius: var(--clay-r-full);
+        background-position: calc(100% - 13px) 19px, calc(100% - 8px) 19px;
     }
     .mobile-menu-btn {
         display: flex;
     }
     .mobile-search-btn {
         display: flex;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        border: 1px solid var(--md-sys-color-outline-variant);
-        background: var(--md-sys-color-surface-container-high);
-        cursor: pointer;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        font-size: 0.9rem;
-        color: var(--md-sys-color-on-surface-variant);
-        transition: all var(--md-sys-transition-short);
     }
-    .mobile-search-btn:hover {
-        border-color: var(--md-sys-color-primary);
-        color: var(--md-sys-color-primary);
-    }
+
     .main-container {
         grid-template-columns: 1fr;
         gap: 1rem;
-        padding: 0.8rem;
+        padding: 0.7rem 0.8rem 2rem;
     }
+
+    /* ----- 侧栏变成抽屉 ----- */
     .sidebar {
         position: fixed;
         top: var(--header-height);
         left: 0;
-        right: 0;
         bottom: 0;
+        width: min(85vw, 330px);
         z-index: 95;
-        background: var(--md-sys-color-surface);
-        padding: 1rem;
-        transform: translateX(-100%);
-        transition: transform var(--md-sys-transition-spring);
+        background: var(--clay-bg);
+        background-image: var(--clay-bg-tint);
+        padding: 1rem 1rem 2rem;
+        border-radius: 0 var(--clay-r-xl) var(--clay-r-xl) 0;
+        transform: translateX(-104%);
+        transition: transform var(--clay-t-slow);
         overflow-y: auto;
-        /* 抽屉滚到底/顶时，触摸滑动不再带动底层主页面（滚动穿透）。
-           iOS 16+ / Android Chrome 支持；配合 sidebar.js 的 body 滚动锁双保险。 */
         overscroll-behavior: contain;
         max-height: none;
-        border-right: none;
-        box-shadow: var(--md-sys-elevation-4);
+        box-shadow: var(--clay-4);
     }
     .sidebar.mobile-open {
         transform: translateX(0);
@@ -128,36 +145,57 @@
         position: fixed;
         inset: 0;
         top: var(--header-height);
-        background: rgba(0, 0, 0, 0.4);
+        background: rgba(32, 26, 58, 0.42);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
         z-index: 94;
-        transition: opacity var(--md-sys-transition-medium);
     }
     .sidebar-overlay.active {
         display: block;
+        animation: fadeIn 0.25s ease;
     }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+
+    /* ----- 卡片改为上下结构 ----- */
     .post-card,
     .skeleton-card {
         grid-template-columns: 1fr;
         grid-template-rows: auto auto;
+        border-radius: var(--clay-r-lg);
     }
     .card-cover,
     .skeleton-cover {
         width: 100%;
-        height: 180px;
+        height: 190px;
         min-height: auto;
     }
     .card-body {
-        padding: 1rem;
+        padding: 1rem 0.9rem 0.6rem;
     }
     .card-title {
-        font-size: var(--md-sys-typescale-title-large);
+        font-size: var(--clay-text-t1);
     }
+    .post-card.sticky-post::after {
+        top: -4px;
+        right: -4px;
+        width: 18px;
+        height: 18px;
+    }
+
+    .content-header {
+        padding: 0.7rem 1.1rem;
+        border-radius: var(--clay-r-lg);
+    }
+
     .article-view {
-        padding: 1.2rem;
-        border-radius: var(--md-sys-shape-corner-medium);
+        padding: 1.3rem 1.1rem;
+        border-radius: var(--clay-r-lg);
     }
     .article-title {
-        font-size: var(--md-sys-typescale-headline-medium);
+        font-size: var(--clay-text-h2);
     }
     .article-nav {
         grid-template-columns: 1fr;
@@ -167,18 +205,25 @@
         text-align: left;
     }
     .pagination {
-        gap: 0.25rem;
+        gap: 0.35rem;
     }
     .page-btn {
-        min-width: 34px;
-        height: 34px;
-        font-size: var(--md-sys-typescale-body-small);
+        min-width: 40px;
+        height: 40px;
+        padding: 0 0.6rem;
+        font-size: var(--clay-text-b3);
     }
     .back-to-top {
         bottom: 1rem;
         left: 1rem;
-        width: 36px;
-        height: 36px;
+        width: 46px;
+        height: 46px;
+    }
+    .toast-container {
+        left: 1rem;
+        right: 1rem;
+        bottom: 1rem;
+        align-items: center;
     }
     .copy-code-btn {
         opacity: 1;
@@ -187,32 +232,42 @@
 
 @media (max-width: 480px) {
     .blog-name {
-        font-size: 1rem;
+        font-size: 0.98rem;
+    }
+    /* 屏幕太窄时只留一颗小球，避免顶栏挤爆 */
+    .blog-name .paw-dot:nth-child(3),
+    .blog-name .paw-dot:nth-child(4) {
+        display: none;
     }
     .card-cover {
-        height: 150px;
+        height: 158px;
     }
     .card-title {
-        font-size: var(--md-sys-typescale-title-medium);
+        font-size: var(--clay-text-t2);
     }
     .card-summary {
-        font-size: var(--md-sys-typescale-body-small);
+        font-size: var(--clay-text-b3);
     }
     .article-title {
-        font-size: var(--md-sys-typescale-headline-small);
+        font-size: var(--clay-text-h3);
     }
     .article-content {
-        font-size: var(--md-sys-typescale-body-medium);
+        font-size: var(--clay-text-b2);
+    }
+    .article-content pre {
+        padding: 1.1rem 1rem;
     }
     .content-header {
         flex-direction: column;
         align-items: flex-start;
+        border-radius: var(--clay-r-md);
     }
-    .lightbox-prev { left: 0.4rem; }
-    .lightbox-next { right: 0.4rem; }
+    .lightbox-prev { left: 0.5rem; }
+    .lightbox-next { right: 0.5rem; }
+    .lightbox button { width: 46px; height: 46px; }
     .lang-select {
-        max-width: 70px;
-        padding: 0 1.2rem 0 0.4rem;
+        max-width: 74px;
+        padding: 0 1.3rem 0 0.55rem;
     }
 }
 
@@ -223,4 +278,49 @@
     .sidebar-overlay {
         display: none !important;
     }
+}
+
+/* ================================================================
+   RTL（阿拉伯语 / 希伯来语 / 波斯语）
+   i18n.js 会把 <html dir="rtl"> 写上；黏土阴影和图标位置都是有方向的，
+   这里统一镜像，避免「光从右边打过来、图标却在左边」的违和感。
+   ================================================================ */
+[dir="rtl"] .search-icon { right: auto; left: 14px; }
+[dir="rtl"] .search-clear { right: auto; left: 40px; }
+[dir="rtl"] .search-kbd { right: auto; left: 42px; }
+[dir="rtl"] .search-input { padding: 0 1.2rem 0 2.8rem; }
+[dir="rtl"] .lang-select {
+    padding: 0 1rem 0 1.9rem;
+    background-position: 17px 21px, 11px 21px;
+}
+[dir="rtl"] .sidebar-cat-item:hover,
+[dir="rtl"] .sidebar-archive-item:hover { transform: translateX(-3px); }
+[dir="rtl"] .post-card.sticky-post::after { right: auto; left: -6px; }
+[dir="rtl"] .article-nav-item.prev { text-align: right; }
+[dir="rtl"] .article-nav-item.next { text-align: left; }
+[dir="rtl"] .article-content blockquote {
+    padding: 1.1rem 1.6rem 1.1rem 1.4rem;
+}
+[dir="rtl"] .article-content blockquote::before { left: auto; right: 0.55rem; }
+[dir="rtl"] .copy-code-btn { right: auto; left: 0.7rem; }
+[dir="rtl"] .article-back:hover .article-back-arrow { transform: translateX(4px); }
+[dir="rtl"] .reading-progress-bar {
+    border-radius: var(--clay-r-full) 0 0 var(--clay-r-full);
+    margin-left: auto;
+}
+[dir="rtl"] .toast-container { right: auto; left: 1.6rem; }
+[dir="rtl"] .back-to-top { left: auto; right: 2rem; }
+[dir="rtl"] .lightbox-close { right: auto; left: 1.2rem; }
+[dir="rtl"] .help-details summary::after { left: auto; right: calc(1.1rem + 6px); }
+
+@media (max-width: 768px) {
+    [dir="rtl"] .sidebar {
+        left: auto;
+        right: 0;
+        border-radius: var(--clay-r-xl) 0 0 var(--clay-r-xl);
+        transform: translateX(104%);
+    }
+    [dir="rtl"] .sidebar.mobile-open { transform: translateX(0); }
+    [dir="rtl"] .post-card.sticky-post::after { left: -4px; right: auto; }
+    [dir="rtl"] .back-to-top { right: 1rem; left: auto; }
 }
