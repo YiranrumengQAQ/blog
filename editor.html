@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>写作助手 - 让写文章像填表格一样简单</title>
     <meta name="robots" content="noindex">
-    <meta name="theme-color" content="#FDFBF7">
+    <meta name="theme-color" content="#EDEBFA">
     <script>
         // 防止主题闪烁（FOUC）：与 index.html 相同的内联脚本。
         // editor.js 在 DOMContentLoaded 之后才恢复主题，没有这段会先闪一帧亮色。
@@ -18,7 +18,7 @@
                 if (dark) {
                     document.documentElement.setAttribute('data-theme', 'dark');
                     var meta = document.querySelector('meta[name="theme-color"]');
-                    if (meta) meta.setAttribute('content', '#141218');
+                    if (meta) meta.setAttribute('content', '#201C2E');
                 }
             } catch (e) { /* localStorage 不可用时按默认亮色 */ }
         })();

@@ -577,7 +577,7 @@
             const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             html.setAttribute('data-theme', next);
             const meta = document.querySelector('meta[name="theme-color"]');
-            if (meta) meta.setAttribute('content', next === 'dark' ? '#141218' : '#FDFBF7');
+            if (meta) meta.setAttribute('content', next === 'dark' ? '#201C2E' : '#EDEBFA');
             try { localStorage.setItem('blog-theme', next); } catch (e) { /* 忽略 */ }
         });
 
