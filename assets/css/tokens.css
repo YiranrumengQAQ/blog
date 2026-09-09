@@ -1,45 +1,45 @@
 /* ================================================================
-   设计令牌 (Design Tokens) — Claymorphism 黏土拟物风
-   软凸起、内外阴影、超大圆角、粉彩表面
+   设计令牌 (Design Tokens) — Material 3 风格
+   修改这里的变量即可全站换肤
    ================================================================ */
 :root {
-    /* ----- 颜色 (亮色 · 粉彩黏土) ----- */
-    --md-sys-color-primary: #E07A5F;
+    /* ----- 颜色 (亮色) ----- */
+    --md-sys-color-primary: #8D6E63;
     --md-sys-color-on-primary: #FFFFFF;
-    --md-sys-color-primary-container: #FFD6C9;
-    --md-sys-color-on-primary-container: #5C2E22;
+    --md-sys-color-primary-container: #F5E6D3;
+    --md-sys-color-on-primary-container: #3E2C23;
 
-    --md-sys-color-secondary: #81B29A;
+    --md-sys-color-secondary: #6D5D4E;
     --md-sys-color-on-secondary: #FFFFFF;
-    --md-sys-color-secondary-container: #D4EDE0;
-    --md-sys-color-on-secondary-container: #1E3D30;
+    --md-sys-color-secondary-container: #E8DED3;
+    --md-sys-color-on-secondary-container: #241A12;
 
-    --md-sys-color-tertiary: #F2CC8F;
-    --md-sys-color-on-tertiary: #4A3510;
-    --md-sys-color-tertiary-container: #FFF0D0;
-    --md-sys-color-on-tertiary-container: #4A3510;
+    --md-sys-color-tertiary: #7D5260;
+    --md-sys-color-on-tertiary: #FFFFFF;
+    --md-sys-color-tertiary-container: #FFD8E4;
+    --md-sys-color-on-tertiary-container: #31111D;
 
-    --md-sys-color-error: #E07A7A;
+    --md-sys-color-error: #BA1A1A;
     --md-sys-color-on-error: #FFFFFF;
-    --md-sys-color-error-container: #FFD6D6;
-    --md-sys-color-on-error-container: #5C2222;
+    --md-sys-color-error-container: #FFDAD6;
+    --md-sys-color-on-error-container: #410002;
 
-    --md-sys-color-surface: #F4EFE6;
-    --md-sys-color-on-surface: #3D3229;
-    --md-sys-color-surface-variant: #E8DFD3;
-    --md-sys-color-on-surface-variant: #6B5E54;
-    --md-sys-color-surface-container: #EDE6DB;
-    --md-sys-color-surface-container-high: #FFFBF5;
+    --md-sys-color-surface: #FDFBF7;
+    --md-sys-color-on-surface: #1D1B20;
+    --md-sys-color-surface-variant: #F0EDE8;
+    --md-sys-color-on-surface-variant: #49454F;
+    --md-sys-color-surface-container: #F0EDE8;
+    --md-sys-color-surface-container-high: #FDFBF7;
 
-    --md-sys-color-outline: #C9B8A8;
-    --md-sys-color-outline-variant: #E4D6C6;
-    --md-sys-color-shadow: #C4B5A5;
+    --md-sys-color-outline: #79747E;
+    --md-sys-color-outline-variant: #CAC4D0;
+    --md-sys-color-shadow: #000000;
 
-    /* ----- 形状：黏土风超大圆角 ----- */
-    --md-sys-shape-corner-small: 12px;
-    --md-sys-shape-corner-medium: 20px;
-    --md-sys-shape-corner-large: 28px;
-    --md-sys-shape-corner-extra-large: 36px;
+    /* ----- 形状 (Shape) ----- */
+    --md-sys-shape-corner-small: 4px;
+    --md-sys-shape-corner-medium: 12px;
+    --md-sys-shape-corner-large: 20px;
+    --md-sys-shape-corner-extra-large: 28px;
     --md-sys-shape-corner-full: 9999px;
 
     /* ----- 排版 (Typography) ----- */
@@ -73,29 +73,12 @@
     --md-space-7: 32px;
     --md-space-8: 40px;
 
-    /* ----- 黏土阴影：外凸 + 内高光 ----- */
-    --clay-light: rgba(255, 255, 255, 0.85);
-    --clay-dark: rgba(180, 155, 130, 0.35);
+    /* ----- 阴影 (Elevation) ----- */
     --md-sys-elevation-0: none;
-    --md-sys-elevation-1:
-        6px 6px 14px var(--clay-dark),
-        -6px -6px 14px var(--clay-light),
-        inset 1px 1px 2px rgba(255, 255, 255, 0.7);
-    --md-sys-elevation-2:
-        10px 10px 22px var(--clay-dark),
-        -8px -8px 18px var(--clay-light),
-        inset 2px 2px 4px rgba(255, 255, 255, 0.8);
-    --md-sys-elevation-3:
-        14px 14px 28px var(--clay-dark),
-        -10px -10px 22px var(--clay-light),
-        inset 2px 2px 6px rgba(255, 255, 255, 0.85);
-    --md-sys-elevation-4:
-        18px 18px 36px var(--clay-dark),
-        -12px -12px 24px var(--clay-light),
-        inset 3px 3px 8px rgba(255, 255, 255, 0.9);
-    --md-sys-elevation-inset:
-        inset 6px 6px 12px var(--clay-dark),
-        inset -6px -6px 12px var(--clay-light);
+    --md-sys-elevation-1: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 1px 1px 0 rgba(0, 0, 0, 0.08);
+    --md-sys-elevation-2: 0 2px 6px 0 rgba(0, 0, 0, 0.12), 0 1px 4px 0 rgba(0, 0, 0, 0.08);
+    --md-sys-elevation-3: 0 4px 12px 0 rgba(0, 0, 0, 0.12), 0 2px 8px 0 rgba(0, 0, 0, 0.08);
+    --md-sys-elevation-4: 0 8px 24px 0 rgba(0, 0, 0, 0.12), 0 4px 16px 0 rgba(0, 0, 0, 0.08);
 
     /* ----- 字体 (Fonts) ----- */
     --md-sys-font-family: 'Inter', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
@@ -114,30 +97,26 @@
 }
 
 /* ================================================================
-   暗色主题 (Dark Theme · 夜色黏土)
+   暗色主题 (Dark Theme)
    ================================================================ */
 [data-theme="dark"] {
-    --md-sys-color-primary: #F2A488;
-    --md-sys-color-on-primary: #3D2218;
-    --md-sys-color-primary-container: #5C3A2E;
-    --md-sys-color-on-primary-container: #FFD6C9;
+    --md-sys-color-primary: #D4A77C;
+    --md-sys-color-on-primary: #3E2C23;
+    --md-sys-color-primary-container: #5A4237;
+    --md-sys-color-on-primary-container: #FCE4EC;
 
-    --md-sys-color-secondary: #A8D4BE;
-    --md-sys-color-on-secondary: #1E3D30;
-    --md-sys-color-secondary-container: #2E4A3C;
-    --md-sys-color-on-secondary-container: #D4EDE0;
+    --md-sys-color-secondary: #CCC2DC;
+    --md-sys-color-on-secondary: #332D41;
+    --md-sys-color-secondary-container: #4A4458;
+    --md-sys-color-on-secondary-container: #E8DEF8;
 
-    --md-sys-color-surface: #2A2522;
-    --md-sys-color-on-surface: #F0E6DC;
-    --md-sys-color-surface-variant: #3A332E;
-    --md-sys-color-on-surface-variant: #C9B8A8;
-    --md-sys-color-surface-container: #322C28;
-    --md-sys-color-surface-container-high: #3E3732;
+    --md-sys-color-surface: #141218;
+    --md-sys-color-on-surface: #E6E0E9;
+    --md-sys-color-surface-variant: #49454F;
+    --md-sys-color-on-surface-variant: #CAC4D0;
+    --md-sys-color-surface-container: #211F26;
+    --md-sys-color-surface-container-high: #2B2933;
 
-    --md-sys-color-outline: #6B5E54;
-    --md-sys-color-outline-variant: #4A4038;
-    --md-sys-color-shadow: #000000;
-
-    --clay-light: rgba(80, 70, 62, 0.55);
-    --clay-dark: rgba(0, 0, 0, 0.45);
+    --md-sys-color-outline: #938F99;
+    --md-sys-color-outline-variant: #49454F;
 }
