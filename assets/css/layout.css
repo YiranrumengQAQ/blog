@@ -7,12 +7,12 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    background: color-mix(in srgb, var(--md-sys-color-surface-container-high) 82%, transparent);
-    border-bottom: none;
-    padding: 0.45rem 1.5rem 0.7rem;
-    transition: background var(--md-sys-transition-medium), box-shadow var(--md-sys-transition-medium);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: var(--md-sys-color-surface);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    padding: 0 1.5rem;
+    transition: background var(--md-sys-transition-medium), border-color var(--md-sys-transition-medium);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 .site-header.scrolled {
     box-shadow: var(--md-sys-elevation-2);
@@ -75,8 +75,8 @@
 }
 .search-input {
     width: 220px;
-    height: 42px;
-    border: none;
+    height: 40px;
+    border: 1px solid var(--md-sys-color-outline-variant);
     border-radius: var(--md-sys-shape-corner-full);
     padding: 0 2.5rem 0 1rem;
     font-size: var(--md-sys-typescale-body-medium);
@@ -85,10 +85,10 @@
     color: var(--md-sys-color-on-surface);
     transition: all var(--md-sys-transition-short);
     outline: none;
-    box-shadow: var(--md-sys-elevation-inset);
 }
 .search-input:focus {
-    box-shadow: var(--md-sys-elevation-inset), 0 0 0 4px var(--md-sys-color-primary-container);
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 4px var(--md-sys-color-primary-container);
     width: 260px;
 }
 .search-input::placeholder {
@@ -140,10 +140,10 @@
 
 /* ----- M3 图标按钮 (Icon Button) ----- */
 .m3-icon-btn {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    border: none;
+    border: 1px solid var(--md-sys-color-outline-variant);
     background: var(--md-sys-color-surface-container-high);
     cursor: pointer;
     display: flex;
@@ -154,13 +154,11 @@
     color: var(--md-sys-color-on-surface-variant);
     position: relative;
     overflow: hidden;
-    box-shadow: var(--md-sys-elevation-1);
 }
 .m3-icon-btn:hover {
+    border-color: var(--md-sys-color-primary);
     background: var(--md-sys-color-primary-container);
     color: var(--md-sys-color-on-primary-container);
-    box-shadow: var(--md-sys-elevation-2);
-    transform: translateY(-1px);
 }
 .m3-icon-btn svg {
     width: 20px;
@@ -197,12 +195,11 @@
     align-items: center;
 }
 .lang-select {
-    height: 42px;
+    height: 40px;
     max-width: 118px;
     padding: 0 1.6rem 0 0.7rem;
     border-radius: var(--md-sys-shape-corner-full);
-    border: none;
-    box-shadow: var(--md-sys-elevation-1);
+    border: 1px solid var(--md-sys-color-outline-variant);
     background-color: var(--md-sys-color-surface-container-high);
     color: var(--md-sys-color-on-surface-variant);
     font: inherit;
@@ -235,11 +232,10 @@
     justify-content: center;
     gap: 4px;
     padding: 0;
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    border: none;
-    box-shadow: var(--md-sys-elevation-1);
+    border: 1px solid var(--md-sys-color-outline-variant);
     background: var(--md-sys-color-surface-container-high);
     cursor: pointer;
     transition: all var(--md-sys-transition-short);
@@ -292,11 +288,10 @@
     transition: all var(--md-sys-transition-medium);
 }
 .sidebar-section {
-    background: var(--md-sys-color-surface-container-high);
+    background: var(--md-sys-color-surface-container);
     border-radius: var(--md-sys-shape-corner-large);
     padding: 1.2rem;
-    border: none;
-    box-shadow: var(--md-sys-elevation-1);
+    border: 1px solid var(--md-sys-color-outline-variant);
     transition: all var(--md-sys-transition-medium);
 }
 .sidebar-section h3 {
@@ -316,14 +311,13 @@
 /* M3 标签 (Chip) */
 .sidebar-tag {
     font-size: var(--md-sys-typescale-label-medium);
-    padding: 0.35rem 0.75rem;
+    padding: 0.3rem 0.7rem;
     border-radius: var(--md-sys-shape-corner-full);
-    background: var(--md-sys-color-surface-variant);
+    background: var(--md-sys-color-surface-container-high);
     color: var(--md-sys-color-on-surface-variant);
     cursor: pointer;
     transition: all var(--md-sys-transition-short);
-    border: none;
-    box-shadow: var(--md-sys-elevation-1);
+    border: 1px solid transparent;
     white-space: nowrap;
     text-decoration: none;
     user-select: none;
@@ -331,8 +325,8 @@
 .sidebar-tag:hover,
 .sidebar-tag.active {
     background: var(--md-sys-color-primary-container);
+    border-color: var(--md-sys-color-primary);
     color: var(--md-sys-color-on-primary-container);
-    box-shadow: var(--md-sys-elevation-2);
 }
 .sidebar-tag .count {
     font-size: 0.7rem;

@@ -19,10 +19,7 @@ html {
 
 body {
     font-family: var(--md-sys-font-family);
-    background:
-        radial-gradient(1200px 600px at 10% -10%, #ffe8dc 0%, transparent 50%),
-        radial-gradient(900px 500px at 110% 10%, #d4ede0 0%, transparent 45%),
-        var(--md-sys-color-surface);
+    background: var(--md-sys-color-surface);
     color: var(--md-sys-color-on-surface);
     line-height: 1.7;
     min-height: 100vh;
@@ -34,12 +31,6 @@ body {
     flex-direction: column;
     transition: background var(--md-sys-transition-medium), color var(--md-sys-transition-medium);
     overflow-x: hidden;
-}
-[data-theme="dark"] body {
-    background:
-        radial-gradient(1000px 500px at 8% -8%, #4a342c 0%, transparent 50%),
-        radial-gradient(800px 400px at 110% 8%, #2e4a3c 0%, transparent 45%),
-        var(--md-sys-color-surface);
 }
 
 /* 移动端抽屉/灯箱打开时锁定底层页面滚动。
@@ -125,7 +116,7 @@ svg[data-icon] {
     text-align: center;
     color: var(--md-sys-color-on-surface-variant);
     font-size: var(--md-sys-typescale-body-small);
-    border-top: none;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
 }
 .site-footer .footer-line {
     display: flex;

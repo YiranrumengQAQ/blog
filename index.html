@@ -6,7 +6,7 @@
     <!-- 站点名走语言包 site.blogName（缺失时回退 config.json 的 blogName） -->
     <title data-i18n="site.blogName">猫猫的回忆</title>
     <meta name="description" content="记录温暖时光的静态博客" data-i18n-attr="content:site.description">
-    <meta name="theme-color" content="#F4EFE6">
+    <meta name="theme-color" content="#FDFBF7">
     <script>
         // 防止主题闪烁（FOUC）：必须放在 <head> 内、首帧渲染前同步执行。
         // theme.js 在页面底部 defer 加载，若用户偏好暗色，等它执行时页面已经
@@ -20,7 +20,7 @@
                 if (dark) {
                     document.documentElement.setAttribute('data-theme', 'dark');
                     var meta = document.querySelector('meta[name="theme-color"]');
-                    if (meta) meta.setAttribute('content', '#2A2522'); // 与 theme.js 的暗色同步
+                    if (meta) meta.setAttribute('content', '#141218'); // 与 theme.js 的暗色同步
                 }
             } catch (e) { /* 隐私模式等 localStorage 不可用时按默认亮色 */ }
         })();
