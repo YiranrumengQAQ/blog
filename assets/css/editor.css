@@ -5,9 +5,11 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    background: var(--md-sys-color-surface);
-    border-bottom: 1px solid var(--md-sys-color-outline-variant);
-    padding: 0 1.5rem;
+    background: color-mix(in srgb, var(--md-sys-color-surface-container-high) 85%, transparent);
+    border-bottom: none;
+    padding: 0.4rem 1.5rem 0.6rem;
+    backdrop-filter: blur(16px);
+    box-shadow: var(--md-sys-elevation-1);
 }
 .editor-header-inner {
     max-width: 1440px;
@@ -54,17 +56,18 @@
     align-items: center;
     gap: 0.35rem;
     font-size: var(--md-sys-typescale-body-medium);
-    color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary-container);
     text-decoration: none;
-    padding: 0.35rem 0.8rem;
+    padding: 0.4rem 0.9rem;
     border-radius: var(--md-sys-shape-corner-full);
-    border: 1px solid var(--md-sys-color-outline-variant);
+    border: none;
+    background: var(--md-sys-color-primary-container);
+    box-shadow: var(--md-sys-elevation-1);
     transition: all var(--md-sys-transition-short);
     white-space: nowrap;
 }
 .editor-back-link:hover {
-    background: var(--md-sys-color-primary-container);
-    border-color: var(--md-sys-color-primary);
+    box-shadow: var(--md-sys-elevation-2);
 }
 
 .editor-main {
@@ -79,8 +82,9 @@
 
 .editor-panel {
     background: var(--md-sys-color-surface-container-high);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: var(--md-sys-shape-corner-large);
+    border: none;
+    box-shadow: var(--md-sys-elevation-2);
+    border-radius: var(--md-sys-shape-corner-extra-large);
     padding: 1.4rem;
     display: flex;
     flex-direction: column;
@@ -143,7 +147,7 @@
 .form-input,
 .form-textarea {
     width: 100%;
-    border: 1px solid var(--md-sys-color-outline-variant);
+    border: none;
     border-radius: var(--md-sys-shape-corner-medium);
     background: var(--md-sys-color-surface);
     color: var(--md-sys-color-on-surface);
@@ -152,11 +156,11 @@
     padding: 0.55rem 0.8rem;
     transition: all var(--md-sys-transition-short);
     outline: none;
+    box-shadow: var(--md-sys-elevation-inset);
 }
 .form-input:focus,
 .form-textarea:focus {
-    border-color: var(--md-sys-color-primary);
-    box-shadow: 0 0 0 3px var(--md-sys-color-primary-container);
+    box-shadow: var(--md-sys-elevation-inset), 0 0 0 3px var(--md-sys-color-primary-container);
 }
 .form-textarea {
     resize: vertical;
@@ -198,20 +202,21 @@
     align-items: center;
     gap: 0.32rem;
     font-size: var(--md-sys-typescale-label-large);
-    padding: 0.3rem 0.65rem;
+    padding: 0.35rem 0.7rem;
     border-radius: var(--md-sys-shape-corner-full);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    background: var(--md-sys-color-surface);
+    border: none;
+    background: var(--md-sys-color-surface-container-high);
     color: var(--md-sys-color-on-surface-variant);
     cursor: pointer;
     font-family: var(--md-sys-font-family);
     transition: all var(--md-sys-transition-short);
     user-select: none;
+    box-shadow: var(--md-sys-elevation-1);
 }
 .md-btn:hover {
-    border-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary-container);
     background: var(--md-sys-color-primary-container);
+    box-shadow: var(--md-sys-elevation-2);
 }
 .md-btn .icon {
     width: 1.05em;
@@ -236,19 +241,20 @@
     font-size: var(--md-sys-typescale-body-medium);
     font-family: var(--md-sys-font-family);
     font-weight: 600;
-    padding: 0.6rem 1.2rem;
+    padding: 0.65rem 1.3rem;
     border-radius: var(--md-sys-shape-corner-full);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    background: var(--md-sys-color-surface);
+    border: none;
+    background: var(--md-sys-color-surface-container-high);
     color: var(--md-sys-color-on-surface);
     cursor: pointer;
     text-decoration: none;
     transition: all var(--md-sys-transition-short);
     user-select: none;
+    box-shadow: var(--md-sys-elevation-1);
 }
 .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--md-sys-elevation-2);
+    transform: translateY(-2px);
+    box-shadow: var(--md-sys-elevation-3);
 }
 .btn-primary {
     background: var(--md-sys-color-primary);
@@ -461,9 +467,10 @@
 
 /* 帮助折叠面板 */
 .help-details {
-    border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: var(--md-sys-shape-corner-medium);
+    border: none;
+    border-radius: var(--md-sys-shape-corner-large);
     background: var(--md-sys-color-surface);
+    box-shadow: var(--md-sys-elevation-1);
     overflow: hidden;
 }
 .help-details summary {
@@ -549,10 +556,10 @@
 }
 .toast {
     pointer-events: auto;
-    padding: 0.7rem 1.2rem;
+    padding: 0.8rem 1.3rem;
     border-radius: var(--md-sys-shape-corner-full);
     background: var(--md-sys-color-surface-container-high);
-    border: 1px solid var(--md-sys-color-outline-variant);
+    border: none;
     color: var(--md-sys-color-on-surface);
     font-size: var(--md-sys-typescale-body-medium);
     box-shadow: var(--md-sys-elevation-3);
