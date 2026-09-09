@@ -1,0 +1,886 @@
+/* ================================================================
+   Neo-Brutalism 皮肤补丁 (neo-brutalism.css)
+   ----------------------------------------------------------------
+   补丁原则：**不修改、不删除任何旧样式文件**。
+   本文件加载在 tokens/base/layout/components/article/responsive
+   /editor 全部旧样式之后，用两层手段把全站从 Claymorphism
+   （黏土拟物）整体覆盖为 Neo-Brutalism（新粗野主义）：
+
+     1. 重新定义 --clay-* 设计令牌（颜色 / 圆角→0 / 黏土柔和阴影
+        →纯色硬投影 / 弹性过渡 → 干脆的快过渡）。旧规则引用令牌，
+        令牌一换，全站自动跟着换。
+     2. 令牌覆盖不到的地方（旧规则写死的 border: none、50% 圆角、
+        渐变底色……）用选择器补丁逐条覆盖。
+
+   Neo-Brutalism 三板斧：
+     · 粗黑描边（3px 实线，不透明、不柔和）
+     · 硬投影（Xpx Ypx 0 纯色、零模糊、零扩散）
+     · 直角（border-radius 全部归零）+ 高饱和撞色 + 按下位移
+
+   想卸载补丁：删掉 index.html / editor.html 里的这一行
+   <link rel="stylesheet" href="assets/css/neo-brutalism.css">
+   旧黏土 UI 原样复活，一行旧代码都不用改。
+
+   想临时回退：给 <html> 加 ui-clay 类（右下角悬浮按钮 /
+   localStorage 的 blog-ui=clay 也会加）。本文件所有覆盖规则
+   都用 html:not(.ui-clay) 门控，类一加，补丁整体失效。
+   ================================================================ */
+
+/* ----------------------------------------------------------------
+   0. 补丁私有令牌
+   --nb-ink 是粗野主义的「墨色」：描边、投影、强调字全用它。
+   默认 transparent —— 这样右下角的皮肤开关按钮在黏土模式下
+   不会突兀地长出黑边；补丁生效时由下面两块令牌改成实色。
+   ---------------------------------------------------------------- */
+:root {
+    --nb-ink: transparent;
+}
+
+/* ----------------------------------------------------------------
+   1. 令牌补丁 · 亮色（Neo-Brutalism Light）
+   奶油纸底 + 白卡片 + 墨黑描边 + 电光蓝/荧光粉/芥末黄撞色
+   ---------------------------------------------------------------- */
+html:not(.ui-clay) {
+    --nb-ink: #101010;
+
+    /* ----- 主色板：高饱和、敢撞色 ----- */
+    --clay-primary: #2D5BFF;            /* 电光蓝 */
+    --clay-primary-deep: #1E41CC;
+    --clay-on-primary: #FFFFFF;
+    --clay-primary-soft: #D9E2FF;       /* 蓝色贴纸 */
+    --clay-on-primary-soft: #0F2183;
+
+    --clay-secondary: #FF90E8;          /* 荧光粉 */
+    --clay-on-secondary: #43092F;
+    --clay-secondary-soft: #FFDEF8;
+    --clay-on-secondary-soft: #7A115F;
+
+    --clay-tertiary: #7CE8A4;           /* 薄荷绿 */
+    --clay-tertiary-soft: #D4F7E2;
+    --clay-on-tertiary-soft: #0A5C34;
+
+    --clay-warn: #FFCB2E;               /* 芥末黄：高亮专用 */
+    --clay-warn-soft: #FFE9A3;
+    --clay-on-warn-soft: #6B4A00;
+
+    --clay-error: #FF4D4D;
+    --clay-error-soft: #FFD9D9;
+    --clay-on-error-soft: #8F1616;
+
+    /* ----- 表面：纸感 ----- */
+    --clay-bg: #FAF3E3;                 /* 奶油纸底 */
+    --clay-bg-tint: none;               /* 撤掉三团柔光，换成点阵网格（见下） */
+    --clay-surface: #FFFFFF;
+    --clay-surface-2: #F1EBDC;
+    --clay-surface-3: #FFFFFF;
+    --clay-on-surface: #101010;
+    --clay-on-surface-dim: #5C5545;
+
+    --clay-shade: rgba(16, 16, 16, 0.2);
+    --clay-shade-strong: rgba(16, 16, 16, 0.32);
+    --clay-light: rgba(255, 255, 255, 0.9);
+
+    /* ----- 硬投影：零模糊、零扩散，偏移多少就是多少 ----- */
+    --clay-1: 3px 3px 0 var(--nb-ink);
+    --clay-2: 5px 5px 0 var(--nb-ink);
+    --clay-3: 8px 8px 0 var(--nb-ink);
+    --clay-4: 10px 10px 0 var(--nb-ink);
+    --clay-inset: inset 3px 3px 0 rgba(16, 16, 16, 0.08);
+    --clay-inset-deep: inset 4px 4px 0 rgba(16, 16, 16, 0.14);
+    --clay-color-raise: 5px 5px 0 var(--nb-ink);
+
+    /* ----- 形状：全部直角 ----- */
+    --clay-r-xs: 0;
+    --clay-r-sm: 0;
+    --clay-r-md: 0;
+    --clay-r-lg: 0;
+    --clay-r-xl: 0;
+    --clay-r-full: 0;
+
+    /* ----- 排版：粗黑无衬线 + 等宽字点缀 ----- */
+    --clay-font: 'Helvetica Neue', Helvetica, Arial, 'Segoe UI',
+                 'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei',
+                 system-ui, sans-serif;
+    --clay-font-display: 'Archivo Black', 'Arial Black', 'Helvetica Neue',
+                 'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei',
+                 system-ui, sans-serif;
+    --clay-font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace,
+                 'SF Mono', 'Cascadia Code', Consolas, monospace;
+
+    /* ----- 过渡：快、脆、不回弹 ----- */
+    --clay-t-fast: 0.1s cubic-bezier(0.2, 0, 0, 1);
+    --clay-t: 0.14s cubic-bezier(0.2, 0, 0, 1);
+    --clay-t-slow: 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ----------------------------------------------------------------
+   2. 令牌补丁 · 暗色（Neo-Brutalism Dark）
+   暗夜纸底 + 米白描边/投影（黑底上黑影子看不见，干脆反色成
+   「粉笔白」轮廓，荧光撞色不变，对比更凶）
+   ---------------------------------------------------------------- */
+html[data-theme="dark"]:not(.ui-clay) {
+    --nb-ink: #F2EFE9;
+
+    --clay-primary: #7790FF;
+    --clay-primary-deep: #93A7FF;
+    --clay-on-primary: #101010;
+    --clay-primary-soft: #323A66;
+    --clay-on-primary-soft: #C7D2FF;
+
+    --clay-secondary: #FF9DEE;
+    --clay-on-secondary: #43092F;
+    --clay-secondary-soft: #4D2340;
+    --clay-on-secondary-soft: #FFD3F4;
+
+    --clay-tertiary: #7CE8A4;
+    --clay-tertiary-soft: #1F4A33;
+    --clay-on-tertiary-soft: #B8F5CE;
+
+    --clay-warn: #FFCB2E;
+    --clay-warn-soft: #574408;
+    --clay-on-warn-soft: #FFE9A3;
+
+    --clay-error: #FF6B6B;
+    --clay-error-soft: #5C2320;
+    --clay-on-error-soft: #FFD1D1;
+
+    --clay-bg: #171512;
+    --clay-bg-tint: none;
+    --clay-surface: #23201B;
+    --clay-surface-2: #2C2822;
+    --clay-surface-3: #26231E;
+    --clay-on-surface: #F5F1E6;
+    --clay-on-surface-dim: #A79E8B;
+
+    --clay-shade: rgba(0, 0, 0, 0.5);
+    --clay-shade-strong: rgba(0, 0, 0, 0.65);
+    --clay-light: rgba(255, 255, 255, 0.06);
+
+    --clay-1: 3px 3px 0 rgba(242, 239, 233, 0.85);
+    --clay-2: 5px 5px 0 rgba(242, 239, 233, 0.85);
+    --clay-3: 8px 8px 0 rgba(242, 239, 233, 0.85);
+    --clay-4: 10px 10px 0 rgba(242, 239, 233, 0.85);
+    --clay-inset: inset 3px 3px 0 rgba(242, 239, 233, 0.06);
+    --clay-inset-deep: inset 4px 4px 0 rgba(242, 239, 233, 0.1);
+    --clay-color-raise: 5px 5px 0 rgba(242, 239, 233, 0.85);
+}
+
+/* 尊重「减少动态效果」：与旧 tokens.css 行为保持一致，
+   但要重新声明一遍（本文件的选择器优先级更高，不重声明会盖掉旧的） */
+@media (prefers-reduced-motion: reduce) {
+    html:not(.ui-clay) {
+        --clay-t-fast: 0.01ms linear;
+        --clay-t: 0.01ms linear;
+        --clay-t-slow: 0.01ms linear;
+    }
+}
+
+/* ================================================================
+   3. 基础层补丁
+   ================================================================ */
+
+/* 纸底 + 点阵网格：粗野主义站点的经典底纹 */
+html:not(.ui-clay) body {
+    background-image: radial-gradient(rgba(16, 16, 16, 0.12) 1.3px, transparent 1.3px);
+    background-size: 26px 26px;
+}
+html[data-theme="dark"]:not(.ui-clay) body {
+    background-image: radial-gradient(rgba(242, 239, 233, 0.1) 1.3px, transparent 1.3px);
+}
+
+/* 滚动条：一根带描边的实心方条 */
+html:not(.ui-clay) ::-webkit-scrollbar { width: 14px; height: 14px; }
+html:not(.ui-clay) ::-webkit-scrollbar-track { background: var(--clay-bg); }
+html:not(.ui-clay) ::-webkit-scrollbar-thumb {
+    background: var(--clay-primary);
+    border: 3px solid var(--clay-bg);
+    background-clip: padding-box;
+    border-radius: 0;
+}
+html:not(.ui-clay) ::-webkit-scrollbar-thumb:hover {
+    background: var(--clay-primary-deep);
+    background-clip: padding-box;
+}
+
+/* 选中文字 = 一块芥末黄荧光贴纸 */
+html:not(.ui-clay) ::selection {
+    background: var(--clay-warn);
+    color: #101010;
+}
+
+/* 聚焦环：黑框，直角 */
+html:not(.ui-clay) :focus-visible {
+    outline: 3px solid var(--nb-ink);
+    outline-offset: 2px;
+}
+
+/* 旧黏土工具类补上描边 */
+html:not(.ui-clay) .clay { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .clay-inset { border: 2px solid var(--nb-ink); }
+
+/* 无脚本提示 */
+html:not(.ui-clay) .nojs-tip { border: 3px solid var(--nb-ink); }
+
+/* 页脚：一块方牌子 */
+html:not(.ui-clay) .site-footer .footer-line { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .site-footer a:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+
+/* ================================================================
+   4. 顶栏补丁
+   ================================================================ */
+
+/* 滚动时顶栏背后的渐隐毛玻璃 → 一整块纸 + 底部墨线 */
+html:not(.ui-clay) .site-header::before {
+    background: var(--clay-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+html:not(.ui-clay) .site-header.scrolled::before {
+    box-shadow: 0 4px 0 var(--nb-ink);
+}
+
+html:not(.ui-clay) .header-inner { border: 3px solid var(--nb-ink); }
+
+/* 站名旁三颗黏土球 → 三枚彩色方片（保留呼吸动画） */
+html:not(.ui-clay) .blog-name .paw-dot {
+    border-radius: 0;
+    border: 2px solid var(--nb-ink);
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+
+/* 搜索框：白底黑框，聚焦时投影加重 */
+html:not(.ui-clay) .search-input {
+    border: 3px solid var(--nb-ink);
+    background: var(--clay-surface);
+    box-shadow: 3px 3px 0 var(--nb-ink);
+}
+html:not(.ui-clay) .search-input:focus {
+    box-shadow: 5px 5px 0 var(--nb-ink);
+}
+html:not(.ui-clay) .search-clear {
+    border-radius: 0;
+    border: 2px solid var(--nb-ink);
+    background: var(--clay-surface-3);
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+html:not(.ui-clay) .search-kbd {
+    border: 2px solid var(--nb-ink);
+    border-radius: 0;
+    box-shadow: 2px 2px 0 var(--nb-ink);
+    background: var(--clay-surface);
+}
+
+/* 圆形图标按钮 → 方钮 + 「按下去」交互 */
+html:not(.ui-clay) .m3-icon-btn,
+html:not(.ui-clay) .mobile-menu-btn,
+html:not(.ui-clay) .mobile-search-btn {
+    border: 3px solid var(--nb-ink);
+    border-radius: 0;
+}
+html:not(.ui-clay) .m3-icon-btn:hover,
+html:not(.ui-clay) .mobile-menu-btn:hover,
+html:not(.ui-clay) .mobile-search-btn:hover {
+    transform: translate(-2px, -2px);
+}
+html:not(.ui-clay) .m3-icon-btn:active,
+html:not(.ui-clay) .mobile-menu-btn:active,
+html:not(.ui-clay) .mobile-search-btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--nb-ink);
+}
+
+/* 语言下拉 */
+html:not(.ui-clay) .lang-select {
+    border: 3px solid var(--nb-ink);
+    border-radius: 0;
+    background-color: var(--clay-surface);
+    box-shadow: 3px 3px 0 var(--nb-ink);
+}
+html:not(.ui-clay) .lang-select:hover,
+html:not(.ui-clay) .lang-select:focus-visible {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 var(--nb-ink);
+    outline: none;
+}
+
+/* ================================================================
+   5. 侧边栏补丁
+   ================================================================ */
+html:not(.ui-clay) .sidebar-section { border: 3px solid var(--nb-ink); }
+
+/* 标题前的黏土点 → 墨边方片 */
+html:not(.ui-clay) .sidebar-section h3::before {
+    border-radius: 0;
+    border: 2px solid var(--nb-ink);
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+
+/* 标签：贴纸 + 位移按压 */
+html:not(.ui-clay) .sidebar-tag {
+    border: 2px solid var(--nb-ink);
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+html:not(.ui-clay) .sidebar-tag:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--nb-ink);
+}
+html:not(.ui-clay) .sidebar-tag:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 var(--nb-ink);
+}
+
+/* 分类 / 归档列表项：平时只有底色，悬停 / 激活时长出墨框 */
+html:not(.ui-clay) .sidebar-cat-item,
+html:not(.ui-clay) .sidebar-archive-item {
+    border: 2px solid transparent;
+    border-radius: 0;
+}
+html:not(.ui-clay) .sidebar-cat-item:hover,
+html:not(.ui-clay) .sidebar-archive-item:hover {
+    border-color: var(--nb-ink);
+    background: var(--clay-surface);
+    box-shadow: 3px 3px 0 var(--nb-ink);
+    transform: translate(-1px, -1px);
+}
+html:not(.ui-clay) .sidebar-cat-item.active,
+html:not(.ui-clay) .sidebar-archive-item.active {
+    border-color: var(--nb-ink);
+    background: var(--clay-primary-soft);
+    box-shadow: 3px 3px 0 var(--nb-ink);
+}
+
+/* 计数徽章：芥末黄小方牌 */
+html:not(.ui-clay) .sidebar-cat-item .count,
+html:not(.ui-clay) .sidebar-archive-item .count {
+    border: 2px solid var(--nb-ink);
+    border-radius: 0;
+    background: var(--clay-warn);
+    color: #101010;
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+
+/* 「显示全部文章」主按钮 */
+html:not(.ui-clay) .sidebar-reset { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .sidebar-reset:hover { transform: translate(-2px, -2px); }
+html:not(.ui-clay) .sidebar-reset:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--nb-ink);
+}
+
+/* ================================================================
+   6. 内容区 / 文章卡片 / 分页 / 空状态 / 骨架 / Toast
+   ================================================================ */
+html:not(.ui-clay) .content-header { border: 3px solid var(--nb-ink); }
+
+/* 结果计数：荧光黄方牌（文字永远用墨黑，黄底两套主题通用） */
+html:not(.ui-clay) .result-count {
+    border: 2px solid var(--nb-ink);
+    background: var(--clay-warn);
+    color: #101010;
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+
+/* 文章卡片 */
+html:not(.ui-clay) .post-card { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .post-card:hover { transform: translate(-3px, -3px); }
+html:not(.ui-clay) .post-card:active {
+    transform: translate(3px, 3px);
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+
+/* 置顶文章：整张卡刷成荧光黄，右上角戳一枚粉色方钉 */
+html:not(.ui-clay) .post-card.sticky-post { background: var(--clay-warn); }
+html[data-theme="dark"]:not(.ui-clay) .post-card.sticky-post { background: var(--clay-warn-soft); }
+html:not(.ui-clay) .post-card.sticky-post::after {
+    border-radius: 0;
+    border: 2px solid var(--nb-ink);
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+
+/* 封面 */
+html:not(.ui-clay) .card-cover { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .card-cover img { border-radius: 0; }
+html:not(.ui-clay) .card-cover-placeholder {
+    background: var(--clay-primary-soft);
+    text-shadow: none;
+}
+
+/* 卡片上的小徽章 / 标签 */
+html:not(.ui-clay) .card-sticky-badge { border: 2px solid var(--nb-ink); }
+html:not(.ui-clay) .card-category { border: 2px solid var(--nb-ink); }
+html:not(.ui-clay) .card-tag {
+    border: 2px solid var(--nb-ink);
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+html:not(.ui-clay) .card-tag.clickable:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--nb-ink);
+}
+
+/* 搜索高亮：荧光黄记号笔 */
+html:not(.ui-clay) mark.search-hl {
+    background: var(--clay-warn);
+    color: #101010;
+    border: 2px solid var(--nb-ink);
+    border-radius: 0;
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+
+/* 分页方钮 */
+html:not(.ui-clay) .page-btn { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .page-btn:hover:not(:disabled) { transform: translate(-2px, -2px); }
+html:not(.ui-clay) .page-btn:active:not(:disabled) {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--nb-ink);
+}
+html:not(.ui-clay) .page-btn.active { transform: none; }
+html:not(.ui-clay) .page-btn:disabled { box-shadow: none; }
+
+/* 空状态 */
+html:not(.ui-clay) .empty-state { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .empty-state .empty-icon {
+    border-radius: 0;
+    border: 3px solid var(--nb-ink);
+    background: var(--clay-warn);
+    color: #101010;
+    box-shadow: 4px 4px 0 var(--nb-ink);
+}
+
+/* 骨架屏 */
+html:not(.ui-clay) .skeleton-card { border: 3px solid var(--nb-ink); }
+
+/* Toast：方牌 + 硬投影，弹入更快更脆 */
+html:not(.ui-clay) .toast {
+    border: 3px solid var(--nb-ink);
+    animation-duration: 0.18s;
+    animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+html:not(.ui-clay) .toast.toast-out { animation-duration: 0.15s; }
+/* 给右下角的皮肤开关让位，Toast 整体抬高一点 */
+html:not(.ui-clay) .toast-container { bottom: 5.4rem; }
+
+/* 回到顶部：圆钮 → 方钮 */
+html:not(.ui-clay) .back-to-top {
+    border-radius: 0;
+    border: 3px solid var(--nb-ink);
+}
+html:not(.ui-clay) .back-to-top.visible { transform: translateY(0) scale(1); }
+html:not(.ui-clay) .back-to-top:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 7px 7px 0 var(--nb-ink);
+}
+html:not(.ui-clay) .back-to-top:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 var(--nb-ink);
+}
+
+/* 阅读进度条：黄蓝斜纹硬糖条 */
+html:not(.ui-clay) .reading-progress { height: 10px; }
+html:not(.ui-clay) .reading-progress-bar {
+    background: repeating-linear-gradient(-45deg,
+        var(--clay-warn) 0 12px,
+        var(--clay-primary) 12px 24px);
+    border-radius: 0;
+    box-shadow: 0 3px 0 var(--nb-ink);
+}
+
+/* ================================================================
+   7. 文章详情页补丁
+   ================================================================ */
+html:not(.ui-clay) .article-view {
+    border: 3px solid var(--nb-ink);
+    animation-duration: 0.22s;
+    animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+html:not(.ui-clay) .article-back { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .article-back:hover { transform: translate(-2px, -2px); }
+html:not(.ui-clay) .article-back:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 var(--nb-ink);
+}
+html:not(.ui-clay) .article-cover-full { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .article-meta {
+    border: 3px solid var(--nb-ink);
+    box-shadow: var(--clay-1);
+}
+html:not(.ui-clay) .article-meta .meta-sep { border-radius: 0; }
+
+/* 标题下的黏土短棍 → 墨边色块 */
+html:not(.ui-clay) .article-content h1::after,
+html:not(.ui-clay) .article-content h2::after {
+    border-radius: 0;
+    box-shadow: 3px 3px 0 var(--nb-ink);
+}
+
+/* 行内链接：贴纸式，悬停反色 */
+html:not(.ui-clay) .article-content a {
+    border: 2px solid var(--nb-ink);
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+html:not(.ui-clay) .article-content a:hover {
+    background: var(--clay-primary);
+    color: var(--clay-on-primary);
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+
+/* 图片 / 嵌入媒体 */
+html:not(.ui-clay) .article-content img {
+    border: 3px solid var(--nb-ink);
+}
+html:not(.ui-clay) .article-content img:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 7px 7px 0 var(--nb-ink);
+}
+html:not(.ui-clay) .article-content iframe,
+html:not(.ui-clay) .article-content video,
+html:not(.ui-clay) .article-content embed,
+html:not(.ui-clay) .article-content object {
+    border: 3px solid var(--nb-ink);
+    box-shadow: var(--clay-1);
+}
+
+/* 引用块：墨框 + 粗色左肋，撤掉内部小圆棒 */
+html:not(.ui-clay) .article-content blockquote {
+    border: 3px solid var(--nb-ink);
+    border-left: 10px solid var(--clay-secondary);
+    box-shadow: var(--clay-1);
+}
+html:not(.ui-clay) .article-content blockquote::before { display: none; }
+
+/* 代码：行内小贴纸 / 代码块墨框 */
+html:not(.ui-clay) .article-content code {
+    border: 1.5px solid var(--nb-ink);
+    border-radius: 0;
+    box-shadow: none;
+}
+html:not(.ui-clay) .article-content pre {
+    border: 3px solid var(--nb-ink);
+    box-shadow: var(--clay-1);
+}
+html:not(.ui-clay) .copy-code-btn {
+    border: 2px solid var(--nb-ink);
+    background: var(--clay-surface);
+}
+
+/* 表格：实线网格 + 芥末黄表头 */
+html:not(.ui-clay) .article-content table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 3px solid var(--nb-ink);
+    box-shadow: var(--clay-2);
+    padding: 0;
+}
+html:not(.ui-clay) .article-content th,
+html:not(.ui-clay) .article-content td {
+    border: 2px solid var(--nb-ink);
+    border-radius: 0;
+}
+html:not(.ui-clay) .article-content th {
+    background: var(--clay-warn);
+    color: #101010;
+}
+
+/* 分割线：一块实心色条 */
+html:not(.ui-clay) .article-content hr {
+    background: var(--clay-primary);
+    height: 6px;
+    border-radius: 0;
+    box-shadow: 3px 3px 0 var(--nb-ink);
+}
+
+/* 图片加载失败的占位 */
+html:not(.ui-clay) .img-fallback { border: 3px solid var(--nb-ink); }
+
+/* 上一篇 / 下一篇 */
+html:not(.ui-clay) .article-nav-item { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .article-nav-item:hover { transform: translate(-2px, -2px); }
+html:not(.ui-clay) .article-nav-item:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 var(--nb-ink);
+}
+
+/* 灯箱：压暗不打磨（撤掉毛玻璃），按钮全部方角化 */
+html:not(.ui-clay) .lightbox {
+    background: rgba(12, 10, 8, 0.9);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+html:not(.ui-clay) .lightbox-img {
+    border-radius: 0;
+    border: 3px solid #F2EFE9;
+    box-shadow: 14px 14px 0 rgba(0, 0, 0, 0.55);
+}
+html:not(.ui-clay) .lightbox button {
+    border-radius: 0;
+    border: 3px solid #F2EFE9;
+    background: #171512;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.55);
+}
+html:not(.ui-clay) .lightbox-caption {
+    border-radius: 0;
+    border: 2px solid rgba(242, 239, 233, 0.7);
+    background: #171512;
+}
+
+/* ================================================================
+   8. 写作助手 (editor.html) 补丁
+   ================================================================ */
+html:not(.ui-clay) .editor-header-inner { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .editor-brand > .icon {
+    border-radius: 0;
+    border: 2px solid var(--nb-ink);
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+html:not(.ui-clay) .editor-brand .badge {
+    border: 2px solid var(--nb-ink);
+    background: var(--clay-warn);
+    color: #101010;
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+html:not(.ui-clay) .editor-back-link { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .editor-back-link:hover { transform: translate(-2px, -2px); }
+html:not(.ui-clay) .editor-back-link:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 var(--nb-ink);
+}
+
+/* 面板 */
+html:not(.ui-clay) .editor-panel { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .panel-title > .icon {
+    border-radius: 0;
+    border: 2px solid var(--nb-ink);
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+
+/* 表单：白底墨框输入槽 */
+html:not(.ui-clay) .form-input,
+html:not(.ui-clay) .form-textarea {
+    border: 3px solid var(--nb-ink);
+    background: var(--clay-surface);
+    box-shadow: 3px 3px 0 var(--nb-ink);
+}
+html:not(.ui-clay) .form-input:focus,
+html:not(.ui-clay) .form-textarea:focus {
+    box-shadow: 5px 5px 0 var(--nb-ink);
+    outline: none;
+}
+html:not(.ui-clay) .form-check {
+    border: 2px solid var(--nb-ink);
+    box-shadow: none;
+}
+
+/* Markdown 工具栏 */
+html:not(.ui-clay) .md-toolbar {
+    border: 3px solid var(--nb-ink);
+    box-shadow: none;
+}
+html:not(.ui-clay) .md-btn {
+    border: 2px solid var(--nb-ink);
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+html:not(.ui-clay) .md-btn:hover { transform: translate(-1px, -1px); }
+html:not(.ui-clay) .md-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 var(--nb-ink);
+}
+
+/* 按钮区 */
+html:not(.ui-clay) .btn { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .btn:hover { transform: translate(-2px, -2px); }
+html:not(.ui-clay) .btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--nb-ink);
+}
+html:not(.ui-clay) .btn-primary {
+    background: var(--clay-primary);
+    color: var(--clay-on-primary);
+}
+html:not(.ui-clay) .btn-primary:hover { filter: none; }
+html:not(.ui-clay) .btn-tertiary {
+    color: #10453A;
+    box-shadow: var(--clay-color-raise);
+}
+html:not(.ui-clay) .btn-danger-ghost { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .btn[disabled] { box-shadow: none; }
+
+/* 导入 / 警示条 */
+html:not(.ui-clay) .import-note {
+    border: 2px solid var(--nb-ink);
+    box-shadow: none;
+}
+html:not(.ui-clay) .warn-banner {
+    border: 3px solid var(--nb-ink);
+    box-shadow: var(--clay-1);
+}
+
+/* 预览面板 */
+html:not(.ui-clay) .preview-cover { border: 3px solid var(--nb-ink); }
+html:not(.ui-clay) .preview-content::before {
+    background: var(--nb-ink);
+    height: 6px;
+    border-radius: 0;
+    box-shadow: none;
+}
+html:not(.ui-clay) .preview-content img {
+    border: 3px solid var(--nb-ink);
+    box-shadow: var(--clay-1);
+}
+html:not(.ui-clay) .preview-content iframe,
+html:not(.ui-clay) .preview-content video {
+    border: 3px solid var(--nb-ink);
+    box-shadow: none;
+}
+html:not(.ui-clay) .preview-content blockquote {
+    border: 3px solid var(--nb-ink);
+    border-left: 8px solid var(--clay-secondary);
+    box-shadow: none;
+}
+html:not(.ui-clay) .preview-content code {
+    border: 1.5px solid var(--nb-ink);
+    border-radius: 0;
+    box-shadow: none;
+}
+html:not(.ui-clay) .preview-content pre {
+    border: 3px solid var(--nb-ink);
+    box-shadow: none;
+}
+html:not(.ui-clay) .preview-content table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 3px solid var(--nb-ink);
+    padding: 0;
+}
+html:not(.ui-clay) .preview-content th,
+html:not(.ui-clay) .preview-content td { border: 2px solid var(--nb-ink); }
+html:not(.ui-clay) .preview-content th {
+    background: var(--clay-warn);
+    color: #101010;
+}
+html:not(.ui-clay) .preview-empty {
+    border: 3px solid var(--nb-ink);
+    box-shadow: none;
+}
+
+/* 帮助折叠面板 */
+html:not(.ui-clay) .help-details {
+    border: 2px solid var(--nb-ink);
+    box-shadow: none;
+}
+html:not(.ui-clay) .help-details summary::before {
+    border-radius: 0;
+    border: 2px solid var(--nb-ink);
+    box-shadow: 2px 2px 0 var(--nb-ink);
+}
+html:not(.ui-clay) .help-tip {
+    border: 2px solid var(--nb-ink);
+    box-shadow: none;
+}
+html:not(.ui-clay) .help-body code,
+html:not(.ui-clay) .help-table code {
+    border: 1.5px solid var(--nb-ink);
+    border-radius: 0;
+    box-shadow: none;
+}
+html:not(.ui-clay) .help-table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+html:not(.ui-clay) .help-table th,
+html:not(.ui-clay) .help-table td {
+    border: 2px solid var(--nb-ink);
+    border-radius: 0;
+}
+html:not(.ui-clay) .help-table th {
+    background: var(--clay-warn);
+    color: #101010;
+}
+
+/* ================================================================
+   9. 响应式 & RTL（仅补丁态需要额外处理的）
+   ================================================================ */
+@media (max-width: 768px) {
+    /* 移动端抽屉侧栏：加一条墨色右缘 */
+    html:not(.ui-clay) .sidebar { border-right: 3px solid var(--nb-ink); }
+    html:not(.ui-clay)[dir="rtl"] .sidebar {
+        border-right: none;
+        border-left: 3px solid var(--nb-ink);
+    }
+    /* 顶部滑出的搜索条 */
+    html:not(.ui-clay) .search-wrap.mobile-visible { border: 3px solid var(--nb-ink); }
+    /* 遮罩撤掉毛玻璃 */
+    html:not(.ui-clay) .sidebar-overlay {
+        background: rgba(12, 10, 8, 0.55);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+    html:not(.ui-clay) .toast-container { bottom: 5rem; }
+}
+
+/* RTL 下 Toast 与皮肤开关同侧，抬高避让 */
+html:not(.ui-clay)[dir="rtl"] .toast-container { bottom: 5.4rem; }
+@media (max-width: 768px) {
+    html:not(.ui-clay)[dir="rtl"] .toast-container { bottom: 5rem; }
+}
+
+/* ================================================================
+   10. 皮肤开关（uipatch.js 动态注入）
+   ----------------------------------------------------------------
+   这段**故意不做 ui-clay 门控**：黏土模式下按钮也要能显示
+   （否则切回去就找不到入口了）。它全部走 --clay-* 令牌，所以
+   黏土模式下自动变成一颗圆角黏土钮，补丁模式下是墨边方钮，
+   两边都不违和。--nb-ink 默认 transparent，黏土模式下不露边。
+   ================================================================ */
+.ui-style-switch {
+    position: fixed;
+    bottom: 1.6rem;
+    right: 1.6rem;
+    /* 高于页面内容、低于灯箱(10000)/Toast(10100)，全屏看图时不抢戏 */
+    z-index: 9500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.62rem 1rem;
+    font-family: var(--clay-font-mono);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    color: var(--clay-on-surface);
+    background: var(--clay-surface-3);
+    border: 3px solid var(--nb-ink);
+    border-radius: var(--clay-r-full);
+    box-shadow: var(--clay-1);
+    cursor: pointer;
+    user-select: none;
+    transition: transform var(--clay-t-fast), box-shadow var(--clay-t-fast), color var(--clay-t-fast);
+}
+.ui-style-switch:hover {
+    color: var(--clay-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--clay-2);
+}
+.ui-style-switch:active {
+    transform: translateY(1px);
+    box-shadow: var(--clay-inset);
+}
+.ui-style-switch:focus-visible {
+    outline: 3px solid var(--clay-primary);
+    outline-offset: 2px;
+}
+.ui-style-swatch {
+    width: 12px;
+    height: 12px;
+    flex: none;
+    background: var(--clay-primary);
+    border: 2px solid var(--nb-ink);
+    border-radius: var(--clay-r-xs);
+}
+.ui-style-swatch.clay-mode { background: var(--clay-secondary); }
+
+[dir="rtl"] .ui-style-switch { right: auto; left: 1.6rem; }
+@media (max-width: 768px) {
+    .ui-style-switch { bottom: 1rem; right: 1rem; }
+    [dir="rtl"] .ui-style-switch { right: auto; left: 1rem; }
+}
+@media print {
+    .ui-style-switch { display: none !important; }
+}

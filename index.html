@@ -6,7 +6,7 @@
     <!-- 站点名走语言包 site.blogName（缺失时回退 config.json 的 blogName） -->
     <title data-i18n="site.blogName">猫猫的回忆</title>
     <meta name="description" content="记录温暖时光的静态博客" data-i18n-attr="content:site.description">
-    <meta name="theme-color" content="#EDEBFA">
+    <meta name="theme-color" content="#FAF3E3">
     <script>
         // 防止主题闪烁（FOUC）：必须放在 <head> 内、首帧渲染前同步执行。
         // theme.js 在页面底部 defer 加载，若用户偏好暗色，等它执行时页面已经
@@ -25,12 +25,28 @@
             } catch (e) { /* 隐私模式等 localStorage 不可用时按默认亮色 */ }
         })();
     </script>
+    <script>
+        // Neo-Brutalism 皮肤补丁（assets/css/neo-brutalism.css）的防闪烁：
+        // 补丁默认启用，无需任何类；只有明确选择过「黏土风」旧皮肤的用户，
+        // 才要在首帧渲染前给 <html> 补上 ui-clay 类把补丁撕下来。
+        // 键名与 assets/js/ui/uipatch.js 的 STORAGE_KEY（blog-ui）保持一致。
+        (function () {
+            try {
+                if (localStorage.getItem('blog-ui') === 'clay') {
+                    document.documentElement.classList.add('ui-clay');
+                }
+            } catch (e) { /* localStorage 不可用时保持默认的 Neo-Brutalism */ }
+        })();
+    </script>
     <link rel="stylesheet" href="assets/css/tokens.css">
     <link rel="stylesheet" href="assets/css/base.css">
     <link rel="stylesheet" href="assets/css/layout.css">
     <link rel="stylesheet" href="assets/css/components.css">
     <link rel="stylesheet" href="assets/css/article.css">
     <link rel="stylesheet" href="assets/css/responsive.css">
+    <!-- ▼ Neo-Brutalism 皮肤补丁：必须加载在所有旧样式之后（整体覆盖外观，旧黏土样式原样保留） -->
+    <link rel="stylesheet" href="assets/css/neo-brutalism.css">
+    <!-- ▲ 想卸载补丁：删掉上面这一行即可，旧 UI 一行不用改 -->
 </head>
 <body>
     <!-- noscript 里的内容只有在"禁用 JS"时才会显示，而 i18n 本身要靠 JS 运行，
@@ -175,5 +191,7 @@
     <script src="assets/js/ui/search.js" defer></script>
     <!-- 入口 -->
     <script src="assets/js/main.js" defer></script>
+    <!-- Neo-Brutalism 补丁开关（悬浮按钮 + meta 地址栏颜色校准，功能零耦合，去掉也不影响博客） -->
+    <script src="assets/js/ui/uipatch.js" defer></script>
 </body>
 </html>
