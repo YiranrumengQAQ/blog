@@ -7,32 +7,33 @@
     <meta name="robots" content="noindex">
     <meta name="theme-color" content="#c3d3e8">
     <script>
-        // 防止主题闪烁（FOUC）：与 index.html 相同的内联脚本。
-        // editor.js 在 DOMContentLoaded 之后才恢复主题，没有这段会先闪一帧亮色。
-        // 键名与 assets/js/ui/theme.js、editor.js 使用的 blog-theme 保持一致。
+        // ── 首帧状态统一入口（FOUC / 首帧主题错配防护）────────────────────
+        // 这里是主题与雨效在首帧的唯一决策点：把结果显式写到 <html> 上，
+        // 后面的 theme.js / rain.js 只是读取并沿用，绝不再各自推导一遍。
+        //   blog-theme → <html data-theme="light|dark"> + color-scheme + meta
+        //   blog-rain  → <html class="rain-off">
+        // 显式写 data-theme（而不是「只在暗色时改」）能避免原生 select /
+        // 滚动条 / 表单控件在首帧按 :root 默认值渲染成另一套配色。
         (function () {
-            try {
-                var saved = localStorage.getItem('blog-theme');
-                var dark = saved === 'dark' ||
-                    (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                if (dark) {
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                    var meta = document.querySelector('meta[name="theme-color"]');
-                    if (meta) meta.setAttribute('content', '#05080f');
-                }
-            } catch (e) { /* localStorage 不可用时按默认亮色 */ }
-        })();
-    </script>
-    <script>
-        // 雨效防闪烁：雨默认开启；只有明确关过雨的用户（blog-rain=off），
-        // 才在首帧前给 <html> 补 rain-off 类，避免先下一帧雨再停。
-        // 键名与 assets/js/ui/rain.js 的 STORAGE_KEY（blog-rain）保持一致。
-        (function () {
-            try {
-                if (localStorage.getItem('blog-rain') === 'off') {
-                    document.documentElement.classList.add('rain-off');
-                }
-            } catch (e) { /* localStorage 不可用时保持默认下雨 */ }
+            var root = document.documentElement;
+            function read(key) {
+                try { return localStorage.getItem(key); } catch (e) { return null; }
+            }
+            var saved = read('blog-theme');
+            var dark = saved === 'dark';
+            if (saved !== 'dark' && saved !== 'light') {
+                try { dark = window.matchMedia('(prefers-color-scheme: dark)').matches; }
+                catch (e) { dark = false; }
+            }
+            var theme = dark ? 'dark' : 'light';
+            root.setAttribute('data-theme', theme);
+            root.style.colorScheme = theme;
+            var meta = document.querySelector('meta[name="theme-color"]');
+            // 与 theme.js 的取值保持一致
+            if (meta) meta.setAttribute('content', dark ? '#05080f' : '#c3d3e8');
+
+            // 雨效：默认开；只有明确关过雨的用户才在首帧前补 rain-off，避免闪一帧雨
+            if (read('blog-rain') === 'off') root.classList.add('rain-off');
         })();
     </script>
     <link rel="stylesheet" href="assets/css/tokens.css">
@@ -52,6 +53,11 @@
                 <span class="badge">零代码写博客</span>
             </div>
             <div class="editor-header-actions">
+                <!-- 自动保存状态：● 已保存 / ◌ 保存中… / ! 保存失败（点击看最后保存时间） -->
+                <button class="save-status" id="saveStatus" type="button" data-state="saved"
+                    title="草稿自动保存在本浏览器">
+                    <span class="save-dot" aria-hidden="true"></span><span class="save-text">已保存</span>
+                </button>
                 <button class="md-btn theme-btn" id="themeToggle" type="button" title="切换亮色/暗色主题"
                     aria-label="切换亮色/暗色主题">
                     <svg class="icon sun-icon" data-icon="sun"></svg>
@@ -298,12 +304,19 @@
     <script src="assets/vendor/marked.min.js"></script>
     <script src="assets/vendor/purify.min.js"></script>
     <script src="assets/js/utils/dom.js" defer></script>
+    <script src="assets/js/utils/storage.js" defer></script>
     <script src="assets/js/utils/format.js" defer></script>
     <!-- 图标（与阅读页共用同一套内联 SVG，替代 emoji） -->
     <script src="assets/js/ui/icons.js" defer></script>
     <script src="assets/js/core/frontmatter.js" defer></script>
     <script src="assets/js/core/markdown.js" defer></script>
     <!-- 雨夜玻璃主题：天气引擎（雨幕 + 水珠）与玻璃交互（光斑 + 倾斜 + 显现） -->
+    <!-- 玻璃确认框 / 提示系统 / 材质反馈层（与阅读页同一套） -->
+    <script src="assets/js/ui/toast.js" defer></script>
+    <script src="assets/js/ui/modal.js" defer></script>
+    <script src="assets/js/ui/fx.js" defer></script>
+    <!-- 视觉模块生命周期注册表（Blog.controllers.list() 可在控制台查看） -->
+    <script src="assets/js/ui/controllers.js" defer></script>
     <script src="assets/js/ui/rain.js" defer></script>
     <script src="assets/js/ui/glass.js" defer></script>
     <script src="assets/js/editor.js" defer></script>

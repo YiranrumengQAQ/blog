@@ -2,9 +2,11 @@
    雨夜毛玻璃主题 (Rain Glass Theme) — 真·玻璃拟态
    --------------------------------------------------------------------------
    设计目标（不考虑性能，只考虑好看）：
-     1. 真实折射：所有玻璃全部走 GPU 实时 backdrop-filter（blur/saturate/
-        brightness），不是半透明纯色贴片；前景水珠同样用 backdrop-filter
-        对页面内容做实时透镜折射。
+     1. 透镜式模糊（不是物理折射）：玻璃全部走 GPU 实时 backdrop-filter
+        （blur/saturate/brightness）——它的本质是「背景采样 + 模糊 + 滤镜」，
+        没有 distortion / displacement / UV offset，所以准确的说法是
+        「高级毛玻璃 + 镜面高光 + 边缘光学」，而不是 refraction。
+        我们刻意不为了「物理正确」去硬加扭曲，观感优先。
      2. 默认 GPU 加速：动画元素全部 translateZ(0) + will-change，雨幕用
         Canvas + DPR 渲染，多层叠加。
      3. 三层雨：CSS 远/近雨线打底 + Canvas 雨幕（远雨/近雨/涟漪/水花）+
@@ -24,7 +26,9 @@
    ========================================================================== */
 
 :root {
-  color-scheme: dark;
+  /* 默认两种都声明：真正的主题由 html[data-theme] 决定（见下方两处覆盖），
+     避免首帧 :root 与 <html data-theme> 冲突导致原生控件短暂主题错配 */
+  color-scheme: light dark;
   --bg: #0a1120;
   --bg-image:
     linear-gradient(180deg, rgba(148, 178, 222, .14) 0%, rgba(56, 78, 118, .1) 46%, rgba(8, 13, 26, .36) 100%),
@@ -132,6 +136,8 @@ html[data-theme="light"] {
     linear-gradient(180deg, rgba(255, 255, 255, .55) 0%, rgba(214, 228, 245, .28) 38%, rgba(140, 165, 200, .34) 100%),
     radial-gradient(120% 90% at 50% -10%, rgba(255, 255, 255, .6) 0%, rgba(255, 255, 255, 0) 55%),
     radial-gradient(130% 100% at 50% 110%, rgba(90, 120, 165, .35) 0%, rgba(90, 120, 165, 0) 60%);
+  /* 亮色 = 3 层渐变，size 必须 3 个（照片层的 cover 在 body 规则里追加） */
+  --bg-size: 100% 100%, 100% 100%, 100% 100%;
 
   --surface: rgba(255, 255, 255, .32);
   --surface-2: rgba(255, 255, 255, .24);
@@ -208,6 +214,8 @@ html[data-theme="dark"] {
   --bg-image:
     linear-gradient(180deg, rgba(3, 6, 14, .3) 0%, rgba(2, 5, 12, .34) 46%, rgba(1, 3, 9, .62) 100%),
     radial-gradient(130% 100% at 50% 0%, rgba(0, 2, 8, .1) 40%, rgba(0, 2, 8, .68) 100%);
+  /* 暗色 = 2 层渐变，size 必须 2 个 */
+  --bg-size: 100% 100%, 100% 100%;
   --surface: rgba(7, 11, 22, .3);
   --surface-2: rgba(7, 11, 22, .24);
   --surface-3: rgba(7, 11, 22, .18);
@@ -351,15 +359,22 @@ body.glass-theme {
   /* 渐变罩在上、背景照片铺底（cover）；照片缺失时只剩渐变 */
   background-image: var(--bg-image), var(--bg-photo);
   background-attachment: fixed;
-  background-size: 100% 100%, 100% 100%, cover;
+  /* 渐变层数由 --bg-size 跟随主题给出，末尾的 cover 固定对应照片层，
+     以后改 --bg-image 只要同步改同一个主题块里的 --bg-size 即可 */
+  background-size: var(--bg-size), cover;
   background-position: center;
-  text-shadow: var(--text-emboss);
   overflow-x: hidden;
 }
 
-/* 亮色主题的 --bg-image 是三层渐变（上面是两层），照片层 size 补齐第四位 */
-html[data-theme="light"] body.glass-theme {
-  background-size: 100% 100%, 100% 100%, 100% 100%, cover;
+/* UI 外壳（顶栏 / 侧栏 / 页脚 / 按钮）才需要浮雕感；正文与代码保持干净 */
+body.glass-theme .site-header,
+body.glass-theme .sidebar,
+body.glass-theme .site-footer,
+body.glass-theme .content-header,
+body.glass-theme .pagination,
+body.glass-theme .editor-header,
+body.glass-theme .editor-toolbar {
+  text-shadow: var(--text-emboss);
 }
 
 /* 内容层浮在雨幕之上 */
@@ -451,12 +466,27 @@ html[data-theme="light"] body.glass-theme::after {
   pointer-events: none;
   background: var(--glass-iris);
   opacity: .5;
-  -webkit-backdrop-filter: var(--lens-blur);
-  backdrop-filter: var(--lens-blur);
+  /* 这里以前还叠了一层 backdrop-filter：同一块背景被模糊两次，
+     实际效果不是「边缘折射」而是「边缘更糊」，而且 backdrop-filter + mask +
+     伪元素的合成结果在 Chromium / Firefox / WebKit 上并不一致。
+     现在纯靠渐变 + 遮罩画环形高光，跨浏览器表现统一。 */
   -webkit-mask: var(--glass-ring-mask);
   -webkit-mask-composite: xor;
   mask: var(--glass-ring-mask);
   mask-composite: exclude;
+}
+/* mask-composite fallback：不支持的浏览器（旧 Firefox / 旧 Safari）会把整块
+   涂满虹膜色，那还不如退化成一圈 inset 描边高光 */
+@supports not ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+  .glass-card::before,
+  body.glass-theme .post-card::before {
+    -webkit-mask: none;
+    mask: none;
+    background: none;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, .34),
+      inset 0 1px 0 rgba(255, 255, 255, .5);
+  }
 }
 
 /* 鼠标悬浮滑光动效 */
@@ -2052,7 +2082,14 @@ body.glass-theme.no-glass-fx .empty-state {
 }
 @media (max-width: 380px) {
   body.glass-theme .blog-name { font-size: .92rem; }
-  body.glass-theme .lang-select { max-width: 52px; }
+  /* 多语言（English / Deutsch / العربية / Монгол …）不能硬压到 52px，
+     否则文字和 select 箭头会互相挤掉；给一个可读下限 + 省略号上限 */
+  body.glass-theme .lang-select {
+    min-width: 64px;
+    max-width: 96px;
+    padding-inline-end: 1.4rem;
+    text-overflow: ellipsis;
+  }
   body.glass-theme .m3-icon-btn,
   body.glass-theme .mobile-menu-btn,
   body.glass-theme .mobile-search-btn { width: 38px; height: 38px; }
@@ -2068,23 +2105,1175 @@ body.glass-theme.no-glass-fx .empty-state {
 
 /* 打印：关掉一切动态与透明，保证纸面清晰 */
 @media print {
-  .rain-stage, .drop-stage, #glassSpot,
+  .rain-stage, .drop-stage, #glassSpot, .rain-aurora, .rain-mist, .rain-lightning,
+  .rain-vignette, .rain-grain,
   body.glass-theme::before, body.glass-theme::after { display: none !important; }
   body.glass-theme { background: #fff !important; color: #111 !important; text-shadow: none !important; }
+  /* 玻璃组件总开关：任何带玻璃材质的容器统一回到纸面样式 */
   body.glass-theme .post-card,
   body.glass-theme .article-view,
   body.glass-theme .sidebar-section,
   body.glass-theme .content-header,
-  body.glass-theme .editor-panel {
+  body.glass-theme .editor-panel,
+  body.glass-theme .glass-card,
+  body.glass-theme .glass-item,
+  body.glass-theme .glass-bar,
+  body.glass-theme .glass-btn,
+  body.glass-theme .glass-modal,
+  body.glass-theme .glass-badge,
+  body.glass-theme .site-header,
+  body.glass-theme .site-footer,
+  body.glass-theme .pagination {
     background: #fff !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
+    filter: none !important;
     border: 1px solid #999 !important;
     box-shadow: none !important;
+    text-shadow: none !important;
+    opacity: 1 !important;
+    /* transform 与 translate 是两个独立属性，必须分别清空，
+       只写 translate:0 0 清不掉 translateZ(0) / translateY(...) */
+    transform: none !important;
+    translate: none !important;
+    rotate: none !important;
+    scale: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  /* 伪元素上的高光 / 虹膜环在纸上只会变成灰块 */
+  body.glass-theme .post-card::before, body.glass-theme .post-card::after,
+  body.glass-theme .glass-card::before, body.glass-theme .glass-card::after,
+  body.glass-theme .article-view::before, body.glass-theme .article-view::after { display: none !important; }
+}
+
+/* ==========================================================================
+   15. 可访问性：减少动态 / 触摸设备 hover 隔离 / 正文反玻璃
+   ========================================================================== */
+
+/* 用户在系统里要求「减少动态」：保留静态雨夜画面，关掉所有动画与位移 */
+@media (prefers-reduced-motion: reduce) {
+  body.glass-theme *,
+  body.glass-theme *::before,
+  body.glass-theme *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* 入场动画直接落位，不要靠 IntersectionObserver 才可见 */
+  body.glass-theme .post-card,
+  body.glass-theme .sidebar-section,
+  body.glass-theme .article-view,
+  body.glass-theme .editor-panel,
+  body.glass-theme .content-header,
+  body.glass-theme .empty-state {
     opacity: 1 !important;
     translate: 0 0 !important;
   }
+  .rain-aurora, .rain-mist, .rain-lightning { animation: none !important; }
+  #glassSpot { display: none !important; }
+  body.glass-theme::before, body.glass-theme::after { animation: none !important; }
+}
+
+/* 触摸设备上的「tap → hover 卡住」：只有真正的精细指针才享受上浮 / 滑光 */
+@media (hover: none), (pointer: coarse) {
+  body.glass-theme .post-card:hover,
+  body.glass-theme .glass-card:hover,
+  body.glass-theme .glass-item:hover,
+  body.glass-theme .glass-btn:hover,
+  body.glass-theme .sidebar-cat-item:hover,
+  body.glass-theme .sidebar-archive-item:hover,
+  body.glass-theme .m3-icon-btn:hover {
+    transform: none;
+    box-shadow: var(--shadow);
+  }
+  body.glass-theme .post-card:hover::after,
+  body.glass-theme .glass-card:hover::after { opacity: 0; animation: none; }
+  /* 但点按反馈要留着，否则移动端会觉得没响应 */
+  body.glass-theme .post-card:active,
+  body.glass-theme .glass-card:active,
+  body.glass-theme .glass-btn:active { transform: scale(.99); }
+}
+
+/* 正文反玻璃：代码 / 表格是内容，不该再叠一层透镜和浮雕字 */
+body.glass-theme .article-content pre,
+body.glass-theme .article-content pre code,
+body.glass-theme .article-content code,
+body.glass-theme .article-content kbd,
+body.glass-theme .article-content samp,
+body.glass-theme .article-content table,
+body.glass-theme .article-content th,
+body.glass-theme .article-content td,
+body.glass-theme .editor-preview pre,
+body.glass-theme .editor-preview code {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  text-shadow: none !important;
+}
+/* 代码块自身可以是一块玻璃「板」，但文字区域必须实底、边界清楚 */
+body.glass-theme .article-content pre,
+body.glass-theme .editor-preview pre {
+  background: rgba(10, 16, 30, .82);
+  color: #e8f0ff;
+  border: 1px solid var(--border);
+}
+html[data-theme="light"] body.glass-theme .article-content pre,
+html[data-theme="light"] body.glass-theme .editor-preview pre {
+  background: rgba(252, 253, 255, .94);
+  color: #16233a;
+  border: 1px solid rgba(90, 120, 165, .35);
 }
 
 /* 旧皮肤开关按钮如果还被缓存脚本注入，直接藏掉（玻璃主题唯一） */
 body.glass-theme .ui-style-switch { display: none !important; }
+
+/* ==========================================================================
+   16. 体验层：页面软切换 / 沉浸阅读模式 / 快捷键帮助
+   --------------------------------------------------------------------------
+   原则：换内容 ≠ 换世界。雨幕、极光、背景与玻璃舞台永远不重启，
+   这里动的只有「内容区」这一层。
+   ========================================================================== */
+
+/* ---- 页面软切换（内容区淡出 → 换内容 → 淡入，150~220ms） ---- */
+body.glass-theme .content-area {
+  transition: opacity .16s var(--ease), filter .16s var(--ease), translate .16s var(--ease);
+}
+body.glass-theme .content-area.view-leaving {
+  opacity: 0;
+  filter: blur(2px);
+  translate: 0 4px;
+}
+body.glass-theme .content-area.view-entering {
+  animation: glass-view-in .22s var(--ease) both;
+}
+@keyframes glass-view-in {
+  from { opacity: 0; filter: blur(3px); translate: 0 8px; }
+  to   { opacity: 1; filter: blur(0);   translate: 0 0; }
+}
+
+/* ---- 阅读模式入口按钮（文章页右下角，回到顶部按钮上方） ---- */
+.reader-toggle {
+  position: fixed;
+  right: 1.2rem;
+  bottom: 5.2rem;
+  z-index: 5000;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .55rem .9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  background: var(--glass-spec), var(--surface-glass);
+  -webkit-backdrop-filter: var(--lens-blur-soft);
+  backdrop-filter: var(--lens-blur-soft);
+  box-shadow: var(--shadow-sm);
+  font: inherit;
+  font-size: .82rem;
+  cursor: pointer;
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+              opacity var(--dur) var(--ease);
+}
+[dir="rtl"] .reader-toggle { right: auto; left: 1.2rem; }
+.reader-toggle[hidden] { display: none; }
+.reader-toggle .icon, .reader-toggle svg { width: 1em; height: 1em; }
+@media (hover: hover) and (pointer: fine) {
+  .reader-toggle:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+}
+.reader-toggle:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 3px; }
+@media (max-width: 480px) {
+  .reader-toggle { bottom: 4.6rem; font-size: .78rem; padding: .5rem .75rem; }
+}
+
+/* ---- 沉浸阅读模式 ---- */
+body.glass-theme.reader-mode .site-header {
+  transform: translateY(-105%);
+  opacity: 0;
+  pointer-events: none;
+}
+body.glass-theme.reader-mode .sidebar { display: none; }
+body.glass-theme.reader-mode .main-container { grid-template-columns: 1fr; display: block; }
+body.glass-theme.reader-mode .content-area { margin: 0 auto; max-width: 46rem; }
+body.glass-theme.reader-mode .site-footer { opacity: .35; }
+
+/* 背景变暗、雨幕降低存在感（但绝不停止——世界还在下雨） */
+body.glass-theme.reader-mode .rain-stage { opacity: .42; }
+body.glass-theme.reader-mode .drop-stage { opacity: .3; }
+body.glass-theme.reader-mode .rain-aurora { opacity: .35; }
+body.glass-theme.reader-mode::before,
+body.glass-theme.reader-mode::after { opacity: .35; }
+.rain-stage, .drop-stage { transition: opacity .45s var(--ease); }
+
+/* 玻璃变干净：模糊收敛、高光减弱，让文字成为主角 */
+body.glass-theme.reader-mode .article-view {
+  -webkit-backdrop-filter: saturate(112%) blur(26px);
+  backdrop-filter: saturate(112%) blur(26px);
+  padding: 2.6rem 2.4rem 2.2rem;
+}
+body.glass-theme.reader-mode .article-view::after { display: none; }
+body.glass-theme.reader-mode .article-content {
+  font-size: 1.07rem;
+  line-height: 1.95;
+  letter-spacing: .012em;
+}
+body.glass-theme.reader-mode .article-content p { margin: 1.15em 0; }
+body.glass-theme.reader-mode .article-content img { max-width: 100%; height: auto; }
+body.glass-theme.reader-mode .article-content pre { overflow-x: auto; }
+@media (max-width: 768px) {
+  body.glass-theme.reader-mode .article-view { padding: 1.6rem 1.15rem; }
+  body.glass-theme.reader-mode .article-content { font-size: 1.02rem; line-height: 1.85; }
+}
+
+/* 阅读进度：一条玻璃高光线，不是传统粗进度条 */
+body.glass-theme .reading-progress {
+  height: 2px;
+  background: transparent;
+}
+body.glass-theme .reading-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, .25),
+    var(--accent) 55%,
+    rgba(255, 255, 255, .85));
+  box-shadow: 0 0 10px -2px var(--accent-ring);
+  transition: width .12s linear;
+}
+body.glass-theme.reader-mode .reading-progress {
+  position: fixed;
+  top: 0;
+  z-index: 6000;
+}
+
+/* ---- 快捷键帮助面板（? 呼出） ---- */
+.shortcut-help {
+  position: fixed;
+  inset: 0;
+  z-index: 6500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem;
+  background: rgba(3, 6, 14, .45);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.shortcut-help[hidden] { display: none; }
+.shortcut-help-card {
+  width: min(420px, 100%);
+  padding: 1.4rem 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  background: var(--glass-spec), var(--surface-glass);
+  -webkit-backdrop-filter: var(--lens-blur);
+  backdrop-filter: var(--lens-blur);
+  box-shadow: var(--shadow-hover);
+}
+.shortcut-help-card h3 { margin: 0 0 .9rem; font-size: 1.05rem; }
+.shortcut-help-card ul { margin: 0; padding: 0; list-style: none; }
+.shortcut-help-card li {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  padding: .3rem 0;
+  font-size: .88rem;
+  color: var(--text-muted);
+}
+.shortcut-help-card kbd {
+  flex: 0 0 auto;
+  min-width: 5.6rem;
+  text-align: center;
+  padding: .2rem .5rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: .78rem;
+}
+.shortcut-help-tip { margin: .9rem 0 0; font-size: .76rem; color: var(--text-soft); }
+
+/* 打印与减少动态下，这些体验层组件一律让路 */
+@media print {
+  .reader-toggle, .shortcut-help { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.glass-theme .content-area.view-leaving { opacity: 1; filter: none; translate: 0 0; }
+  body.glass-theme .content-area.view-entering { animation: none; }
+}
+
+/* ---- 写作助手：自动保存状态胶囊 ---- */
+.save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .38rem .8rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background: var(--surface-2);
+  -webkit-backdrop-filter: var(--lens-blur-soft);
+  backdrop-filter: var(--lens-blur-soft);
+  font: inherit;
+  font-size: .78rem;
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.save-status .save-dot {
+  width: .52em;
+  height: .52em;
+  border-radius: 50%;
+  background: currentColor;
+  transition: background var(--dur) var(--ease);
+}
+.save-status[data-state="saved"] { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+.save-status[data-state="dirty"] { color: var(--warn-ink); }
+.save-status[data-state="dirty"] .save-dot { animation: save-pulse 1.4s var(--ease) infinite; }
+.save-status[data-state="saving"] { color: var(--text-soft); }
+.save-status[data-state="saving"] .save-dot { animation: save-spin .9s linear infinite; background: none; border: 1.5px solid currentColor; border-top-color: transparent; }
+.save-status[data-state="error"] { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 50%, transparent); }
+.save-status:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 2px; }
+@keyframes save-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@keyframes save-spin { to { transform: rotate(360deg); } }
+@media (max-width: 480px) {
+  .save-status .save-text { display: none; }
+  .save-status { padding: .38rem .5rem; }
+}
+
+/* ==========================================================================
+   17. 体验层二期：命令面板 / 提示分级 / 图片 Blur-up / 高光跟随 / 移动端收纳
+   ========================================================================== */
+
+/* ---- 快速搜索 · 命令面板 ---- */
+.palette {
+  position: fixed;
+  inset: 0;
+  z-index: 6600;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(3rem, 12vh, 8rem) 1rem 2rem;
+  background: rgba(3, 6, 14, .42);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  backdrop-filter: blur(10px) saturate(120%);
+  animation: glass-view-in .16s var(--ease) both;
+}
+.palette[hidden] { display: none; }
+html[data-theme="light"] .palette { background: rgba(120, 150, 195, .3); }
+
+.palette-card {
+  width: min(620px, 100%);
+  max-height: min(70vh, 640px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  background: var(--glass-spec), var(--surface-glass);
+  -webkit-backdrop-filter: var(--lens-blur);
+  backdrop-filter: var(--lens-blur);
+  box-shadow: var(--shadow-hover);
+}
+.palette-head {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .9rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+.palette-icon svg, .palette-item-icon svg { width: 1.05em; height: 1.05em; }
+.palette-icon { color: var(--text-soft); display: inline-flex; }
+.palette-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 1rem;
+}
+.palette-esc {
+  flex: 0 0 auto;
+  font-size: .68rem;
+  padding: .18rem .45rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  color: var(--text-soft);
+  background: var(--surface-3);
+}
+.palette-list { overflow-y: auto; padding: .4rem; flex: 1 1 auto; }
+.palette-section {
+  padding: .5rem .7rem .3rem;
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.palette-item {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .55rem .7rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.palette-item.is-active {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent-ring);
+}
+.palette-item-icon { color: var(--text-soft); display: inline-flex; flex: 0 0 auto; }
+.palette-item-text { min-width: 0; display: flex; flex-direction: column; gap: .12rem; }
+.palette-item-label { font-size: .92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.palette-item-desc {
+  font-size: .76rem;
+  color: var(--text-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.palette-item mark {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 .1em;
+}
+.palette-empty {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: 1.4rem 1rem;
+  color: var(--text-soft);
+  font-size: .88rem;
+  justify-content: center;
+}
+.palette-hint {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: .55rem 1.1rem;
+  border-top: 1px solid var(--border);
+  font-size: .72rem;
+  color: var(--text-soft);
+}
+.palette-hint kbd {
+  padding: .1rem .35rem;
+  margin-inline-end: .2rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface-3);
+  font-family: inherit;
+}
+@media (max-width: 480px) {
+  .palette { padding-top: 2.2rem; }
+  .palette-card { max-height: 78vh; }
+  .palette-hint { display: none; }
+}
+
+/* ---- 提示分级（成功 / 信息 / 警告 / 错误 + 撤销） ---- */
+body.glass-theme .toast {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  border: 1px solid var(--border-strong);
+  background: var(--glass-spec), var(--surface-glass);
+  -webkit-backdrop-filter: var(--lens-blur-soft);
+  backdrop-filter: var(--lens-blur-soft);
+  box-shadow: var(--shadow);
+  color: var(--text);
+}
+.toast-icon { display: inline-flex; flex: 0 0 auto; }
+.toast-icon svg { width: 1.05em; height: 1.05em; }
+.toast-msg { flex: 1 1 auto; }
+.toast-count { font-size: .74rem; color: var(--text-soft); }
+body.glass-theme .toast-success .toast-icon { color: var(--ok); }
+body.glass-theme .toast-info .toast-icon { color: var(--accent); }
+body.glass-theme .toast-warn .toast-icon { color: var(--warn-ink); }
+body.glass-theme .toast-error .toast-icon { color: var(--danger); }
+body.glass-theme .toast-warn { border-color: color-mix(in srgb, var(--warn-ink) 45%, transparent); }
+body.glass-theme .toast-error { border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+.toast-action {
+  flex: 0 0 auto;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: .22rem .7rem;
+  font: inherit;
+  font-size: .78rem;
+  cursor: pointer;
+}
+.toast-action:hover { background: var(--accent-soft); }
+.toast-close {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  display: inline-flex;
+  padding: .1rem;
+}
+.toast-close svg { width: .95em; height: .95em; }
+
+/* ---- 统一错误卡 ---- */
+body.glass-theme .error-card .error-causes {
+  margin: .8rem auto 0;
+  padding: 0;
+  list-style: none;
+  text-align: start;
+  display: inline-block;
+  font-size: .82rem;
+  color: var(--text-muted);
+}
+body.glass-theme .error-card .error-causes li::before { content: "• "; color: var(--accent); }
+body.glass-theme .error-card .error-detail {
+  margin-top: .7rem;
+  font-size: .74rem;
+  color: var(--text-soft);
+  word-break: break-word;
+}
+
+/* ---- 图片 Blur-up（骨架 → 模糊 → 清晰，页面不跳） ---- */
+.img-shell {
+  display: block;
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface-3);
+}
+.img-shell img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: blur(0);
+  opacity: 1;
+  transition: filter .5s var(--ease), opacity .5s var(--ease), transform .5s var(--ease);
+}
+.img-shell.is-loading { min-height: 120px; }
+.img-shell.is-loading img { filter: blur(16px); opacity: 0; transform: scale(1.02); }
+.img-shell.is-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg,
+    transparent 20%,
+    color-mix(in srgb, var(--text) 8%, transparent) 42%,
+    transparent 64%);
+  background-size: 220% 100%;
+  animation: img-shimmer 1.3s linear infinite;
+}
+.img-shell.is-failed::after { display: none; }
+@keyframes img-shimmer {
+  from { background-position: 120% 0; }
+  to   { background-position: -120% 0; }
+}
+
+/* ---- 鼠标高光跟随（glass.js 写入 --mx / --my） ----
+   注意：绝不能改写 ::before —— 那是虹膜边缘环（.post-card）和顶沿光线
+   （.article-view），改了会把边缘光学整块弄坏。高光叠在元素自身的
+   background-image 上，和下面 18 段的滚动高光 / 指针邻域是同一套图层。 */
+/* ---- 移动端「设置」分区（语言选择器从顶栏搬进来） ---- */
+body.glass-theme .sidebar-settings[hidden] { display: none; }
+body.glass-theme .sidebar-settings .lang-wrap { width: 100%; }
+body.glass-theme .sidebar-settings .lang-select {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  padding: .55rem .8rem;
+  font-size: .9rem;
+}
+@media (max-width: 560px) {
+  /* 顶栏只剩「搜索 / 主题 / 菜单」，不再把五件套无限压小 */
+  body.glass-theme .header-actions { gap: .38rem; }
+}
+
+@media print {
+  .palette, .toast-container { display: none !important; }
+}
+
+/* ==========================================================================
+   18. 材质微反馈：水波纹 / 闪电反光 / 滚动高光 / 灯箱缩放 / 玻璃确认框
+   --------------------------------------------------------------------------
+   这一段全部是「玻璃真的存在」的细节，由 ui/fx.js 写入变量驱动：
+     --flash-power  闪电强度      --sheen-angle / --sheen-shift  滚动高光
+     --px / --py    指针位置      --mx / --my                    卡片内指针位置
+   prefers-reduced-motion 下整段自动退化为静态。
+   ========================================================================== */
+
+:root {
+  --flash-power: 0;
+  --sheen-angle: 152deg;
+  --sheen-shift: 0%;
+}
+
+/* ---- 26. 点击水波纹（极轻，一圈水环扩散后蒸发） ---- */
+.water-ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle,
+    rgba(255, 255, 255, .34) 0%,
+    rgba(255, 255, 255, .12) 38%,
+    rgba(255, 255, 255, 0) 62%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .18) inset;
+  animation: water-ripple .62s var(--ease) forwards;
+}
+html[data-theme="light"] .water-ripple {
+  background: radial-gradient(circle,
+    rgba(255, 255, 255, .8) 0%,
+    rgba(210, 230, 255, .3) 38%,
+    rgba(255, 255, 255, 0) 62%);
+}
+@keyframes water-ripple {
+  from { transform: scale(.25); opacity: .9; }
+  to   { transform: scale(1);   opacity: 0; }
+}
+
+/* ---- 24. 闪电反光：天上闪，屋里的玻璃也跟着亮一下 ---- */
+body.glass-theme.glass-flash .site-header,
+body.glass-theme.glass-flash .post-card,
+body.glass-theme.glass-flash .article-view,
+body.glass-theme.glass-flash .sidebar-section,
+body.glass-theme.glass-flash .glass-card,
+body.glass-theme.glass-flash .editor-panel {
+  animation: glass-lightning .56s var(--ease);
+}
+@keyframes glass-lightning {
+  0%   { box-shadow: var(--shadow); border-color: var(--border); }
+  14%  {
+    box-shadow: var(--shadow),
+      inset 0 1px 0 rgba(255, 255, 255, calc(.55 * var(--flash-power, 1))),
+      0 0 32px -8px rgba(210, 232, 255, calc(.5 * var(--flash-power, 1)));
+    border-color: rgba(255, 255, 255, calc(.6 * var(--flash-power, 1)));
+  }
+  100% { box-shadow: var(--shadow); border-color: var(--border); }
+}
+/* 水珠在闪电里最亮：它们是最靠近眼睛的一层 */
+body.glass-theme.glass-flash .gdrop { animation: drop-lightning .5s var(--ease); }
+@keyframes drop-lightning {
+  0%, 100% { filter: none; }
+  16% { filter: brightness(1.7) saturate(115%); }
+}
+
+/* ---- 21 + 28 + 19：玻璃表面的三层光学（统一在 background-image 上叠）----
+     第 1 层：卡片内指针高光（--mx / --my，glass.js 写，仅 .glass-lit 时出现）
+     第 2 层：视口级指针邻域折射（--px / --py，fx.js 写，attachment: fixed）
+     第 3 层：随滚动缓慢转角的镜面高光（--sheen-angle / --sheen-shift）
+   ::before / ::after 一律不碰：那里是虹膜环、顶沿光线与掠光 sheen。 */
+body.glass-theme .post-card,
+body.glass-theme .article-view,
+body.glass-theme .glass-card {
+  background-image:
+    radial-gradient(420px 420px at var(--px, -999px) var(--py, -999px),
+      rgba(255, 255, 255, .06), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(
+      var(--sheen-angle, 152deg),
+      rgba(255, 255, 255, .13) 0%,
+      rgba(255, 255, 255, .045) calc(24% + var(--sheen-shift, 0%) * .12),
+      rgba(255, 255, 255, .015) 52%,
+      rgba(255, 255, 255, .05) 82%,
+      rgba(255, 255, 255, .1) 100%);
+  background-attachment: fixed, scroll;
+}
+html[data-theme="light"] body.glass-theme .post-card,
+html[data-theme="light"] body.glass-theme .article-view,
+html[data-theme="light"] body.glass-theme .glass-card {
+  background-image:
+    radial-gradient(420px 420px at var(--px, -999px) var(--py, -999px),
+      rgba(255, 255, 255, .26), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(
+      var(--sheen-angle, 152deg),
+      rgba(255, 255, 255, .5) 0%,
+      rgba(255, 255, 255, .18) calc(24% + var(--sheen-shift, 0%) * .12),
+      rgba(255, 255, 255, .06) 52%,
+      rgba(255, 255, 255, .16) 82%,
+      rgba(255, 255, 255, .34) 100%);
+  background-attachment: fixed, scroll;
+}
+/* 指针正停在这张卡上：再叠一圈跟手的近场高光（卡片本体几乎不动） */
+body.glass-theme .post-card.glass-lit,
+body.glass-theme .article-view.glass-lit,
+body.glass-theme .glass-card.glass-lit {
+  background-image:
+    radial-gradient(180px 180px at var(--mx, 50%) var(--my, 0%),
+      rgba(255, 255, 255, .2), rgba(255, 255, 255, 0) 72%),
+    radial-gradient(420px 420px at var(--px, -999px) var(--py, -999px),
+      rgba(255, 255, 255, .06), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(
+      var(--sheen-angle, 152deg),
+      rgba(255, 255, 255, .13) 0%,
+      rgba(255, 255, 255, .045) calc(24% + var(--sheen-shift, 0%) * .12),
+      rgba(255, 255, 255, .015) 52%,
+      rgba(255, 255, 255, .05) 82%,
+      rgba(255, 255, 255, .1) 100%);
+  background-attachment: scroll, fixed, scroll;
+}
+html[data-theme="light"] body.glass-theme .post-card.glass-lit,
+html[data-theme="light"] body.glass-theme .article-view.glass-lit,
+html[data-theme="light"] body.glass-theme .glass-card.glass-lit {
+  background-image:
+    radial-gradient(190px 190px at var(--mx, 50%) var(--my, 0%),
+      rgba(255, 255, 255, .5), rgba(255, 255, 255, 0) 72%),
+    radial-gradient(420px 420px at var(--px, -999px) var(--py, -999px),
+      rgba(255, 255, 255, .26), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(
+      var(--sheen-angle, 152deg),
+      rgba(255, 255, 255, .5) 0%,
+      rgba(255, 255, 255, .18) calc(24% + var(--sheen-shift, 0%) * .12),
+      rgba(255, 255, 255, .06) 52%,
+      rgba(255, 255, 255, .16) 82%,
+      rgba(255, 255, 255, .34) 100%);
+  background-attachment: scroll, fixed, scroll;
+}
+/* 触摸设备没有指针：退回纯滚动高光，别留一块永远不动的亮斑 */
+@media (hover: none), (pointer: coarse) {
+  body.glass-theme .post-card,
+  body.glass-theme .article-view,
+  body.glass-theme .glass-card {
+    background-image: var(--glass-spec);
+    background-attachment: scroll;
+  }
+}
+
+/* ---- 22. 文章图片光影：图片也是一块「玻璃下的相纸」 ---- */
+body.glass-theme .article-content .img-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(var(--sheen-angle, 152deg),
+    rgba(255, 255, 255, .16) 0%,
+    rgba(255, 255, 255, 0) 38%,
+    rgba(255, 255, 255, 0) 70%,
+    rgba(255, 255, 255, .08) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 0 40px -22px rgba(0, 0, 0, .8);
+}
+
+/* ---- 4. 按钮三态 + loading / success / error / disabled ---- */
+body.glass-theme button,
+body.glass-theme .glass-btn,
+body.glass-theme .sidebar-cat-item,
+body.glass-theme .sidebar-archive-item,
+body.glass-theme .sidebar-tag,
+body.glass-theme .article-nav-item,
+.palette-item { position: relative; overflow: hidden; }
+/* 例外：这些按钮内部本来就有需要溢出的装饰 / 浮层，不能裁 */
+body.glass-theme .theme-toggle,
+body.glass-theme .mobile-menu-btn,
+body.glass-theme .copy-code-btn { overflow: visible; }
+body.glass-theme button:active:not(:disabled),
+body.glass-theme .glass-btn:active { transform: scale(.985) translateZ(0); }
+body.glass-theme button:disabled,
+body.glass-theme .glass-btn[aria-disabled="true"] {
+  opacity: .5;
+  cursor: not-allowed;
+  filter: saturate(60%);
+}
+body.glass-theme .is-loading-btn { color: transparent !important; pointer-events: none; }
+body.glass-theme .is-loading-btn::after {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 1em;
+  height: 1em;
+  margin: -.5em 0 0 -.5em;
+  border-radius: 50%;
+  border: 1.6px solid currentColor;
+  border-top-color: transparent;
+  color: var(--text);
+  animation: save-spin .8s linear infinite;
+}
+body.glass-theme .is-success-btn { box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--ok) 60%, transparent) inset; }
+body.glass-theme .is-error-btn { box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--danger) 60%, transparent) inset; }
+
+/* 主题按钮：☀ → ◐ → ☾ 的短过渡（图标交叉旋转淡入） */
+body.glass-theme .theme-toggle .sun-icon,
+body.glass-theme .theme-toggle .moon-icon,
+body.glass-theme .theme-btn .sun-icon,
+body.glass-theme .theme-btn .moon-icon {
+  transition: transform .34s var(--ease-spring), opacity .24s var(--ease);
+}
+body.glass-theme .theme-toggle:active .sun-icon,
+body.glass-theme .theme-toggle:active .moon-icon { transform: rotate(45deg) scale(.86); }
+
+/* ---- 10. 灯箱：缩放 / 拖动 / 原图 ---- */
+.lightbox-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  max-width: 100%;
+  max-height: 100%;
+  /* 入场弹跳交给舞台做：图片自身的 transform 要留给缩放 / 拖动，
+     否则 article.css 的 lightboxPop 动画会和 JS 的 transform 打架 */
+  animation: lightboxPop .35s cubic-bezier(.34, 1.5, .64, 1);
+}
+.lightbox-stage .lightbox-img { animation: none; }
+.lightbox-img {
+  transform-origin: center center;
+  transition: transform .18s var(--ease);
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.lightbox-img.is-zoomed { cursor: grab; transition: none; }
+.lightbox-img.is-dragging { cursor: grabbing; }
+.lightbox-tools {
+  position: fixed;
+  left: 50%;
+  bottom: 1.1rem;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .4rem .6rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--glass-spec), var(--surface-glass);
+  -webkit-backdrop-filter: var(--lens-blur-soft);
+  backdrop-filter: var(--lens-blur-soft);
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
+  z-index: 2;
+}
+.lightbox-tools button,
+.lightbox-tools a {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: .28rem .45rem;
+  border-radius: 999px;
+  font: inherit;
+  font-size: .78rem;
+  text-decoration: none;
+}
+.lightbox-tools button:hover,
+.lightbox-tools a:hover { background: var(--surface-2); }
+.lightbox-tools svg { width: 1em; height: 1em; }
+.lightbox-scale { font-size: .75rem; color: var(--text-soft); min-width: 3.2em; text-align: center; }
+@media (max-width: 480px) {
+  .lightbox-origin span { display: none; }
+}
+
+/* ---- 15. 移动端文章底部操作条 ---- */
+.article-mobile-bar {
+  position: fixed;
+  left: 50%;
+  bottom: .9rem;
+  transform: translateX(-50%);
+  z-index: 4800;
+  display: none;
+  gap: .4rem;
+  padding: .35rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--glass-spec), var(--surface-glass);
+  -webkit-backdrop-filter: var(--lens-blur-soft);
+  backdrop-filter: var(--lens-blur-soft);
+  box-shadow: var(--shadow);
+}
+.article-mobile-bar[hidden] { display: none !important; }
+.article-mobile-bar button {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: .82rem;
+  padding: .42rem .85rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.article-mobile-bar button:active { background: var(--surface-2); }
+.article-mobile-bar svg { width: 1em; height: 1em; }
+@media (max-width: 768px) {
+  body.view-detail .article-mobile-bar { display: inline-flex; }
+  body.view-detail.reader-mode .article-mobile-bar { display: inline-flex; opacity: .85; }
+  /* 底部条会挡住文末导航，给正文补一段安全距离 */
+  body.view-detail .site-footer { padding-bottom: 4.2rem; }
+  .reader-toggle { bottom: 8.4rem; }
+}
+
+/* ---- 5. 玻璃确认框 ---- */
+.glass-modal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 6800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem;
+  background: rgba(3, 6, 14, .5);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  animation: glass-view-in .16s var(--ease) both;
+}
+.glass-modal-layer[hidden] { display: none; }
+html[data-theme="light"] .glass-modal-layer { background: rgba(120, 150, 195, .34); }
+.glass-modal {
+  width: min(420px, 100%);
+  padding: 1.5rem 1.5rem 1.2rem;
+  text-align: center;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  background: var(--glass-spec), var(--surface-glass);
+  -webkit-backdrop-filter: var(--lens-blur);
+  backdrop-filter: var(--lens-blur);
+  box-shadow: var(--shadow-hover);
+}
+.glass-modal-icon { color: var(--warn-ink); display: flex; justify-content: center; margin-bottom: .6rem; }
+.glass-modal-icon svg { width: 1.7rem; height: 1.7rem; }
+.glass-modal-title { margin: 0 0 .5rem; font-size: 1.02rem; }
+.glass-modal-msg { margin: 0 0 1.2rem; font-size: .86rem; color: var(--text-muted); line-height: 1.7; }
+.glass-modal-actions { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; }
+.glass-modal-btn {
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: .85rem;
+  padding: .5rem 1.1rem;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.glass-modal-btn:hover { background: var(--surface); }
+.glass-modal-btn.confirm { background: var(--accent-soft); color: var(--accent); }
+.glass-modal-btn.confirm.is-danger { background: var(--danger-soft); color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+.glass-modal-btn:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 2px; }
+
+@media print {
+  .glass-modal-layer, .article-mobile-bar, .lightbox-tools { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .water-ripple { display: none !important; }
+  body.glass-theme.glass-flash * { animation: none !important; }
+  .lightbox-img { transition: none !important; }
+}
+
+/* ==========================================================================
+   19. 光学层级 (Optical Tiers) —— 这一段是整套玻璃系统的「宪法」
+   --------------------------------------------------------------------------
+   问题：每个 DOM 都套一层 backdrop-filter，最后会变成
+   「磨砂塑料套磨砂塑料」——不是性能问题，是光学叠加问题。
+
+   规定的层级（从远到近，只有 T1 与 T4 拥有真正的 backdrop-filter）：
+
+     T0  天空 / 背景照片 / 极光 / 闪电        .rain-stage（无滤镜，自己发光）
+     T1  大型玻璃容器（唯一的主折射面）        .header-inner .sidebar-section
+                                             .post-card .article-view .glass-card
+                                             .glass-bar .glass-modal .palette-card
+     T2  容器内的内容玻璃（只有表面，不再折射）  .glass-item .glass-badge 卡内分区
+     T3  正文内容层（反玻璃）                  .article-content pre/code/table
+     T4  独立浮层（不在 T1 里面，可以自带折射）  .toast .lightbox-tools .reader-toggle
+                                             .article-mobile-bar #glassSpot
+     T5  前景水珠                            .gdrop（最后一层真透镜）
+
+   规则一句话：**玻璃里面不要再有玻璃**，T1 内部的一切只保留
+   「半透明底 + 边框 + 内高光」，把折射留给容器本身。
+   ========================================================================== */
+
+/* T2：任何处在 T1 容器内部的玻璃控件，一律撤掉自己的 backdrop-filter */
+body.glass-theme .header-inner :is(.glass-item, .glass-btn, .glass-badge, .m3-icon-btn, .lang-select, .search-wrap),
+body.glass-theme .sidebar-section :is(.glass-item, .glass-btn, .glass-badge),
+body.glass-theme .post-card :is(.glass-item, .glass-btn, .glass-badge, .card-tag, .card-category),
+body.glass-theme .article-view :is(.glass-item, .glass-btn, .glass-badge, .card-tag, .card-category, .article-back, .article-nav-item),
+body.glass-theme .glass-card :is(.glass-item, .glass-btn, .glass-badge),
+body.glass-theme .glass-bar :is(.glass-item, .glass-btn, .glass-badge),
+body.glass-theme .glass-modal :is(.glass-item, .glass-btn, .glass-badge),
+body.glass-theme .palette-card :is(.palette-item, .palette-esc),
+body.glass-theme .editor-panel :is(.glass-item, .glass-btn, .glass-badge, .btn, .md-btn) {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* 撤掉折射之后，靠「表面」把层次找回来：更实的底 + 更亮的内高光 */
+body.glass-theme .glass-card .glass-item,
+body.glass-theme .post-card .glass-item,
+body.glass-theme .article-view .glass-item,
+body.glass-theme .sidebar-section .glass-item {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .05) 46%, rgba(255, 255, 255, .03));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .34),
+    inset 0 -1px 0 rgba(255, 255, 255, .07),
+    0 6px 16px -12px rgba(0, 3, 10, .85);
+}
+html[data-theme="light"] body.glass-theme .glass-card .glass-item,
+html[data-theme="light"] body.glass-theme .post-card .glass-item,
+html[data-theme="light"] body.glass-theme .article-view .glass-item,
+html[data-theme="light"] body.glass-theme .sidebar-section .glass-item {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .7), rgba(255, 255, 255, .42));
+}
+
+/* T1 之间也不要互相套：卡片里再放卡片时，内层退化成 T2 */
+body.glass-theme .glass-card .glass-card,
+body.glass-theme .post-card .glass-card,
+body.glass-theme .article-view .glass-card,
+body.glass-theme .glass-modal .glass-card {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: var(--shadow-sm);
+}
+body.glass-theme .glass-card .glass-card::before,
+body.glass-theme .article-view .glass-card::before { display: none; }   /* 不要两圈虹膜环 */
+
+/* T4：独立浮层允许自带折射（它们直接挂在 body 上，不在任何 T1 内部） */
+body.glass-theme > .toast-container .toast,
+body.glass-theme > .lightbox .lightbox-tools,
+body.glass-theme > .reader-toggle,
+body.glass-theme > .article-mobile-bar {
+  -webkit-backdrop-filter: var(--lens-blur-soft);
+  backdrop-filter: var(--lens-blur-soft);
+}
+
+/* ==========================================================================
+   20. 交互四态统一：hover / focus-visible / active / disabled
+   --------------------------------------------------------------------------
+   以前 hover 一套、focus-visible 另一套，键盘操作时视觉层级对不上。
+   现在四个状态共用同一组变量，键盘用户看到的和鼠标用户完全一致。
+   ========================================================================== */
+
+body.glass-theme :is(button, .glass-btn, .sidebar-cat-item, .sidebar-archive-item,
+  .sidebar-tag, .card-tag, .card-category, .page-btn, .article-nav-item,
+  .palette-item, .glass-modal-btn, a.blog-name, .editor-back-link) {
+  transition:
+    transform var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    background-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+/* hover 与 focus-visible 表现完全一致（只有精细指针才享受 hover） */
+@media (hover: hover) and (pointer: fine) {
+  body.glass-theme :is(button, .glass-btn, .sidebar-cat-item, .sidebar-archive-item,
+    .sidebar-tag, .card-tag, .card-category, .page-btn, .article-nav-item,
+    .glass-modal-btn):hover:not(:disabled) {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-sm), inset 0 0 18px -10px rgba(255, 255, 255, .45);
+  }
+}
+body.glass-theme :is(button, .glass-btn, .sidebar-cat-item, .sidebar-archive-item,
+  .sidebar-tag, .card-tag, .card-category, .page-btn, .article-nav-item,
+  .palette-item, .glass-modal-btn, a, select, input, textarea):focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm), inset 0 0 18px -10px rgba(255, 255, 255, .45);
+}
+/* active 永远比 hover 更「按下去」 */
+body.glass-theme :is(button, .glass-btn, .sidebar-cat-item, .sidebar-archive-item,
+  .sidebar-tag, .page-btn, .article-nav-item, .glass-modal-btn):active:not(:disabled) {
+  transform: translateY(0) scale(.985) translateZ(0);
+  box-shadow: inset 0 2px 6px -2px rgba(0, 3, 10, .45), inset 0 1px rgba(255, 255, 255, .22);
+}
+/* disabled 一眼可辨，且不接受任何 hover / active 反馈 */
+body.glass-theme :is(button, .glass-btn, .page-btn, .glass-modal-btn):disabled,
+body.glass-theme [aria-disabled="true"] {
+  opacity: .48;
+  filter: saturate(55%);
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* ==========================================================================
+   21. 移动端 sticky + backdrop-filter 加固（Android Chromium 重灾区）
+   --------------------------------------------------------------------------
+   translateZ(0) 会让元素成为包含块与新的 stacking context，
+   和 position: sticky + backdrop-filter 叠在一起时，安卓上常见：
+   滚动中背景突然不模糊、sticky 抖动、fixed 浮层被吃掉。
+   移动端这里改用 will-change: backdrop-filter + isolation，不再强推图层。
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  body.glass-theme .site-header {
+    isolation: isolate;
+    /* 顶栏自己就是 stacking context 的边界，别让它被内部 transform 影响 */
+    transform: none;
+  }
+  body.glass-theme .header-inner,
+  body.glass-theme .glass-bar {
+    transform: none;                    /* 去掉 translateZ(0) */
+    will-change: backdrop-filter;       /* 交给浏览器决定图层，安卓更稳 */
+    -webkit-backdrop-filter: saturate(140%) blur(20px);
+    backdrop-filter: saturate(140%) blur(20px);
+  }
+  /* 抽屉 / 遮罩 / 灯箱 / 面板都要高于顶栏，绝不能被顶栏的层级吃掉 */
+  body.glass-theme .sidebar { z-index: 4000; }
+  body.glass-theme .sidebar-overlay { z-index: 3900; }
+  .palette { z-index: 6600; }
+  .glass-modal-layer { z-index: 6800; }
+  .lightbox { z-index: 10000; }
+}
+
+/* ==========================================================================
+   22. RTL：逻辑属性收口（阿拉伯语 / 希伯来语 / 波斯语）
+   ========================================================================== */
+
+[dir="rtl"] .reader-toggle { right: auto; left: 1.2rem; }
+[dir="rtl"] .palette-hint kbd { margin-inline-end: 0; margin-inline-start: .2rem; }
+[dir="rtl"] .lightbox-prev { left: auto; right: 1.2rem; }
+[dir="rtl"] .lightbox-next { right: auto; left: 1.2rem; }
+[dir="rtl"] .lightbox-close { right: auto; left: 1.2rem; }
+[dir="rtl"] .toast-container { left: 1rem; right: auto; }
+[dir="rtl"] .article-mobile-bar button { flex-direction: row-reverse; }
+[dir="rtl"] .palette-item,
+[dir="rtl"] .toast,
+[dir="rtl"] .glass-modal-actions { direction: rtl; }
+[dir="rtl"] .error-card .error-causes { text-align: start; }
+/* 方向无关的间距一律用逻辑属性，别再写 left / right */
+.palette-head { padding-inline: 1.1rem; }
+.palette-section { padding-inline: .7rem; }
+.palette-item { padding-inline: .7rem; }
+.save-status { padding-inline: .8rem; }
+
+/* ==========================================================================
+   23. 玻璃容器 ≠ 裁剪容器 ≠ 浮层容器
+   --------------------------------------------------------------------------
+   以前 .glass-card / .post-card 用 overflow: hidden 去裁掉故意放大到
+   inset:-30% 的掠光（sheen）。副作用是：卡片里以后放 tooltip / dropdown /
+   popover / 水珠，全都会被一起裁掉。
+   现在改成「谁产生溢出，谁自己裁」：掠光用 clip-path 裁在自己的圆角内，
+   容器本身恢复 overflow: visible，浮层可以自由溢出。
+   ========================================================================== */
+
+body.glass-theme .post-card,
+body.glass-theme .article-view,
+.glass-card {
+  overflow: visible;
+  /* 背景与伪元素仍然只画在圆角范围内 */
+  background-clip: padding-box;
+}
+/* 掠光自己裁自己：保持「光从卡片外扫进来」的观感，但不连累子元素。
+   伪元素 inset:-40% ⇒ 自身尺寸是卡片的 1.8 倍，要裁回卡片边界
+   需要 0.4 / 1.8 ≈ 22.2%；inset:-30% ⇒ 0.3 / 1.6 ≈ 18.8%。 */
+body.glass-theme .post-card::after { clip-path: inset(22.2% round var(--radius)); }
+.glass-card::after { clip-path: inset(18.8% round var(--radius)); }
+/* 卡片不再整体裁剪了，封面图必须自己保住圆角 */
+body.glass-theme .card-cover,
+body.glass-theme .card-cover img { border-radius: var(--radius-sm); }
+@supports not (clip-path: inset(10% round 10px)) {
+  /* 老浏览器没有 clip-path round：退回原来的裁剪方式，保证不漏光 */
+  body.glass-theme .post-card,
+  .glass-card { overflow: hidden; }
+}
+/* 需要在卡片里放浮层时，给浮层自己加这个类即可（不改容器） */
+.glass-overlay-escape {
+  position: absolute;
+  z-index: 60;
+  isolation: isolate;
+}

@@ -23,10 +23,29 @@
     let spotRaf = 0;
     let tiltEl = null;
     let finePointer = false;
+    let reducedMotion = false;
+
+    /* 生命周期：重复 init 会叠加 pointermove / IntersectionObserver / 定时器，
+       所以这里统一登记，init() 幂等，destroy() 全部摘干净 */
+    let inited = false;
+    let mutObserver = null;
+    let fallbackTimer = 0;
+    let bootTimer = 0;
+    const listeners = [];
+
+    function on(target, type, handler, opts) {
+        target.addEventListener(type, handler, opts);
+        listeners.push([target, type, handler, opts]);
+    }
 
     try {
         finePointer = window.matchMedia('(pointer: fine)').matches;
     } catch (e) { finePointer = true; }
+    try {
+        reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) { reducedMotion = false; }
+    // 「减少动态」时不做光斑和 3D 倾斜，只保留静态玻璃
+    if (reducedMotion) finePointer = false;
 
     /* ---------------- 1. 指针光斑 ---------------- */
 
@@ -66,6 +85,9 @@
     function resetTilt() {
         if (tiltEl) {
             tiltEl.style.transform = '';
+            tiltEl.classList.remove('glass-lit');
+            tiltEl.style.removeProperty('--mdx');
+            tiltEl.style.removeProperty('--mdy');
             tiltEl = null;
         }
     }
@@ -81,10 +103,18 @@
         const px = (e.clientX - rect.left) / rect.width - 0.5;
         const py = (e.clientY - rect.top) / rect.height - 0.5;
         tiltEl = card;
-        // 最大 3.2°：能感到玻璃在转，又不会转晕
+
+        // 玻璃是「有厚度的材质」，不是会翻跟头的卡片：
+        // 位移收到 1.6° / 2px 以内，真正跟着鼠标走的是高光与边缘折射，
+        // 这些由 CSS 读取 --mx / --my / --mdx 自己算（见 glass-rain.css 的镜面高光）。
+        card.style.setProperty('--mx', (((e.clientX - rect.left) / rect.width) * 100).toFixed(2) + '%');
+        card.style.setProperty('--my', (((e.clientY - rect.top) / rect.height) * 100).toFixed(2) + '%');
+        card.style.setProperty('--mdx', px.toFixed(3));
+        card.style.setProperty('--mdy', py.toFixed(3));
+        card.classList.add('glass-lit');
         card.style.transform =
-            `perspective(1100px) rotateX(${(-py * 6.4).toFixed(2)}deg) ` +
-            `rotateY(${(px * 6.4).toFixed(2)}deg) translateY(-4px) translateZ(0)`;
+            `perspective(1400px) rotateX(${(-py * 1.6).toFixed(2)}deg) ` +
+            `rotateY(${(px * 1.6).toFixed(2)}deg) translateY(-2px) translateZ(0)`;
     }
 
     /* ---------------- 3. 入场显现 ---------------- */
@@ -123,20 +153,30 @@
         if (!body || !('MutationObserver' in window)) {
             // 兜底：定时补扫几次（写作助手页没有 contentBody 也无妨）
             let times = 0;
-            const timer = setInterval(() => {
+            clearInterval(fallbackTimer);
+            fallbackTimer = setInterval(() => {
                 watch(document);
-                if (++times > 10) clearInterval(timer);
+                if (++times > 10) { clearInterval(fallbackTimer); fallbackTimer = 0; }
             }, 600);
             return;
         }
-        new MutationObserver(() => watch(body)).observe(body, { childList: true, subtree: true });
+        if (mutObserver) mutObserver.disconnect();
+        mutObserver = new MutationObserver(() => watch(body));
+        mutObserver.observe(body, { childList: true, subtree: true });
     }
 
     /* ---------------- 初始化 ---------------- */
 
     function init() {
+        if (inited) return;   // 幂等：路由切页重复调用不会再挂一份监听
+        inited = true;
+        if (reducedMotion) {
+            // 不跑入场动画，直接全部点亮
+            document.querySelectorAll(REVEAL_SELECTOR).forEach((n) => n.classList.add('in'));
+        }
         // 保险：如果显现系统没跑起来（比如 Observer 被禁用），强制全部可见
-        setTimeout(() => {
+        clearTimeout(bootTimer);
+        bootTimer = setTimeout(() => {
             const anyHidden = Array.prototype.some.call(
                 document.querySelectorAll(REVEAL_SELECTOR),
                 (n) => !n.classList.contains('in')
@@ -152,13 +192,36 @@
         requestAnimationFrame(() => requestAnimationFrame(() => watch(document)));
 
         if (finePointer) {
-            document.addEventListener('pointermove', onPointerMove, { passive: true });
-            document.addEventListener('pointerleave', resetTilt);
-            document.addEventListener('scroll', resetTilt, { passive: true });
+            on(document, 'pointermove', onPointerMove, { passive: true });
+            on(document, 'pointerleave', resetTilt);
+            on(document, 'scroll', resetTilt, { passive: true });
         }
     }
 
-    Blog.ui.glass = { init, watch, resetTilt };
+    /** 销毁：摘监听、断 Observer、清定时器、撤光斑与倾斜 */
+    function destroy() {
+        listeners.forEach(([t, type, h, o]) => {
+            try { t.removeEventListener(type, h, o); } catch (e) { /* 忽略 */ }
+        });
+        listeners.length = 0;
+        if (mutObserver) { mutObserver.disconnect(); mutObserver = null; }
+        if (observer) { observer.disconnect(); observer = null; }
+        clearInterval(fallbackTimer); fallbackTimer = 0;
+        clearTimeout(bootTimer); bootTimer = 0;
+        if (spotRaf) { cancelAnimationFrame(spotRaf); spotRaf = 0; }
+        resetTilt();
+        if (spot && spot.parentNode) spot.parentNode.removeChild(spot);
+        spot = null;
+        inited = false;
+    }
+
+    /** 路由渲染完新内容后调用：只重新扫描，不重复挂监听 */
+    function refresh(root) {
+        if (!inited) { init(); return; }
+        watch(root || document);
+    }
+
+    Blog.ui.glass = { init, destroy, refresh, watch, resetTilt };
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
