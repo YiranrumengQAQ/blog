@@ -126,8 +126,26 @@
         beads: [], micros: [],
         bgImg: null,
         last: 0,
-        els: null
+        els: null,
+        /* 生命周期 */
+        inited: false,
+        raf: 0,
+        paused: false,      // 页面不可见时的暂停（与 enabled 正交）
+        reduced: false,     // 系统「减少动态」
+        listeners: []       // 统一登记，destroy() 时全部摘掉
     };
+
+    /** 唯一状态源：blog-rain → S.enabled → html/body class → 按钮 aria-pressed */
+    function reducedMotion() {
+        try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+        catch (e) { return false; }
+    }
+
+    /** 所有事件监听都走这里，destroy() 才能保证不泄漏 */
+    function on(target, type, handler, opts) {
+        target.addEventListener(type, handler, opts);
+        S.listeners.push([target, type, handler, opts]);
+    }
 
     /* ---------------- DOM 舞台 ---------------- */
 
@@ -544,8 +562,9 @@
     /* ---------------- 主循环 ---------------- */
 
     function frame(now) {
-        if (!S.running) return;
-        requestAnimationFrame(frame);
+        S.raf = 0;
+        if (!S.running || S.paused) return;
+        S.raf = requestAnimationFrame(frame);
         let dt = (now - S.last) / 1000;
         S.last = now;
         if (!(dt > 0)) return;
@@ -580,27 +599,40 @@
             S.els.stage.style.display = '';
             S.els.dropStage.style.display = '';
         }
-        requestAnimationFrame(frame);
+        if (!S.raf) S.raf = requestAnimationFrame(frame);
     }
 
     function stop() {
         S.running = false;
+        if (S.raf) { cancelAnimationFrame(S.raf); S.raf = 0; }
         if (S.els) {
             S.els.stage.style.display = 'none';
             S.els.dropStage.style.display = 'none';
         }
     }
 
+    /** 标签页切后台：停帧、停闪电计时；回来时把时间基准重置，避免闪电连炸 */
+    function pause() {
+        if (S.paused) return;
+        S.paused = true;
+        if (S.raf) { cancelAnimationFrame(S.raf); S.raf = 0; }
+    }
+    function resume() {
+        if (!S.paused) return;
+        S.paused = false;
+        S.last = performance.now();
+        scheduleStrike(S.last + 1200);   // 回到前台不立刻连续闪电
+        if (S.running && !S.raf) S.raf = requestAnimationFrame(frame);
+    }
+
     function setEnabled(on) {
         S.enabled = !!on;
         saveEnabled(S.enabled);
         applyToggleUI();
-        if (S.enabled) {
-            resize();
-            start();
-        } else {
-            stop();
-        }
+        if (!S.enabled) { stop(); return; }
+        resize();
+        if (S.reduced) { S.running = true; frame(performance.now()); stop(); }
+        else start();
     }
 
     function toggle() {
@@ -612,7 +644,12 @@
 
     let resizeTimer = 0;
 
+    let themeObserver = null;
+
     function init() {
+        if (S.inited) return;          // 重复 init 直接短路，杜绝雨幕/监听叠加
+        S.inited = true;
+        S.reduced = reducedMotion();
         buildStage();
         applyToggleUI();
 
@@ -625,10 +662,30 @@
 
         resize();
 
-        window.addEventListener('resize', () => {
+        const onResize = () => {
             clearTimeout(resizeTimer);
+            // 移动端地址栏收缩 / 旋转屏幕都会改变 innerHeight，必须重算 Canvas 尺寸
             resizeTimer = setTimeout(() => { if (S.enabled) resize(); }, 220);
+        };
+        on(window, 'resize', onResize);
+        on(window, 'orientationchange', onResize);
+
+        // 页面不可见时停帧：回来不会一次性补算、不会连续闪电
+        on(document, 'visibilitychange', () => {
+            if (document.visibilityState === 'hidden') pause();
+            else resume();
         });
+
+        // 系统「减少动态」：保留静态雨夜画面，只渲染一帧就停
+        try {
+            const mqm = window.matchMedia('(prefers-reduced-motion: reduce)');
+            const onMotion = (e) => {
+                S.reduced = e.matches;
+                if (S.reduced) { if (S.running) { frame(performance.now()); stop(); } }
+                else if (S.enabled) start();
+            };
+            if (mqm.addEventListener) mqm.addEventListener('change', onMotion);
+        } catch (e) { /* 忽略 */ }
 
         // 主题切换 → 重建调色板与精灵（雨不停，只换天气颜色）
         const applyTheme = () => {
@@ -647,18 +704,19 @@
             seedSky();
         };
         try {
-            new MutationObserver(applyTheme).observe(document.documentElement, {
+            themeObserver = new MutationObserver(applyTheme);
+            themeObserver.observe(document.documentElement, {
                 attributes: true, attributeFilter: ['data-theme']
             });
         } catch (e) { /* 老浏览器没有 Observer：主题色下次 resize 时生效 */ }
-        document.addEventListener('blog:theme', applyTheme);
+        on(document, 'blog:theme', applyTheme);
 
         // 开关按钮（阅读页 + 写作助手各一枚，id 相同）
         document.querySelectorAll('#rainToggle').forEach((btn) => {
-            btn.addEventListener('click', () => toggle());
+            on(btn, 'click', () => toggle());
         });
         // 快捷键 R（输入框里不触发）
-        document.addEventListener('keydown', (e) => {
+        on(document, 'keydown', (e) => {
             if ((e.key === 'r' || e.key === 'R') && !e.ctrlKey && !e.metaKey && !e.altKey) {
                 const tag = (document.activeElement && document.activeElement.tagName) || '';
                 if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
@@ -666,12 +724,45 @@
             }
         });
 
-        if (S.enabled) start();
-        else stop();
+        if (S.enabled && !S.reduced) {
+            start();
+        } else if (S.enabled && S.reduced) {
+            // 静态雨夜：画一帧留住画面，不跑动画
+            S.running = true;
+            frame(performance.now());
+            stop();
+        } else {
+            stop();
+        }
+    }
+
+    /** 彻底销毁：摘监听、停 raf、清定时器、删 DOM。重复初始化前必须调用 */
+    function destroy() {
+        stop();
+        clearTimeout(resizeTimer);
+        S.listeners.forEach(([t, type, h, o]) => {
+            try { t.removeEventListener(type, h, o); } catch (e) { /* 忽略 */ }
+        });
+        S.listeners = [];
+        if (themeObserver) { try { themeObserver.disconnect(); } catch (e) { /* 忽略 */ } themeObserver = null; }
+        if (S.els) {
+            if (S.els.stage.parentNode) S.els.stage.parentNode.removeChild(S.els.stage);
+            if (S.els.dropStage.parentNode) S.els.dropStage.parentNode.removeChild(S.els.dropStage);
+        }
+        S.els = null;
+        S.beads = []; S.micros = []; S.ripples = []; S.far = []; S.near = [];
+        S.inited = false;
+        S.paused = false;
+    }
+
+    /** 路由切页 / 语言切换后重新挂载：先销毁再初始化，绝不叠加 */
+    function refresh() {
+        if (!S.inited) { init(); return; }
+        if (S.enabled) resize();
     }
 
     Blog.ui.rain = {
-        init, toggle, setEnabled,
+        init, destroy, refresh, toggle, setEnabled, pause, resume,
         isEnabled: () => S.enabled
     };
 

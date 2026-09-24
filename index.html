@@ -8,33 +8,33 @@
     <meta name="description" content="记录温暖时光的静态博客" data-i18n-attr="content:site.description">
     <meta name="theme-color" content="#c3d3e8">
     <script>
-        // 防止主题闪烁（FOUC）：必须放在 <head> 内、首帧渲染前同步执行。
-        // theme.js 在页面底部 defer 加载，若用户偏好暗色，等它执行时页面已经
-        // 按默认的亮色画过一帧了。这里提前读 localStorage 把暗色写到 <html> 上。
-        // 键名与 assets/js/ui/theme.js 的 STORAGE_KEY（blog-theme）保持一致。
+        // ── 首帧状态统一入口（FOUC / 首帧主题错配防护）────────────────────
+        // 这里是主题与雨效在首帧的唯一决策点：把结果显式写到 <html> 上，
+        // 后面的 theme.js / rain.js 只是读取并沿用，绝不再各自推导一遍。
+        //   blog-theme → <html data-theme="light|dark"> + color-scheme + meta
+        //   blog-rain  → <html class="rain-off">
+        // 显式写 data-theme（而不是「只在暗色时改」）能避免原生 select /
+        // 滚动条 / 表单控件在首帧按 :root 默认值渲染成另一套配色。
         (function () {
-            try {
-                var saved = localStorage.getItem('blog-theme');
-                var dark = saved === 'dark' ||
-                    (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                if (dark) {
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                    var meta = document.querySelector('meta[name="theme-color"]');
-                    if (meta) meta.setAttribute('content', '#05080f'); // 与 theme.js 的暗色同步
-                }
-            } catch (e) { /* 隐私模式等 localStorage 不可用时按默认亮色 */ }
-        })();
-    </script>
-    <script>
-        // 雨效防闪烁：雨默认开启；只有明确关过雨的用户（blog-rain=off），
-        // 才在首帧前给 <html> 补 rain-off 类，避免先下一帧雨再停。
-        // 键名与 assets/js/ui/rain.js 的 STORAGE_KEY（blog-rain）保持一致。
-        (function () {
-            try {
-                if (localStorage.getItem('blog-rain') === 'off') {
-                    document.documentElement.classList.add('rain-off');
-                }
-            } catch (e) { /* localStorage 不可用时保持默认下雨 */ }
+            var root = document.documentElement;
+            function read(key) {
+                try { return localStorage.getItem(key); } catch (e) { return null; }
+            }
+            var saved = read('blog-theme');
+            var dark = saved === 'dark';
+            if (saved !== 'dark' && saved !== 'light') {
+                try { dark = window.matchMedia('(prefers-color-scheme: dark)').matches; }
+                catch (e) { dark = false; }
+            }
+            var theme = dark ? 'dark' : 'light';
+            root.setAttribute('data-theme', theme);
+            root.style.colorScheme = theme;
+            var meta = document.querySelector('meta[name="theme-color"]');
+            // 与 theme.js 的取值保持一致
+            if (meta) meta.setAttribute('content', dark ? '#05080f' : '#c3d3e8');
+
+            // 雨效：默认开；只有明确关过雨的用户才在首帧前补 rain-off，避免闪一帧雨
+            if (read('blog-rain') === 'off') root.classList.add('rain-off');
         })();
     </script>
     <link rel="stylesheet" href="assets/css/tokens.css">

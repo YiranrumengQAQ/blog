@@ -23,6 +23,9 @@
 
     function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
+        // 与 <head> 首帧脚本保持同一套写法：显式同步 color-scheme，
+        // 保证原生 select / 滚动条 / 表单控件跟着一起换配色
+        document.documentElement.style.colorScheme = theme;
         saveTheme(theme);
         const meta = document.querySelector('meta[name="theme-color"]');
         // 雨夜玻璃主题的地址栏底色：亮 = 雾雨白昼，暗 = 雨夜

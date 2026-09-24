@@ -24,7 +24,9 @@
    ========================================================================== */
 
 :root {
-  color-scheme: dark;
+  /* 默认两种都声明：真正的主题由 html[data-theme] 决定（见下方两处覆盖），
+     避免首帧 :root 与 <html data-theme> 冲突导致原生控件短暂主题错配 */
+  color-scheme: light dark;
   --bg: #0a1120;
   --bg-image:
     linear-gradient(180deg, rgba(148, 178, 222, .14) 0%, rgba(56, 78, 118, .1) 46%, rgba(8, 13, 26, .36) 100%),
@@ -132,6 +134,8 @@ html[data-theme="light"] {
     linear-gradient(180deg, rgba(255, 255, 255, .55) 0%, rgba(214, 228, 245, .28) 38%, rgba(140, 165, 200, .34) 100%),
     radial-gradient(120% 90% at 50% -10%, rgba(255, 255, 255, .6) 0%, rgba(255, 255, 255, 0) 55%),
     radial-gradient(130% 100% at 50% 110%, rgba(90, 120, 165, .35) 0%, rgba(90, 120, 165, 0) 60%);
+  /* 亮色 = 3 层渐变，size 必须 3 个（照片层的 cover 在 body 规则里追加） */
+  --bg-size: 100% 100%, 100% 100%, 100% 100%;
 
   --surface: rgba(255, 255, 255, .32);
   --surface-2: rgba(255, 255, 255, .24);
@@ -208,6 +212,8 @@ html[data-theme="dark"] {
   --bg-image:
     linear-gradient(180deg, rgba(3, 6, 14, .3) 0%, rgba(2, 5, 12, .34) 46%, rgba(1, 3, 9, .62) 100%),
     radial-gradient(130% 100% at 50% 0%, rgba(0, 2, 8, .1) 40%, rgba(0, 2, 8, .68) 100%);
+  /* 暗色 = 2 层渐变，size 必须 2 个 */
+  --bg-size: 100% 100%, 100% 100%;
   --surface: rgba(7, 11, 22, .3);
   --surface-2: rgba(7, 11, 22, .24);
   --surface-3: rgba(7, 11, 22, .18);
@@ -351,15 +357,22 @@ body.glass-theme {
   /* 渐变罩在上、背景照片铺底（cover）；照片缺失时只剩渐变 */
   background-image: var(--bg-image), var(--bg-photo);
   background-attachment: fixed;
-  background-size: 100% 100%, 100% 100%, cover;
+  /* 渐变层数由 --bg-size 跟随主题给出，末尾的 cover 固定对应照片层，
+     以后改 --bg-image 只要同步改同一个主题块里的 --bg-size 即可 */
+  background-size: var(--bg-size), cover;
   background-position: center;
-  text-shadow: var(--text-emboss);
   overflow-x: hidden;
 }
 
-/* 亮色主题的 --bg-image 是三层渐变（上面是两层），照片层 size 补齐第四位 */
-html[data-theme="light"] body.glass-theme {
-  background-size: 100% 100%, 100% 100%, 100% 100%, cover;
+/* UI 外壳（顶栏 / 侧栏 / 页脚 / 按钮）才需要浮雕感；正文与代码保持干净 */
+body.glass-theme .site-header,
+body.glass-theme .sidebar,
+body.glass-theme .site-footer,
+body.glass-theme .content-header,
+body.glass-theme .pagination,
+body.glass-theme .editor-header,
+body.glass-theme .editor-toolbar {
+  text-shadow: var(--text-emboss);
 }
 
 /* 内容层浮在雨幕之上 */
@@ -2052,7 +2065,14 @@ body.glass-theme.no-glass-fx .empty-state {
 }
 @media (max-width: 380px) {
   body.glass-theme .blog-name { font-size: .92rem; }
-  body.glass-theme .lang-select { max-width: 52px; }
+  /* 多语言（English / Deutsch / العربية / Монгол …）不能硬压到 52px，
+     否则文字和 select 箭头会互相挤掉；给一个可读下限 + 省略号上限 */
+  body.glass-theme .lang-select {
+    min-width: 64px;
+    max-width: 96px;
+    padding-inline-end: 1.4rem;
+    text-overflow: ellipsis;
+  }
   body.glass-theme .m3-icon-btn,
   body.glass-theme .mobile-menu-btn,
   body.glass-theme .mobile-search-btn { width: 38px; height: 38px; }
@@ -2068,22 +2088,124 @@ body.glass-theme.no-glass-fx .empty-state {
 
 /* 打印：关掉一切动态与透明，保证纸面清晰 */
 @media print {
-  .rain-stage, .drop-stage, #glassSpot,
+  .rain-stage, .drop-stage, #glassSpot, .rain-aurora, .rain-mist, .rain-lightning,
+  .rain-vignette, .rain-grain,
   body.glass-theme::before, body.glass-theme::after { display: none !important; }
   body.glass-theme { background: #fff !important; color: #111 !important; text-shadow: none !important; }
+  /* 玻璃组件总开关：任何带玻璃材质的容器统一回到纸面样式 */
   body.glass-theme .post-card,
   body.glass-theme .article-view,
   body.glass-theme .sidebar-section,
   body.glass-theme .content-header,
-  body.glass-theme .editor-panel {
+  body.glass-theme .editor-panel,
+  body.glass-theme .glass-card,
+  body.glass-theme .glass-item,
+  body.glass-theme .glass-bar,
+  body.glass-theme .glass-btn,
+  body.glass-theme .glass-modal,
+  body.glass-theme .glass-badge,
+  body.glass-theme .site-header,
+  body.glass-theme .site-footer,
+  body.glass-theme .pagination {
     background: #fff !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
+    filter: none !important;
     border: 1px solid #999 !important;
     box-shadow: none !important;
+    text-shadow: none !important;
+    opacity: 1 !important;
+    /* transform 与 translate 是两个独立属性，必须分别清空，
+       只写 translate:0 0 清不掉 translateZ(0) / translateY(...) */
+    transform: none !important;
+    translate: none !important;
+    rotate: none !important;
+    scale: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  /* 伪元素上的高光 / 虹膜环在纸上只会变成灰块 */
+  body.glass-theme .post-card::before, body.glass-theme .post-card::after,
+  body.glass-theme .glass-card::before, body.glass-theme .glass-card::after,
+  body.glass-theme .article-view::before, body.glass-theme .article-view::after { display: none !important; }
+}
+
+/* ==========================================================================
+   15. 可访问性：减少动态 / 触摸设备 hover 隔离 / 正文反玻璃
+   ========================================================================== */
+
+/* 用户在系统里要求「减少动态」：保留静态雨夜画面，关掉所有动画与位移 */
+@media (prefers-reduced-motion: reduce) {
+  body.glass-theme *,
+  body.glass-theme *::before,
+  body.glass-theme *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* 入场动画直接落位，不要靠 IntersectionObserver 才可见 */
+  body.glass-theme .post-card,
+  body.glass-theme .sidebar-section,
+  body.glass-theme .article-view,
+  body.glass-theme .editor-panel,
+  body.glass-theme .content-header,
+  body.glass-theme .empty-state {
     opacity: 1 !important;
     translate: 0 0 !important;
   }
+  .rain-aurora, .rain-mist, .rain-lightning { animation: none !important; }
+  #glassSpot { display: none !important; }
+  body.glass-theme::before, body.glass-theme::after { animation: none !important; }
+}
+
+/* 触摸设备上的「tap → hover 卡住」：只有真正的精细指针才享受上浮 / 滑光 */
+@media (hover: none), (pointer: coarse) {
+  body.glass-theme .post-card:hover,
+  body.glass-theme .glass-card:hover,
+  body.glass-theme .glass-item:hover,
+  body.glass-theme .glass-btn:hover,
+  body.glass-theme .sidebar-cat-item:hover,
+  body.glass-theme .sidebar-archive-item:hover,
+  body.glass-theme .m3-icon-btn:hover {
+    transform: none;
+    box-shadow: var(--shadow);
+  }
+  body.glass-theme .post-card:hover::after,
+  body.glass-theme .glass-card:hover::after { opacity: 0; animation: none; }
+  /* 但点按反馈要留着，否则移动端会觉得没响应 */
+  body.glass-theme .post-card:active,
+  body.glass-theme .glass-card:active,
+  body.glass-theme .glass-btn:active { transform: scale(.99); }
+}
+
+/* 正文反玻璃：代码 / 表格是内容，不该再叠一层透镜和浮雕字 */
+body.glass-theme .article-content pre,
+body.glass-theme .article-content pre code,
+body.glass-theme .article-content code,
+body.glass-theme .article-content kbd,
+body.glass-theme .article-content samp,
+body.glass-theme .article-content table,
+body.glass-theme .article-content th,
+body.glass-theme .article-content td,
+body.glass-theme .editor-preview pre,
+body.glass-theme .editor-preview code {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  text-shadow: none !important;
+}
+/* 代码块自身可以是一块玻璃「板」，但文字区域必须实底、边界清楚 */
+body.glass-theme .article-content pre,
+body.glass-theme .editor-preview pre {
+  background: rgba(10, 16, 30, .82);
+  color: #e8f0ff;
+  border: 1px solid var(--border);
+}
+html[data-theme="light"] body.glass-theme .article-content pre,
+html[data-theme="light"] body.glass-theme .editor-preview pre {
+  background: rgba(252, 253, 255, .94);
+  color: #16233a;
+  border: 1px solid rgba(90, 120, 165, .35);
 }
 
 /* 旧皮肤开关按钮如果还被缓存脚本注入，直接藏掉（玻璃主题唯一） */
