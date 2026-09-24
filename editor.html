@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>写作助手 - 让写文章像填表格一样简单</title>
     <meta name="robots" content="noindex">
-    <meta name="theme-color" content="#FAF3E3">
+    <meta name="theme-color" content="#c3d3e8">
     <script>
         // 防止主题闪烁（FOUC）：与 index.html 相同的内联脚本。
         // editor.js 在 DOMContentLoaded 之后才恢复主题，没有这段会先闪一帧亮色。
@@ -18,31 +18,31 @@
                 if (dark) {
                     document.documentElement.setAttribute('data-theme', 'dark');
                     var meta = document.querySelector('meta[name="theme-color"]');
-                    if (meta) meta.setAttribute('content', '#201C2E');
+                    if (meta) meta.setAttribute('content', '#05080f');
                 }
             } catch (e) { /* localStorage 不可用时按默认亮色 */ }
         })();
     </script>
     <script>
-        // Neo-Brutalism 皮肤补丁（assets/css/neo-brutalism.css）的防闪烁：
-        // 补丁默认启用；只有保存过「黏土风」的用户才需要在首帧前补 ui-clay 类。
-        // 键名与 assets/js/ui/uipatch.js 的 STORAGE_KEY（blog-ui）保持一致。
+        // 雨效防闪烁：雨默认开启；只有明确关过雨的用户（blog-rain=off），
+        // 才在首帧前给 <html> 补 rain-off 类，避免先下一帧雨再停。
+        // 键名与 assets/js/ui/rain.js 的 STORAGE_KEY（blog-rain）保持一致。
         (function () {
             try {
-                if (localStorage.getItem('blog-ui') === 'clay') {
-                    document.documentElement.classList.add('ui-clay');
+                if (localStorage.getItem('blog-rain') === 'off') {
+                    document.documentElement.classList.add('rain-off');
                 }
-            } catch (e) { /* localStorage 不可用时保持默认的 Neo-Brutalism */ }
+            } catch (e) { /* localStorage 不可用时保持默认下雨 */ }
         })();
     </script>
     <link rel="stylesheet" href="assets/css/tokens.css">
     <link rel="stylesheet" href="assets/css/base.css">
     <link rel="stylesheet" href="assets/css/editor.css">
-    <!-- ▼ Neo-Brutalism 皮肤补丁：必须加载在所有旧样式之后（整体覆盖外观，旧黏土样式原样保留） -->
-    <link rel="stylesheet" href="assets/css/neo-brutalism.css">
-    <!-- ▲ 想卸载补丁：删掉上面这一行即可，旧 UI 一行不用改 -->
+    <!-- ▼ 雨夜毛玻璃主题：必须加载在所有旧样式之后（整体覆盖外观，旧样式原样保留） -->
+    <link rel="stylesheet" href="assets/css/glass-rain.css">
+    <!-- ▲ 想回旧 UI：把上面这一行换回 neo-brutalism.css 并恢复 body 的 class 即可 -->
 </head>
-<body>
+<body class="glass-theme">
     <!-- 顶栏 -->
     <header class="editor-header">
         <div class="editor-header-inner">
@@ -303,8 +303,9 @@
     <script src="assets/js/ui/icons.js" defer></script>
     <script src="assets/js/core/frontmatter.js" defer></script>
     <script src="assets/js/core/markdown.js" defer></script>
+    <!-- 雨夜玻璃主题：天气引擎（雨幕 + 水珠）与玻璃交互（光斑 + 倾斜 + 显现） -->
+    <script src="assets/js/ui/rain.js" defer></script>
+    <script src="assets/js/ui/glass.js" defer></script>
     <script src="assets/js/editor.js" defer></script>
-    <!-- Neo-Brutalism 补丁开关（悬浮按钮 + meta 地址栏颜色校准，功能零耦合，去掉也不影响写作助手） -->
-    <script src="assets/js/ui/uipatch.js" defer></script>
 </body>
 </html>

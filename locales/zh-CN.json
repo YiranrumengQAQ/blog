@@ -40,6 +40,8 @@
         "search": "搜索",
         "themeToggleAria": "切换主题",
         "themeToggleTitle": "切换亮色/暗色主题",
+        "rainToggleAria": "开关雨效",
+        "rainToggleTitle": "开关雨效（R）",
         "menuAria": "菜单",
         "menuTitle": "侧边栏菜单",
         "backToTop": "回到顶部",

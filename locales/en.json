@@ -40,6 +40,8 @@
         "search": "Search",
         "themeToggleAria": "Toggle theme",
         "themeToggleTitle": "Switch light/dark theme",
+        "rainToggleAria": "Toggle rain",
+        "rainToggleTitle": "Toggle rain (R)",
         "menuAria": "Menu",
         "menuTitle": "Sidebar menu",
         "backToTop": "Back to top",

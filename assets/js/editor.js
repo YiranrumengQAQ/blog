@@ -577,8 +577,13 @@
             const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             html.setAttribute('data-theme', next);
             const meta = document.querySelector('meta[name="theme-color"]');
-            if (meta) meta.setAttribute('content', next === 'dark' ? '#201C2E' : '#EDEBFA');
+            // 雨夜玻璃主题的地址栏底色：亮 = 雾雨白昼，暗 = 雨夜
+            if (meta) meta.setAttribute('content', next === 'dark' ? '#05080f' : '#c3d3e8');
             try { localStorage.setItem('blog-theme', next); } catch (e) { /* 忽略 */ }
+            // 通知天气引擎换调色板（rain.js 同时用 MutationObserver 兜底）
+            try {
+                document.dispatchEvent(new CustomEvent('blog:theme', { detail: { theme: next } }));
+            } catch (e) { /* 老浏览器没有 CustomEvent 构造器就跳过 */ }
         });
 
         // 快捷键 Ctrl+S 保存草稿

@@ -25,7 +25,12 @@
         document.documentElement.setAttribute('data-theme', theme);
         saveTheme(theme);
         const meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', theme === 'dark' ? '#201C2E' : '#EDEBFA');
+        // 雨夜玻璃主题的地址栏底色：亮 = 雾雨白昼，暗 = 雨夜
+        if (meta) meta.setAttribute('content', theme === 'dark' ? '#05080f' : '#c3d3e8');
+        // 通知天气引擎换调色板（rain.js 监听此事件；MutationObserver 是另一条保险）
+        try {
+            document.dispatchEvent(new CustomEvent('blog:theme', { detail: { theme } }));
+        } catch (e) { /* 老浏览器没有 CustomEvent 构造器就跳过 */ }
     }
 
     function currentTheme() {
