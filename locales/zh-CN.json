@@ -54,7 +54,8 @@
     "tags": "标签云",
     "archives": "归档",
     "reset": "显示全部文章",
-    "empty": "暂无内容"
+    "empty": "暂无内容",
+    "settings": "设置"
   },
   "list": {
     "latest": "最新文章",
@@ -117,7 +118,12 @@
     "localPreviewHint": "本地预览可在仓库目录运行：python3 -m http.server 8000",
     "retry": "重试",
     "partialFail": "有 {n} 篇文章加载失败，请检查 posts/ 目录",
-    "partialFail_one": "有 {n} 篇文章加载失败，请检查 posts/ 目录"
+    "partialFail_one": "有 {n} 篇文章加载失败，请检查 posts/ 目录",
+    "causeManifest": "posts/manifest.json 不存在或路径不对",
+    "causeJSON": "JSON 格式有误（多了逗号 / 少了引号）",
+    "causeEnv": "当前运行环境限制（本地直接打开 HTML）",
+    "help": "查看帮助",
+    "slow": "还在努力加载…网络好像有点慢"
   },
   "reader": {
     "enter": "阅读模式",
@@ -144,5 +150,32 @@
     "lastSaved": "最后保存：{time}",
     "unsavedTitle": "还有内容没有保存",
     "unsaved": "离开后修改可能会丢失"
+  },
+  "palette": {
+    "placeholder": "搜索文章，或输入 > 使用命令…",
+    "commands": "命令",
+    "articles": "文章 · {n} 篇",
+    "filters": "快速筛选",
+    "recentRead": "最近阅读",
+    "recentSearch": "最近搜索",
+    "emptyStart": "输入关键词开始搜索，或输入 > 查看命令",
+    "noResult": "没有找到与「{q}」相关的文章",
+    "noCommand": "没有匹配的命令",
+    "seeAll": "查看全部 {n} 条结果",
+    "inCategory": "分类 · {n} 篇",
+    "inTag": "标签 · {n} 篇",
+    "hintMove": "选择",
+    "hintOpen": "打开",
+    "hintCommand": "命令",
+    "cmdTheme": "切换亮色 / 暗色主题",
+    "cmdRain": "开关雨效",
+    "cmdReader": "切换阅读模式",
+    "cmdHome": "回到首页（清除筛选）",
+    "cmdTop": "回到顶部",
+    "cmdHelp": "查看快捷键",
+    "cmdLanguage": "切换语言：{name}"
+  },
+  "toast": {
+    "undo": "撤销"
   }
 }

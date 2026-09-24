@@ -85,6 +85,9 @@
     function resetTilt() {
         if (tiltEl) {
             tiltEl.style.transform = '';
+            tiltEl.classList.remove('glass-lit');
+            tiltEl.style.removeProperty('--mdx');
+            tiltEl.style.removeProperty('--mdy');
             tiltEl = null;
         }
     }
@@ -100,10 +103,18 @@
         const px = (e.clientX - rect.left) / rect.width - 0.5;
         const py = (e.clientY - rect.top) / rect.height - 0.5;
         tiltEl = card;
-        // 最大 3.2°：能感到玻璃在转，又不会转晕
+
+        // 玻璃是「有厚度的材质」，不是会翻跟头的卡片：
+        // 位移收到 1.6° / 2px 以内，真正跟着鼠标走的是高光与边缘折射，
+        // 这些由 CSS 读取 --mx / --my / --mdx 自己算（见 glass-rain.css 的镜面高光）。
+        card.style.setProperty('--mx', (((e.clientX - rect.left) / rect.width) * 100).toFixed(2) + '%');
+        card.style.setProperty('--my', (((e.clientY - rect.top) / rect.height) * 100).toFixed(2) + '%');
+        card.style.setProperty('--mdx', px.toFixed(3));
+        card.style.setProperty('--mdy', py.toFixed(3));
+        card.classList.add('glass-lit');
         card.style.transform =
-            `perspective(1100px) rotateX(${(-py * 6.4).toFixed(2)}deg) ` +
-            `rotateY(${(px * 6.4).toFixed(2)}deg) translateY(-4px) translateZ(0)`;
+            `perspective(1400px) rotateX(${(-py * 1.6).toFixed(2)}deg) ` +
+            `rotateY(${(px * 1.6).toFixed(2)}deg) translateY(-2px) translateZ(0)`;
     }
 
     /* ---------------- 3. 入场显现 ---------------- */

@@ -288,6 +288,7 @@
     Blog.ui.article.init(ctx);
     if (Blog.ui.reader) Blog.ui.reader.init(ctx);
     if (Blog.ui.shortcuts) Blog.ui.shortcuts.init(ctx);
+    if (Blog.ui.palette) Blog.ui.palette.init(ctx);
     Blog.ui.postlist.init(ctx);
     Blog.ui.search.init(ctx);
     Blog.ui.sidebar.init(ctx);
@@ -332,21 +333,40 @@
 
     /* ---------------- 启动 ---------------- */
 
+    /**
+     * 统一错误卡：任何失败都长成同一张「雨夜玻璃错误卡」——
+     * 标题 + 一句人话 + 可能原因清单 + 操作按钮，而不是把 Failed to fetch 甩给用户。
+     */
     function showErrorScreen(err) {
         el.skeleton.hidden = true;
         const isFile = window.location.protocol === 'file:';
         const why = isFile ? t('boot.errorFileHint') : t('boot.errorHint');
+        const causes = [
+            t('boot.causeManifest'),
+            t('boot.causeJSON'),
+            t('boot.causeEnv')
+        ];
         el.contentHeader.hidden = true;
         el.contentBody.innerHTML = `
-          <div class="empty-state">
+          <div class="empty-state error-card">
             <div class="empty-icon">${Blog.ui.icons.svg('alert-triangle')}</div>
             <h3>${escapeHTML(t('boot.errorTitle'))}</h3>
             <p>${escapeHTML(why)}</p>
-            <p style="font-size:0.8rem;margin-top:0.6rem;opacity:0.75;">${escapeHTML(t('boot.localPreviewHint'))}</p>
-            <div class="empty-actions"><button class="sidebar-reset" id="initRetryBtn">${escapeHTML(t('boot.retry'))}</button></div>
+            <ul class="error-causes">${causes.map((c) => `<li>${escapeHTML(c)}</li>`).join('')}</ul>
+            <p class="error-detail">${escapeHTML(String((err && err.message) || err || '').slice(0, 160))}</p>
+            <div class="empty-actions">
+              <button class="sidebar-reset" id="initRetryBtn">${escapeHTML(t('boot.retry'))}</button>
+              <button class="sidebar-reset" id="initHelpBtn">${escapeHTML(t('boot.help'))}</button>
+            </div>
           </div>`;
         const retry = $('#initRetryBtn');
         if (retry) retry.addEventListener('click', () => window.location.reload());
+        const help = $('#initHelpBtn');
+        if (help) {
+            help.addEventListener('click', () => {
+                toast.show({ message: t('boot.localPreviewHint'), type: 'info', sticky: true });
+            });
+        }
         console.error('[blog] 初始化失败:', err);
     }
 
@@ -399,7 +419,15 @@
             Blog.ui.sidebar.updateActive(ctx);
             if (state.view === 'list') Blog.ui.postlist.render(ctx);
             if (blog.failedSlugs.length) {
-                toast.show(t('boot.partialFail', { n: blog.failedSlugs.length }), 'error');
+                // 部分失败是「警告」不是「错误」：其余文章照常能读
+                toast.show({
+                    message: t('boot.partialFail', { n: blog.failedSlugs.length }),
+                    type: 'warn',
+                    action: {
+                        label: t('boot.retry'),
+                        onClick: () => window.location.reload()
+                    }
+                });
             }
         }).catch((err) => console.warn('[blog] 预取失败:', err));
 

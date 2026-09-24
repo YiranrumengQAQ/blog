@@ -54,7 +54,8 @@
     "tags": "Tags",
     "archives": "Archives",
     "reset": "Show all posts",
-    "empty": "Nothing here yet"
+    "empty": "Nothing here yet",
+    "settings": "Settings"
   },
   "list": {
     "latest": "Latest Posts",
@@ -117,7 +118,12 @@
     "localPreviewHint": "For a local preview, run in the repo folder: python3 -m http.server 8000",
     "retry": "Retry",
     "partialFail": "{n} posts failed to load, please check the posts/ folder",
-    "partialFail_one": "{n} post failed to load, please check the posts/ folder"
+    "partialFail_one": "{n} post failed to load, please check the posts/ folder",
+    "causeManifest": "posts/manifest.json is missing or the path is wrong",
+    "causeJSON": "Invalid JSON (stray comma / missing quote)",
+    "causeEnv": "Environment restriction (opened the HTML file directly)",
+    "help": "Help",
+    "slow": "Still loading… the network seems slow"
   },
   "reader": {
     "enter": "Reader mode",
@@ -144,5 +150,32 @@
     "lastSaved": "Last saved: {time}",
     "unsavedTitle": "You have unsaved changes",
     "unsaved": "Your edits may be lost if you leave."
+  },
+  "palette": {
+    "placeholder": "Search articles, or type > for commands…",
+    "commands": "Commands",
+    "articles": "Articles · {n}",
+    "filters": "Quick filters",
+    "recentRead": "Recently read",
+    "recentSearch": "Recent searches",
+    "emptyStart": "Type to search, or type > to see commands",
+    "noResult": "No articles match “{q}”",
+    "noCommand": "No matching command",
+    "seeAll": "See all {n} results",
+    "inCategory": "Category · {n}",
+    "inTag": "Tag · {n}",
+    "hintMove": "Navigate",
+    "hintOpen": "Open",
+    "hintCommand": "Commands",
+    "cmdTheme": "Toggle light / dark theme",
+    "cmdRain": "Toggle rain",
+    "cmdReader": "Toggle reader mode",
+    "cmdHome": "Go home (clear filters)",
+    "cmdTop": "Back to top",
+    "cmdHelp": "Show shortcuts",
+    "cmdLanguage": "Switch language: {name}"
+  },
+  "toast": {
+    "undo": "Undo"
   }
 }

@@ -146,6 +146,9 @@ function unlockBodyScroll() {
         el.mobileMenuBtn.addEventListener('click', () => toggleMobile(ctx));
         el.sidebarOverlay.addEventListener('click', () => closeMobile(ctx));
 
+        bindSwipe(ctx);
+        setupMobileSettings(ctx);
+
         // Esc 关闭抽屉（与灯箱、搜索框的 Esc 行为一致）
         document.addEventListener('keydown', (e) => {
             if (e.key !== 'Escape') return;
@@ -163,6 +166,91 @@ function unlockBodyScroll() {
                 closeMobile(ctx);
             }
         }, 200));
+    }
+
+    /* ---------------- 手势：抽屉滑动关闭 / 边缘滑动打开 ---------------- */
+
+    /**
+     * LTR：抽屉在左边 → 向左滑关闭，从屏幕左缘向右滑打开。
+     * RTL：整体镜像（阿拉伯语 / 希伯来语 / 波斯语下抽屉在右边）。
+     * 判定条件刻意保守：横向位移 > 60px 且明显大于纵向位移，避免误伤正常滚动。
+     */
+    function bindSwipe(ctx) {
+        const { el } = ctx;
+        const rtl = () => (document.documentElement.getAttribute('dir') === 'rtl' ||
+            document.body.getAttribute('dir') === 'rtl');
+        let x0 = null, y0 = null, fromEdge = false;
+
+        const start = (e) => {
+            if (window.innerWidth > 768) return;
+            const touch = e.touches[0];
+            x0 = touch.clientX;
+            y0 = touch.clientY;
+            const edge = 28;
+            fromEdge = rtl() ? (x0 > window.innerWidth - edge) : (x0 < edge);
+        };
+
+        const end = (e) => {
+            if (x0 === null) return;
+            const touch = e.changedTouches[0];
+            const dx = touch.clientX - x0;
+            const dy = touch.clientY - y0;
+            x0 = null;
+            if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+            const openDir = rtl() ? dx < 0 : dx > 0;     // 朝屏幕内滑 = 打开
+            const isOpen = el.sidebar.classList.contains('mobile-open');
+            if (isOpen && !openDir) closeMobile(ctx);
+            else if (!isOpen && openDir && fromEdge) openMobile(ctx);
+        };
+
+        document.addEventListener('touchstart', start, { passive: true });
+        document.addEventListener('touchend', end, { passive: true });
+        // 抽屉自身也要能滑：在它上面滑动同样触发（内容区纵向滚动不受影响）
+        el.sidebar.addEventListener('touchstart', start, { passive: true });
+        el.sidebar.addEventListener('touchend', end, { passive: true });
+    }
+
+    /* ---------------- 移动端 Header 收纳：语言选择器进「设置」 ---------------- */
+
+    /**
+     * 小屏顶栏塞不下「搜索 / 语言 / 主题 / 雨效 / 菜单」五件套。
+     * ≤560px 时把语言下拉整块搬进侧栏的「设置」分区（DOM 只移动、不重建，
+     * 事件与 i18n 绑定全部保留），宽屏再搬回顶栏。这样多语言名字再长也不会挤爆。
+     */
+    function setupMobileSettings(ctx) {
+        const wrap = document.getElementById('langWrap');
+        const headerHost = document.querySelector('.header-actions');
+        if (!wrap || !headerHost) return;
+
+        const sidebarHost = document.createElement('div');
+        sidebarHost.className = 'sidebar-section sidebar-settings';
+        sidebarHost.hidden = true;
+        sidebarHost.innerHTML = '<h3 data-i18n="sidebar.settings">设置</h3>';
+        const slot = document.createElement('div');
+        slot.className = 'sidebar-settings-slot';
+        sidebarHost.appendChild(slot);
+        const reset = document.getElementById('sidebarReset');
+        ctx.el.sidebar.insertBefore(sidebarHost, reset || null);
+        if (Blog.i18n) Blog.i18n.applyToDOM(sidebarHost);
+
+        const anchor = document.createComment('lang-slot');
+        headerHost.insertBefore(anchor, wrap);
+
+        let inSidebar = false;
+        const apply = () => {
+            const small = window.innerWidth <= 560;
+            if (small && !inSidebar) {
+                slot.appendChild(wrap);
+                sidebarHost.hidden = false;
+                inSidebar = true;
+            } else if (!small && inSidebar) {
+                anchor.parentNode.insertBefore(wrap, anchor);
+                sidebarHost.hidden = true;
+                inSidebar = false;
+            }
+        };
+        apply();
+        window.addEventListener('resize', Blog.utils.debounce(apply, 200));
     }
 
     Blog.ui.sidebar = {

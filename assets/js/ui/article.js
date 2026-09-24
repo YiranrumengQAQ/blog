@@ -200,11 +200,28 @@
             }
         });
 
-        // 图片：懒加载 + 防防盗链 + 失败占位 + 点击灯箱
+        // 图片：懒加载 + 防防盗链 + Blur-up 渐显 + 失败占位 + 点击灯箱
         $$('img', content).forEach((img, i) => {
             img.setAttribute('loading', 'lazy');
+            img.setAttribute('decoding', 'async');
             img.setAttribute('referrerpolicy', 'no-referrer');
             img.dataset.lbIndex = String(i);
+
+            // Blur-up：先占位（骨架微光）→ 图片解码完成后从模糊淡入清晰，
+            // 页面不会因为图片突然出现而「跳」一下
+            if (!img.parentNode.classList || !img.parentNode.classList.contains('img-shell')) {
+                const shell = document.createElement('span');
+                shell.className = 'img-shell is-loading';
+                img.parentNode.insertBefore(shell, img);
+                shell.appendChild(img);
+                const done = () => shell.classList.remove('is-loading');
+                const fail = () => shell.classList.add('is-failed');
+                if (img.complete && img.naturalWidth > 0) done();
+                else {
+                    img.addEventListener('load', done, { once: true });
+                    img.addEventListener('error', fail, { once: true });
+                }
+            }
             img.addEventListener('error', () => {
                 const tip = document.createElement('span');
                 tip.className = 'img-fallback';
@@ -212,7 +229,8 @@
                     ? t('article.imgFallbackAlt', { alt: img.alt })
                     : t('article.imgFallback');
                 tip.innerHTML = `${icon('image')}<span>${escapeHTML(text)}</span>`;
-                img.replaceWith(tip);
+                const shell = img.closest('.img-shell');
+                (shell || img).replaceWith(tip);
             });
             img.addEventListener('click', () => openLightbox(ctx, i));
         });
