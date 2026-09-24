@@ -58,7 +58,10 @@
             return true;
         }
         if (hash.startsWith('/post/')) {
-            const slug = decodeURIComponent(hash.replace(/^\/post\//, '').split('?')[0]);
+            let slug = '';
+            try {
+                slug = decodeURIComponent(hash.replace(/^\/post\//, '').split('?')[0]);
+            } catch (e) { slug = ''; } // 手敲的坏 URI（如 #/post/abc%zz）不能让整个路由抛异常
             if (slug) {
                 state.view = 'detail';
                 state.slug = slug;

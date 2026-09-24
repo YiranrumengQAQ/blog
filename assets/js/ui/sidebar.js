@@ -46,28 +46,38 @@
         });
     }
 
-    /* ---------------- 移动端抽屉：底层滚动穿透治理 ---------------- */
+/* ---------------- 移动端抽屉：底层滚动穿透治理 ---------------- */
 
-    // iOS Safari 对 body { overflow: hidden } 视而不见，穿透滚动要用
-    // 「body 定位到固定 + 记住滚动位置」的经典方案才能锁住。
-    let savedScrollY = 0;
-    let bodyLocked = false;
+// iOS Safari 对 body { overflow: hidden } 视而不见，穿透滚动要用
+// 「body 定位到固定 + 记住滚动位置」的经典方案才能锁住。
+// 引用计数：抽屉与文章灯箱共用一把锁，后开的先关也不会误解锁。
+let lockCount = 0;
+let savedScrollY = 0;
 
-    function lockBodyScroll() {
-        if (bodyLocked) return;
-        bodyLocked = true;
+function lockBodyScroll() {
+    if (lockCount === 0) {
         savedScrollY = window.scrollY;
         document.body.style.top = (-savedScrollY) + 'px';
         document.body.classList.add('scroll-locked');
     }
+    lockCount++;
+}
 
-    function unlockBodyScroll() {
-        if (!bodyLocked) return;
-        bodyLocked = false;
-        document.body.classList.remove('scroll-locked');
-        document.body.style.top = '';
-        window.scrollTo(0, savedScrollY);
-    }
+function unlockBodyScroll() {
+    if (lockCount <= 0) return;
+    lockCount--;
+    if (lockCount > 0) return;
+    document.body.classList.remove('scroll-locked');
+    document.body.style.top = '';
+    // body 固定期间视口可滚高度塌缩为 0，scrollY 会被钳到 0；
+    // 而 html 有 scroll-behavior: smooth，两参 scrollTo 会跟随平滑动画，
+    // 关抽屉时页面会从顶部"滑"回原位。临时切 auto 原地复位。
+    const root = document.documentElement;
+    const prevBehavior = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'auto';
+    window.scrollTo(0, savedScrollY);
+    root.style.scrollBehavior = prevBehavior;
+}
 
     function openMobile(ctx) {
         const { el } = ctx;
@@ -145,16 +155,20 @@
             }
         });
 
-        // 旋转屏幕 / 拖宽窗口回到桌面布局时，收起抽屉并解除滚动锁，
-        // 否则 body 会一直停留在 position: fixed 上无法滚动。
+        // 旋转屏幕 / 拖宽窗口回到桌面布局时，收起抽屉（closeMobile 会连带解锁）。
+        // 注意不要在这里直接 unlockBodyScroll：文章灯箱也持有这把引用计数锁，
+        // 直接调用会把灯箱的锁误解锁（宽窗口下灯箱后面就能滚动了）。
         window.addEventListener('resize', Blog.utils.debounce(() => {
             if (window.innerWidth > 768 && el.sidebar.classList.contains('mobile-open')) {
                 closeMobile(ctx);
             }
-            // 兜底：任何情况下窗口变宽都确保解锁
-            if (window.innerWidth > 768) unlockBodyScroll();
         }, 200));
     }
 
-    Blog.ui.sidebar = { render, updateActive, init, openMobile, closeMobile, toggleMobile };
+    Blog.ui.sidebar = {
+        render, updateActive, init,
+        openMobile, closeMobile, toggleMobile,
+        // 滚动锁对外开放：文章灯箱（iOS 上 overflow:hidden 锁不住滚动）复用同一把锁
+        lockBodyScroll, unlockBodyScroll
+    };
 })();

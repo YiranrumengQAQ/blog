@@ -502,6 +502,9 @@
 /* ----- 内容区域 ----- */
 .content-area {
     min-width: 0;
+    /* 「返回文章列表 / 点分页」用 scrollIntoView 对齐视口顶部，
+       但吸顶栏会正好压住内容头。留一个顶栏高度的落点余量 */
+    scroll-margin-top: calc(var(--header-height) + 10px);
 }
 .content-header {
     display: flex;

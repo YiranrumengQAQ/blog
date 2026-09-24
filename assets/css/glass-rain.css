@@ -2014,6 +2014,11 @@ body.glass-theme.no-glass-fx .empty-state {
 
 @media (max-width: 768px) {
   body.glass-theme .search-wrap.mobile-visible {
+    /* responsive.css 里 top: var(--header-height) 是以 .site-header 为基准设计的，
+       但玻璃主题给 .header-inner 加了 position: relative（顶沿高光切线要用），
+       绝对定位基准被换成 header-inner → 搜索条整体下移顶栏 padding 的高度、
+       和胶囊之间留缝。把顶栏上 padding（0.6rem）扣回来 */
+    top: calc(var(--header-height) - 0.6rem);
     background: var(--glass-spec), var(--surface-glass);
     -webkit-backdrop-filter: var(--lens-blur);
     backdrop-filter: var(--lens-blur);
