@@ -274,7 +274,9 @@
         lbImages = imgs;
         const lb = ensureLightbox();
         lb.root.hidden = false;
-        document.body.style.overflow = 'hidden';
+        // iOS 上 body { overflow: hidden } 挡不住触摸滚动，
+        // 复用侧栏抽屉那套「body 定位固定」的引用计数锁（关灯箱时才真正解锁）
+        if (Blog.ui.sidebar) Blog.ui.sidebar.lockBodyScroll();
         showLightboxImage(index);
     }
 
@@ -301,7 +303,7 @@
         if (!lbElements) return;
         lbElements.root.hidden = true;
         lbElements.img.src = '';
-        document.body.style.overflow = '';
+        if (Blog.ui.sidebar) Blog.ui.sidebar.unlockBodyScroll();
     }
 
     /* ---------------- 阅读进度条 ---------------- */

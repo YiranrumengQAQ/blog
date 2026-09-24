@@ -8,7 +8,9 @@
      2. 默认 GPU 加速：动画元素全部 translateZ(0) + will-change，雨幕用
         Canvas + DPR 渲染，多层叠加。
      3. 三层雨：CSS 远/近雨线打底 + Canvas 雨幕（远雨/近雨/涟漪/水花）+
-        屏幕玻璃上的冷凝水珠滑落。
+        屏幕玻璃上的静态冷凝水珠（只凝结、不滑落）。
+     6. 背景：优先使用用户的背景照片（--bg-photo，assets/img/rain-bg.jpg，
+        缺失时自动忽略该图层，回退渐变天空）。
      4. 玻璃很透：表面 alpha 压到 0.06~0.34，靠 18~30px 真模糊 + 镜面高光
         + 虹膜边缘保证可读性。
      5. 亮 / 暗双适配：亮色 = 雾雨白昼；暗色 = 雨夜霓虹。
@@ -28,6 +30,9 @@
     linear-gradient(180deg, rgba(148, 178, 222, .14) 0%, rgba(56, 78, 118, .1) 46%, rgba(8, 13, 26, .36) 100%),
     radial-gradient(130% 100% at 50% 0%, rgba(6, 10, 22, 0) 42%, rgba(3, 7, 16, .52) 100%);
   --bg-size: 100% 100%, 100% 100%;
+
+  /* 背景照片（用户图；文件缺失时浏览器静默忽略该层，回退上面的渐变） */
+  --bg-photo: url("../img/rain-bg.jpg");
 
   /* 表面层级（极透，靠真模糊成像） */
   --surface: rgba(196, 217, 246, .1);
@@ -343,12 +348,18 @@ body.glass-theme {
   min-height: 100dvh;
   color: var(--text);
   background-color: var(--bg);
-  background-image: var(--bg-image);
+  /* 渐变罩在上、背景照片铺底（cover）；照片缺失时只剩渐变 */
+  background-image: var(--bg-image), var(--bg-photo);
   background-attachment: fixed;
-  background-size: 100% 100%;
+  background-size: 100% 100%, 100% 100%, cover;
   background-position: center;
   text-shadow: var(--text-emboss);
   overflow-x: hidden;
+}
+
+/* 亮色主题的 --bg-image 是三层渐变（上面是两层），照片层 size 补齐第四位 */
+html[data-theme="light"] body.glass-theme {
+  background-size: 100% 100%, 100% 100%, 100% 100%, cover;
 }
 
 /* 内容层浮在雨幕之上 */
@@ -1873,13 +1884,11 @@ html.rain-off .drop-stage, body.rain-off .drop-stage { display: none; }
   overflow: hidden;
   transform: translateZ(0);
 }
-#dropLayer, #trailLayer {
+#dropLayer {
   position: absolute;
   inset: 0;
   transform: translateZ(0);
 }
-#trailLayer { z-index: 1; }
-#dropLayer { z-index: 2; }
 
 /* 水珠本体：实时折射透镜 */
 .gdrop {
@@ -1927,30 +1936,6 @@ html.rain-off .drop-stage, body.rain-off .drop-stage { display: none; }
 @keyframes microTwinkle {
   0%, 100% { opacity: .55; }
   50% { opacity: 1; }
-}
-/* 滑落大珠：更强的透镜模糊 + 拉长变形由 JS 写入 scale */
-.gdrop.slider {
-  border-radius: 46% 54% 52% 48% / 58% 60% 40% 42%;
-  -webkit-backdrop-filter: blur(3px) saturate(180%) brightness(1.18);
-  backdrop-filter: blur(3px) saturate(180%) brightness(1.18);
-  box-shadow:
-    inset 2px 3px 5px rgba(255, 255, 255, .6),
-    inset -3px -5px 9px rgba(15, 35, 75, .25),
-    inset 0 0 0 1.5px rgba(255, 255, 255, .36),
-    0 6px 18px rgba(5, 12, 28, .35);
-}
-/* 滑落后留下的水痕：细长湿痕，缓慢蒸发 */
-.gtrail {
-  position: absolute;
-  left: 0;
-  top: 0;
-  border-radius: 999px;
-  transform: translateZ(0);
-  will-change: transform, opacity;
-  background: linear-gradient(180deg, rgba(255, 255, 255, .34), rgba(255, 255, 255, .1));
-  -webkit-backdrop-filter: blur(1.2px) saturate(150%) brightness(1.08);
-  backdrop-filter: blur(1.2px) saturate(150%) brightness(1.08);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22), inset 1px 0 2px rgba(255, 255, 255, .3);
 }
 /* 亮色下水珠对比增强 */
 html[data-theme="light"] .gdrop {
@@ -2029,6 +2014,11 @@ body.glass-theme.no-glass-fx .empty-state {
 
 @media (max-width: 768px) {
   body.glass-theme .search-wrap.mobile-visible {
+    /* responsive.css 里 top: var(--header-height) 是以 .site-header 为基准设计的，
+       但玻璃主题给 .header-inner 加了 position: relative（顶沿高光切线要用），
+       绝对定位基准被换成 header-inner → 搜索条整体下移顶栏 padding 的高度、
+       和胶囊之间留缝。把顶栏上 padding（0.6rem）扣回来 */
+    top: calc(var(--header-height) - 0.6rem);
     background: var(--glass-spec), var(--surface-glass);
     -webkit-backdrop-filter: var(--lens-blur);
     backdrop-filter: var(--lens-blur);

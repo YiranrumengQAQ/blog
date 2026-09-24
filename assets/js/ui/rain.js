@@ -1,13 +1,15 @@
 /**
  * ui/rain.js — 雨夜玻璃主题的天气引擎（默认开启，GPU 加速，不考虑性能）
  *
- * 三层雨 + 屏幕冷凝水珠，全部实时计算：
- *   Layer 0  #rainSky   ：动态天空（渐变 + 漂移云 + 城市光斑 + 游动高光 + 闪电）
+ * 背景 + 三层雨 + 屏幕冷凝水珠，全部实时计算：
+ *   Layer 0  #rainSky   ：动态背景——优先铺满用户的背景照片
+ *            （assets/img/rain-bg.jpg，cover 适配；文件缺失时静默回退
+ *            渐变天空：漂移云 + 城市光斑 + 游动高光 + 闪电）
  *   Layer 1  #rainFar   ：远景细雨（数百条雨线 + 风偏摆）
  *   Layer 2  #rainNear  ：近景粗雨（粗雨线 + 落地涟漪 + 水花）
- *   Layer 3  .drop-stage：屏幕玻璃上的冷凝水珠——每个水珠都是一个
- *            backdrop-filter 实时透镜，对页面内容做真正的折射，
- *            大水珠会吞噬小水珠、滑落并留下缓慢蒸发的水痕。
+ *   Layer 3  .drop-stage：屏幕玻璃上的静态冷凝水珠——每个水珠都是一个
+ *            backdrop-filter 实时透镜，对页面内容做真正的折射。
+ *            只凝结、不滑落（滑动大珠与水痕已按需求移除）。
  *
  *   - 主题自适应：监听 <html data-theme>，亮/暗两套调色板实时切换。
  *   - 开关：顶栏雨滴按钮 / 按 R 键，偏好记进 localStorage（blog-rain），默认开。
@@ -20,6 +22,9 @@
 
     const STORAGE_KEY = 'blog-rain';
     const DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+    /* 背景照片：文件不存在 / 加载失败时 naturalWidth 为 0，自动回退渐变天空 */
+    const BG_PHOTO = 'assets/img/rain-bg.jpg';
 
     /* ---------------- 调色板（亮 = 雾雨白昼，暗 = 雨夜霓虹） ---------------- */
 
@@ -118,8 +123,8 @@
         skyGrad: null, glowGrad: null,
         clouds: [], bokeh: [], sheens: [],
         far: [], near: [], ripples: [],
-        sliders: [], beads: [], micros: [],
-        trails: [], trailCursor: 0,
+        beads: [], micros: [],
+        bgImg: null,
         last: 0,
         els: null
     };
@@ -166,17 +171,14 @@
         dropStage.className = 'drop-stage';
         dropStage.id = 'dropStage';
         dropStage.setAttribute('aria-hidden', 'true');
-        const trailLayer = document.createElement('div');
-        trailLayer.id = 'trailLayer';
         const dropLayer = document.createElement('div');
         dropLayer.id = 'dropLayer';
-        dropStage.appendChild(trailLayer);
         dropStage.appendChild(dropLayer);
         document.body.appendChild(dropStage);
 
         S.els = {
             stage, sky, far, near, lightning,
-            dropStage, trailLayer, dropLayer,
+            dropStage, dropLayer,
             skyCtx: sky.getContext('2d'),
             farCtx: far.getContext('2d'),
             nearCtx: near.getContext('2d')
@@ -256,27 +258,12 @@
     }
 
     function seedDroplets() {
-        const { dropLayer, trailLayer } = S.els;
+        const { dropLayer } = S.els;
         dropLayer.innerHTML = '';
-        trailLayer.innerHTML = '';
         const small = S.W < 768;
-        const nSlider = small ? 14 : 24;
         const nBead = small ? 22 : 42;
         const nMicro = small ? 52 : 96;
-        const nTrail = small ? 150 : 260;
 
-        S.sliders = [];
-        for (let i = 0; i < nSlider; i++) {
-            const r = rand(7, 15);
-            const el = dropEl('slider', r * 2);
-            dropLayer.appendChild(el);
-            S.sliders.push({
-                el, r,
-                x: rand(0, S.W), y: rand(-S.H * 0.4, S.H),
-                vy: rand(30, 120), phase: rand(0, Math.PI * 2),
-                trailAcc: rand(0, 0.03)
-            });
-        }
         S.beads = [];
         for (let i = 0; i < nBead; i++) {
             const r = rand(3, 8);
@@ -290,16 +277,6 @@
         for (let i = 0; i < nMicro; i++) {
             S.micros.push(spawnMicro(rand(0, S.W), rand(0, S.H), true));
         }
-        S.trails = [];
-        S.trailCursor = 0;
-        for (let i = 0; i < nTrail; i++) {
-            const el = document.createElement('div');
-            el.className = 'gtrail';
-            el.style.opacity = '0';
-            el.style.transform = 'translate3d(-100px,-100px,0)';
-            trailLayer.appendChild(el);
-            S.trails.push({ el, life: 0, max: 2.4 });
-        }
     }
 
     function spawnMicro(x, y, randomDelay) {
@@ -311,29 +288,7 @@
         return { el, r, x, y };
     }
 
-    function killMicro(m) {
-        if (m.el.parentNode) m.el.parentNode.removeChild(m.el);
-    }
 
-    function emitTrail(x, y, w) {
-        const t = S.trails[S.trailCursor];
-        S.trailCursor = (S.trailCursor + 1) % S.trails.length;
-        const len = rand(10, 26);
-        t.el.style.width = Math.max(2, w).toFixed(1) + 'px';
-        t.el.style.height = len.toFixed(1) + 'px';
-        t.el.style.marginLeft = (-w / 2).toFixed(1) + 'px';
-        t.el.style.marginTop = (-len / 2).toFixed(1) + 'px';
-        t.el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`;
-        t.life = t.max = rand(1.8, 3.2);
-        t.el.style.opacity = '0.55';
-    }
-
-    function splash(x, y) {
-        for (let i = 0; i < 4; i++) {
-            if (S.micros.length > 220) break;
-            S.micros.push(spawnMicro(x + rand(-26, 26), y - rand(0, 50), false));
-        }
-    }
 
     /* ---------------- 尺寸 ---------------- */
 
@@ -401,18 +356,31 @@
     function paintSky(ctx, dt, now, wind) {
         const P = PALETTES[S.theme];
         const t = now * 0.001;
-        ctx.fillStyle = S.skyGrad;
-        ctx.fillRect(0, 0, S.W, S.H);
+        // 背景：优先铺满用户的背景照片（cover 居中裁切）；
+        // 图片不存在 / 还没加载好时静默回退渐变天空
+        const img = S.bgImg;
+        if (img && img.naturalWidth) {
+            const scale = Math.max(S.W / img.naturalWidth, S.H / img.naturalHeight);
+            const dw = img.naturalWidth * scale;
+            const dh = img.naturalHeight * scale;
+            ctx.drawImage(img, (S.W - dw) / 2, (S.H - dh) / 2, dw, dh);
+        } else {
+            ctx.fillStyle = S.skyGrad;
+            ctx.fillRect(0, 0, S.W, S.H);
+        }
         ctx.fillStyle = S.glowGrad;
         ctx.fillRect(0, 0, S.W, S.H);
 
         // 云：预渲染精灵拉伸漂移
+        // （alpha 从调色板的 cloud rgba 串里解析；直接引用不存在的
+        //  P.cloudAlpha 会得到 NaN，赋值被 Canvas 忽略 → 云按全透明绘制）
         ctx.save();
+        const cloudA = parseFloat((/([\d.]+)\)\s*$/.exec(P.cloud) || [])[1]) || 1;
         S.clouds.forEach((c) => {
             c.x += c.vx * dt;
             if (c.x - c.rx > 1) c.x = -c.rx;
             const w = S.W * c.rx * 2, h = S.H * c.ry * 2;
-            ctx.globalAlpha = P.cloudAlpha * c.alpha;
+            ctx.globalAlpha = cloudA * c.alpha;
             ctx.drawImage(S.cloudSprite, c.x * S.W - w / 2, c.y * S.H - h / 2, w, h);
         });
         ctx.restore();
@@ -551,103 +519,26 @@
         }
     }
 
-    function updateDroplets(dt, wind) {
-        // 滑落大珠
-        S.sliders.forEach((s) => {
-            s.vy += (150 + s.r * 22) * dt;
-            if (s.vy > 340) s.vy = 340;
-            s.y += s.vy * dt;
-            s.x += (wind * 0.35 + Math.sin(s.y * 0.02 + s.phase) * 22) * dt;
-            // 吞噬路径上的微珠 / 小珠，长大加速
-            for (let i = S.micros.length - 1; i >= 0; i--) {
-                const m = S.micros[i];
-                const dx = m.x - s.x, dy = m.y - s.y;
-                if (dx * dx + dy * dy < (s.r + m.r) * (s.r + m.r)) {
-                    killMicro(m);
-                    S.micros.splice(i, 1);
-                    s.r = Math.min(16, s.r + 0.12);
-                    s.vy = Math.min(360, s.vy + 6);
-                }
-            }
-            for (let i = S.beads.length - 1; i >= 0; i--) {
-                const b = S.beads[i];
-                const dx = b.x - s.x, dy = b.y - s.y;
-                if (dx * dx + dy * dy < (s.r + b.r) * (s.r + b.r)) {
-                    if (b.el.parentNode) b.el.parentNode.removeChild(b.el);
-                    S.beads.splice(i, 1);
-                    s.r = Math.min(17, s.r + 0.35);
-                    s.vy = Math.min(380, s.vy + 14);
-                }
-            }
-            // 拖尾水痕
-            s.trailAcc += dt;
-            if (s.trailAcc > 0.028) {
-                s.trailAcc = 0;
-                emitTrail(s.x + rand(-1.5, 1.5), s.y - s.r * 0.6, s.r * 0.55);
-            }
-            // 滑出底部：水花 + 回到顶部
-            if (s.y > S.H + 40) {
-                splash(s.x, S.H - 10);
-                s.x = rand(0, S.W);
-                s.y = rand(-120, -20);
-                s.vy = rand(20, 90);
-                s.r = rand(6, 12);
-            }
-            if (s.x < -40) s.x = S.W + 30;
-            if (s.x > S.W + 40) s.x = -30;
-            const d = (s.r * 2).toFixed(1);
-            if (s.el.style.width !== d + 'px') {
-                s.el.style.width = s.el.style.height = d + 'px';
-                s.el.style.marginLeft = s.el.style.marginTop = (-s.r).toFixed(1) + 'px';
-            }
-            const stretch = 1 + Math.min(0.35, s.vy / 1100);
-            const wob = Math.sin(s.y * 0.05 + s.phase) * 0.08;
-            s.el.style.transform =
-                `translate3d(${s.x.toFixed(1)}px,${s.y.toFixed(1)}px,0) scale(${(1 / stretch + wob).toFixed(3)},${stretch.toFixed(3)})`;
-        });
-
-        // 静珠：缓慢长大，长大到阈值就化作滑珠
-        for (let i = S.beads.length - 1; i >= 0; i--) {
-            const b = S.beads[i];
+    function updateDroplets(dt) {
+        // 静珠：缓慢长大；长到临界就"抖落蒸发"，换到别处重新凝结成一颗小珠
+        S.beads.forEach((b) => {
             b.r += b.grow * dt;
             if (b.r > 8.5) {
-                if (b.el.parentNode) b.el.parentNode.removeChild(b.el);
-                S.beads.splice(i, 1);
-                if (S.sliders.length < 40) {
-                    const el = dropEl('slider', b.r * 2);
-                    S.els.dropLayer.appendChild(el);
-                    S.sliders.push({ el, r: b.r, x: b.x, y: b.y, vy: 26, phase: rand(0, Math.PI * 2), trailAcc: 0 });
-                }
-                // 补充一颗新的静珠，保持密度
-                const r = rand(2.5, 5);
-                const el2 = dropEl('bead', r * 2);
-                const x = rand(0, S.W), y = rand(0, S.H * 0.7);
-                el2.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`;
-                S.els.dropLayer.appendChild(el2);
-                S.beads.push({ el: el2, r, x, y, grow: rand(0.1, 0.4) });
-                continue;
+                b.r = rand(2.5, 4.5);
+                b.grow = rand(0.1, 0.4);
+                b.x = rand(0, S.W);
+                b.y = rand(0, S.H * 0.7);
             }
             const d = (b.r * 2).toFixed(1);
             b.el.style.width = b.el.style.height = d + 'px';
             b.el.style.marginLeft = b.el.style.marginTop = (-b.r).toFixed(1) + 'px';
-        }
+            b.el.style.transform = `translate3d(${b.x.toFixed(1)}px,${b.y.toFixed(1)}px,0)`;
+        });
 
         // 微珠：偶尔新生，保持凝露密度
         if (S.micros.length < 70 && Math.random() < 0.3) {
             S.micros.push(spawnMicro(rand(0, S.W), rand(0, S.H), false));
         }
-
-        // 水痕蒸发
-        S.trails.forEach((tr) => {
-            if (tr.life <= 0) return;
-            tr.life -= dt;
-            if (tr.life <= 0) {
-                tr.el.style.opacity = '0';
-                tr.el.style.transform = 'translate3d(-100px,-100px,0)';
-            } else {
-                tr.el.style.opacity = ((tr.life / tr.max) * 0.55).toFixed(3);
-            }
-        });
     }
 
     /* ---------------- 主循环 ---------------- */
@@ -665,7 +556,7 @@
         paintSky(skyCtx, dt, now, wind);
         paintFar(farCtx, dt, wind);
         paintNear(nearCtx, dt, wind);
-        updateDroplets(dt, wind);
+        updateDroplets(dt);
     }
 
     /* ---------------- 开关 ---------------- */
@@ -724,6 +615,14 @@
     function init() {
         buildStage();
         applyToggleUI();
+
+        // 背景照片：加载失败（404 / 断网）不报错，paintSky 自动回退渐变
+        try {
+            S.bgImg = new Image();
+            S.bgImg.decoding = 'async';
+            S.bgImg.src = BG_PHOTO;
+        } catch (e) { S.bgImg = null; }
+
         resize();
 
         window.addEventListener('resize', () => {

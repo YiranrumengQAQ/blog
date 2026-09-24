@@ -62,6 +62,19 @@
 
     const ctx = { blog, state, el, config: null, actions: {} };
 
+    /**
+     * 瞬时滚到顶部。html 上有 scroll-behavior: smooth，
+     * 两参 scrollTo / behavior:'auto' 都会跟随平滑动画——
+     * 从列表切文章时会一边滑一边出新内容，观感很怪。
+     */
+    function scrollToTopInstant() {
+        const root = document.documentElement;
+        const prev = root.style.scrollBehavior;
+        root.style.scrollBehavior = 'auto';
+        window.scrollTo(0, 0);
+        root.style.scrollBehavior = prev;
+    }
+
     /* ---------------- 站点名 ---------------- */
 
     /**
@@ -128,7 +141,7 @@
             state.slug = slug;
             Blog.ui.router.syncPostHash(slug);
             Blog.ui.sidebar.closeMobile(ctx);
-            window.scrollTo({ top: 0, behavior: 'auto' });
+            scrollToTopInstant();
             actions.refreshAll();
         },
 
@@ -211,7 +224,7 @@
     window.addEventListener('popstate', () => {
         Blog.ui.router.parseHash(state);
         actions.refreshAll();
-        if (state.view === 'detail') window.scrollTo({ top: 0, behavior: 'auto' });
+        if (state.view === 'detail') scrollToTopInstant();
     });
 
     /* ---------------- 启动 ---------------- */
