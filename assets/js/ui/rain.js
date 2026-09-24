@@ -8,7 +8,8 @@
  *   Layer 1  #rainFar   ：远景细雨（数百条雨线 + 风偏摆）
  *   Layer 2  #rainNear  ：近景粗雨（粗雨线 + 落地涟漪 + 水花）
  *   Layer 3  .drop-stage：屏幕玻璃上的静态冷凝水珠——每个水珠都是一个
- *            backdrop-filter 实时透镜，对页面内容做真正的折射。
+ *            backdrop-filter 透镜（严格说是「背景采样 + 模糊 + 滤镜」，
+ *            不是带 UV 位移的物理折射，但观感足够像）。
  *            只凝结、不滑落（滑动大珠与水痕已按需求移除）。
  *
  *   - 主题自适应：监听 <html data-theme>，亮/暗两套调色板实时切换。
@@ -681,6 +682,15 @@
         };
         on(window, 'resize', onResize);
         on(window, 'orientationchange', onResize);
+        // 移动端地址栏收缩 / 键盘弹出只改 visualViewport，不一定触发 window.resize；
+        // 100dvh 与 Canvas 尺寸都得跟着变，否则雨幕会偏移、水珠会错位
+        if (window.visualViewport) {
+            on(window.visualViewport, 'resize', onResize);
+            on(window.visualViewport, 'scroll', () => {
+                // 只在高度真的变了时重算，纯滚动不重置雨幕
+                if (Math.abs(window.innerHeight - S.H) > 40) onResize();
+            });
+        }
 
         // 页面不可见时停帧：回来不会一次性补算、不会连续闪电
         on(document, 'visibilitychange', () => {

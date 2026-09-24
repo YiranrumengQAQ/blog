@@ -2,9 +2,11 @@
    雨夜毛玻璃主题 (Rain Glass Theme) — 真·玻璃拟态
    --------------------------------------------------------------------------
    设计目标（不考虑性能，只考虑好看）：
-     1. 真实折射：所有玻璃全部走 GPU 实时 backdrop-filter（blur/saturate/
-        brightness），不是半透明纯色贴片；前景水珠同样用 backdrop-filter
-        对页面内容做实时透镜折射。
+     1. 透镜式模糊（不是物理折射）：玻璃全部走 GPU 实时 backdrop-filter
+        （blur/saturate/brightness）——它的本质是「背景采样 + 模糊 + 滤镜」，
+        没有 distortion / displacement / UV offset，所以准确的说法是
+        「高级毛玻璃 + 镜面高光 + 边缘光学」，而不是 refraction。
+        我们刻意不为了「物理正确」去硬加扭曲，观感优先。
      2. 默认 GPU 加速：动画元素全部 translateZ(0) + will-change，雨幕用
         Canvas + DPR 渲染，多层叠加。
      3. 三层雨：CSS 远/近雨线打底 + Canvas 雨幕（远雨/近雨/涟漪/水花）+
@@ -464,12 +466,27 @@ html[data-theme="light"] body.glass-theme::after {
   pointer-events: none;
   background: var(--glass-iris);
   opacity: .5;
-  -webkit-backdrop-filter: var(--lens-blur);
-  backdrop-filter: var(--lens-blur);
+  /* 这里以前还叠了一层 backdrop-filter：同一块背景被模糊两次，
+     实际效果不是「边缘折射」而是「边缘更糊」，而且 backdrop-filter + mask +
+     伪元素的合成结果在 Chromium / Firefox / WebKit 上并不一致。
+     现在纯靠渐变 + 遮罩画环形高光，跨浏览器表现统一。 */
   -webkit-mask: var(--glass-ring-mask);
   -webkit-mask-composite: xor;
   mask: var(--glass-ring-mask);
   mask-composite: exclude;
+}
+/* mask-composite fallback：不支持的浏览器（旧 Firefox / 旧 Safari）会把整块
+   涂满虹膜色，那还不如退化成一圈 inset 描边高光 */
+@supports not ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+  .glass-card::before,
+  body.glass-theme .post-card::before {
+    -webkit-mask: none;
+    mask: none;
+    background: none;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, .34),
+      inset 0 1px 0 rgba(255, 255, 255, .5);
+  }
 }
 
 /* 鼠标悬浮滑光动效 */
@@ -3045,4 +3062,218 @@ html[data-theme="light"] .glass-modal-layer { background: rgba(120, 150, 195, .3
   .water-ripple { display: none !important; }
   body.glass-theme.glass-flash * { animation: none !important; }
   .lightbox-img { transition: none !important; }
+}
+
+/* ==========================================================================
+   19. 光学层级 (Optical Tiers) —— 这一段是整套玻璃系统的「宪法」
+   --------------------------------------------------------------------------
+   问题：每个 DOM 都套一层 backdrop-filter，最后会变成
+   「磨砂塑料套磨砂塑料」——不是性能问题，是光学叠加问题。
+
+   规定的层级（从远到近，只有 T1 与 T4 拥有真正的 backdrop-filter）：
+
+     T0  天空 / 背景照片 / 极光 / 闪电        .rain-stage（无滤镜，自己发光）
+     T1  大型玻璃容器（唯一的主折射面）        .header-inner .sidebar-section
+                                             .post-card .article-view .glass-card
+                                             .glass-bar .glass-modal .palette-card
+     T2  容器内的内容玻璃（只有表面，不再折射）  .glass-item .glass-badge 卡内分区
+     T3  正文内容层（反玻璃）                  .article-content pre/code/table
+     T4  独立浮层（不在 T1 里面，可以自带折射）  .toast .lightbox-tools .reader-toggle
+                                             .article-mobile-bar #glassSpot
+     T5  前景水珠                            .gdrop（最后一层真透镜）
+
+   规则一句话：**玻璃里面不要再有玻璃**，T1 内部的一切只保留
+   「半透明底 + 边框 + 内高光」，把折射留给容器本身。
+   ========================================================================== */
+
+/* T2：任何处在 T1 容器内部的玻璃控件，一律撤掉自己的 backdrop-filter */
+body.glass-theme .header-inner :is(.glass-item, .glass-btn, .glass-badge, .m3-icon-btn, .lang-select, .search-wrap),
+body.glass-theme .sidebar-section :is(.glass-item, .glass-btn, .glass-badge),
+body.glass-theme .post-card :is(.glass-item, .glass-btn, .glass-badge, .card-tag, .card-category),
+body.glass-theme .article-view :is(.glass-item, .glass-btn, .glass-badge, .card-tag, .card-category, .article-back, .article-nav-item),
+body.glass-theme .glass-card :is(.glass-item, .glass-btn, .glass-badge),
+body.glass-theme .glass-bar :is(.glass-item, .glass-btn, .glass-badge),
+body.glass-theme .glass-modal :is(.glass-item, .glass-btn, .glass-badge),
+body.glass-theme .palette-card :is(.palette-item, .palette-esc),
+body.glass-theme .editor-panel :is(.glass-item, .glass-btn, .glass-badge, .btn, .md-btn) {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* 撤掉折射之后，靠「表面」把层次找回来：更实的底 + 更亮的内高光 */
+body.glass-theme .glass-card .glass-item,
+body.glass-theme .post-card .glass-item,
+body.glass-theme .article-view .glass-item,
+body.glass-theme .sidebar-section .glass-item {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .05) 46%, rgba(255, 255, 255, .03));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .34),
+    inset 0 -1px 0 rgba(255, 255, 255, .07),
+    0 6px 16px -12px rgba(0, 3, 10, .85);
+}
+html[data-theme="light"] body.glass-theme .glass-card .glass-item,
+html[data-theme="light"] body.glass-theme .post-card .glass-item,
+html[data-theme="light"] body.glass-theme .article-view .glass-item,
+html[data-theme="light"] body.glass-theme .sidebar-section .glass-item {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .7), rgba(255, 255, 255, .42));
+}
+
+/* T1 之间也不要互相套：卡片里再放卡片时，内层退化成 T2 */
+body.glass-theme .glass-card .glass-card,
+body.glass-theme .post-card .glass-card,
+body.glass-theme .article-view .glass-card,
+body.glass-theme .glass-modal .glass-card {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: var(--shadow-sm);
+}
+body.glass-theme .glass-card .glass-card::before,
+body.glass-theme .article-view .glass-card::before { display: none; }   /* 不要两圈虹膜环 */
+
+/* T4：独立浮层允许自带折射（它们直接挂在 body 上，不在任何 T1 内部） */
+body.glass-theme > .toast-container .toast,
+body.glass-theme > .lightbox .lightbox-tools,
+body.glass-theme > .reader-toggle,
+body.glass-theme > .article-mobile-bar {
+  -webkit-backdrop-filter: var(--lens-blur-soft);
+  backdrop-filter: var(--lens-blur-soft);
+}
+
+/* ==========================================================================
+   20. 交互四态统一：hover / focus-visible / active / disabled
+   --------------------------------------------------------------------------
+   以前 hover 一套、focus-visible 另一套，键盘操作时视觉层级对不上。
+   现在四个状态共用同一组变量，键盘用户看到的和鼠标用户完全一致。
+   ========================================================================== */
+
+body.glass-theme :is(button, .glass-btn, .sidebar-cat-item, .sidebar-archive-item,
+  .sidebar-tag, .card-tag, .card-category, .page-btn, .article-nav-item,
+  .palette-item, .glass-modal-btn, a.blog-name, .editor-back-link) {
+  transition:
+    transform var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    background-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+/* hover 与 focus-visible 表现完全一致（只有精细指针才享受 hover） */
+@media (hover: hover) and (pointer: fine) {
+  body.glass-theme :is(button, .glass-btn, .sidebar-cat-item, .sidebar-archive-item,
+    .sidebar-tag, .card-tag, .card-category, .page-btn, .article-nav-item,
+    .glass-modal-btn):hover:not(:disabled) {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-sm), inset 0 0 18px -10px rgba(255, 255, 255, .45);
+  }
+}
+body.glass-theme :is(button, .glass-btn, .sidebar-cat-item, .sidebar-archive-item,
+  .sidebar-tag, .card-tag, .card-category, .page-btn, .article-nav-item,
+  .palette-item, .glass-modal-btn, a, select, input, textarea):focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm), inset 0 0 18px -10px rgba(255, 255, 255, .45);
+}
+/* active 永远比 hover 更「按下去」 */
+body.glass-theme :is(button, .glass-btn, .sidebar-cat-item, .sidebar-archive-item,
+  .sidebar-tag, .page-btn, .article-nav-item, .glass-modal-btn):active:not(:disabled) {
+  transform: translateY(0) scale(.985) translateZ(0);
+  box-shadow: inset 0 2px 6px -2px rgba(0, 3, 10, .45), inset 0 1px rgba(255, 255, 255, .22);
+}
+/* disabled 一眼可辨，且不接受任何 hover / active 反馈 */
+body.glass-theme :is(button, .glass-btn, .page-btn, .glass-modal-btn):disabled,
+body.glass-theme [aria-disabled="true"] {
+  opacity: .48;
+  filter: saturate(55%);
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* ==========================================================================
+   21. 移动端 sticky + backdrop-filter 加固（Android Chromium 重灾区）
+   --------------------------------------------------------------------------
+   translateZ(0) 会让元素成为包含块与新的 stacking context，
+   和 position: sticky + backdrop-filter 叠在一起时，安卓上常见：
+   滚动中背景突然不模糊、sticky 抖动、fixed 浮层被吃掉。
+   移动端这里改用 will-change: backdrop-filter + isolation，不再强推图层。
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  body.glass-theme .site-header {
+    isolation: isolate;
+    /* 顶栏自己就是 stacking context 的边界，别让它被内部 transform 影响 */
+    transform: none;
+  }
+  body.glass-theme .header-inner,
+  body.glass-theme .glass-bar {
+    transform: none;                    /* 去掉 translateZ(0) */
+    will-change: backdrop-filter;       /* 交给浏览器决定图层，安卓更稳 */
+    -webkit-backdrop-filter: saturate(140%) blur(20px);
+    backdrop-filter: saturate(140%) blur(20px);
+  }
+  /* 抽屉 / 遮罩 / 灯箱 / 面板都要高于顶栏，绝不能被顶栏的层级吃掉 */
+  body.glass-theme .sidebar { z-index: 4000; }
+  body.glass-theme .sidebar-overlay { z-index: 3900; }
+  .palette { z-index: 6600; }
+  .glass-modal-layer { z-index: 6800; }
+  .lightbox { z-index: 10000; }
+}
+
+/* ==========================================================================
+   22. RTL：逻辑属性收口（阿拉伯语 / 希伯来语 / 波斯语）
+   ========================================================================== */
+
+[dir="rtl"] .reader-toggle { right: auto; left: 1.2rem; }
+[dir="rtl"] .palette-hint kbd { margin-inline-end: 0; margin-inline-start: .2rem; }
+[dir="rtl"] .lightbox-prev { left: auto; right: 1.2rem; }
+[dir="rtl"] .lightbox-next { right: auto; left: 1.2rem; }
+[dir="rtl"] .lightbox-close { right: auto; left: 1.2rem; }
+[dir="rtl"] .toast-container { left: 1rem; right: auto; }
+[dir="rtl"] .article-mobile-bar button { flex-direction: row-reverse; }
+[dir="rtl"] .palette-item,
+[dir="rtl"] .toast,
+[dir="rtl"] .glass-modal-actions { direction: rtl; }
+[dir="rtl"] .error-card .error-causes { text-align: start; }
+/* 方向无关的间距一律用逻辑属性，别再写 left / right */
+.palette-head { padding-inline: 1.1rem; }
+.palette-section { padding-inline: .7rem; }
+.palette-item { padding-inline: .7rem; }
+.save-status { padding-inline: .8rem; }
+
+/* ==========================================================================
+   23. 玻璃容器 ≠ 裁剪容器 ≠ 浮层容器
+   --------------------------------------------------------------------------
+   以前 .glass-card / .post-card 用 overflow: hidden 去裁掉故意放大到
+   inset:-30% 的掠光（sheen）。副作用是：卡片里以后放 tooltip / dropdown /
+   popover / 水珠，全都会被一起裁掉。
+   现在改成「谁产生溢出，谁自己裁」：掠光用 clip-path 裁在自己的圆角内，
+   容器本身恢复 overflow: visible，浮层可以自由溢出。
+   ========================================================================== */
+
+body.glass-theme .post-card,
+body.glass-theme .article-view,
+.glass-card {
+  overflow: visible;
+  /* 背景与伪元素仍然只画在圆角范围内 */
+  background-clip: padding-box;
+}
+/* 掠光自己裁自己：保持「光从卡片外扫进来」的观感，但不连累子元素。
+   伪元素 inset:-40% ⇒ 自身尺寸是卡片的 1.8 倍，要裁回卡片边界
+   需要 0.4 / 1.8 ≈ 22.2%；inset:-30% ⇒ 0.3 / 1.6 ≈ 18.8%。 */
+body.glass-theme .post-card::after { clip-path: inset(22.2% round var(--radius)); }
+.glass-card::after { clip-path: inset(18.8% round var(--radius)); }
+/* 卡片不再整体裁剪了，封面图必须自己保住圆角 */
+body.glass-theme .card-cover,
+body.glass-theme .card-cover img { border-radius: var(--radius-sm); }
+@supports not (clip-path: inset(10% round 10px)) {
+  /* 老浏览器没有 clip-path round：退回原来的裁剪方式，保证不漏光 */
+  body.glass-theme .post-card,
+  .glass-card { overflow: hidden; }
+}
+/* 需要在卡片里放浮层时，给浮层自己加这个类即可（不改容器） */
+.glass-overlay-escape {
+  position: absolute;
+  z-index: 60;
+  isolation: isolate;
 }
