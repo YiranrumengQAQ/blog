@@ -109,7 +109,11 @@
   "lightbox": {
     "close": "关闭",
     "prev": "上一张",
-    "next": "下一张"
+    "next": "下一张",
+    "zoomIn": "放大",
+    "zoomOut": "缩小",
+    "reset": "复位（0）",
+    "origin": "查看原图"
   },
   "boot": {
     "errorTitle": "博客初始化失败",

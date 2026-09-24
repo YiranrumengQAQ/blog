@@ -2654,25 +2654,10 @@ body.glass-theme .error-card .error-detail {
   to   { background-position: -120% 0; }
 }
 
-/* ---- 鼠标高光跟随（glass.js 写入 --mx / --my） ---- */
-body.glass-theme .post-card,
-body.glass-theme .glass-card { position: relative; }
-body.glass-theme .post-card.glass-lit::before,
-body.glass-theme .glass-card.glass-lit::before {
-  /* 高光中心跟着指针走，卡片本体几乎不动：玻璃有厚度，不是会翻跟头的纸片 */
-  background-image:
-    radial-gradient(160px 160px at var(--mx, 50%) var(--my, 0%),
-      rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 70%),
-    var(--glass-spec);
-}
-html[data-theme="light"] body.glass-theme .post-card.glass-lit::before,
-html[data-theme="light"] body.glass-theme .glass-card.glass-lit::before {
-  background-image:
-    radial-gradient(170px 170px at var(--mx, 50%) var(--my, 0%),
-      rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 70%),
-    var(--glass-spec);
-}
-
+/* ---- 鼠标高光跟随（glass.js 写入 --mx / --my） ----
+   注意：绝不能改写 ::before —— 那是虹膜边缘环（.post-card）和顶沿光线
+   （.article-view），改了会把边缘光学整块弄坏。高光叠在元素自身的
+   background-image 上，和下面 18 段的滚动高光 / 指针邻域是同一套图层。 */
 /* ---- 移动端「设置」分区（语言选择器从顶栏搬进来） ---- */
 body.glass-theme .sidebar-settings[hidden] { display: none; }
 body.glass-theme .sidebar-settings .lang-wrap { width: 100%; }
@@ -2690,4 +2675,374 @@ body.glass-theme .sidebar-settings .lang-select {
 
 @media print {
   .palette, .toast-container { display: none !important; }
+}
+
+/* ==========================================================================
+   18. 材质微反馈：水波纹 / 闪电反光 / 滚动高光 / 灯箱缩放 / 玻璃确认框
+   --------------------------------------------------------------------------
+   这一段全部是「玻璃真的存在」的细节，由 ui/fx.js 写入变量驱动：
+     --flash-power  闪电强度      --sheen-angle / --sheen-shift  滚动高光
+     --px / --py    指针位置      --mx / --my                    卡片内指针位置
+   prefers-reduced-motion 下整段自动退化为静态。
+   ========================================================================== */
+
+:root {
+  --flash-power: 0;
+  --sheen-angle: 152deg;
+  --sheen-shift: 0%;
+}
+
+/* ---- 26. 点击水波纹（极轻，一圈水环扩散后蒸发） ---- */
+.water-ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle,
+    rgba(255, 255, 255, .34) 0%,
+    rgba(255, 255, 255, .12) 38%,
+    rgba(255, 255, 255, 0) 62%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .18) inset;
+  animation: water-ripple .62s var(--ease) forwards;
+}
+html[data-theme="light"] .water-ripple {
+  background: radial-gradient(circle,
+    rgba(255, 255, 255, .8) 0%,
+    rgba(210, 230, 255, .3) 38%,
+    rgba(255, 255, 255, 0) 62%);
+}
+@keyframes water-ripple {
+  from { transform: scale(.25); opacity: .9; }
+  to   { transform: scale(1);   opacity: 0; }
+}
+
+/* ---- 24. 闪电反光：天上闪，屋里的玻璃也跟着亮一下 ---- */
+body.glass-theme.glass-flash .site-header,
+body.glass-theme.glass-flash .post-card,
+body.glass-theme.glass-flash .article-view,
+body.glass-theme.glass-flash .sidebar-section,
+body.glass-theme.glass-flash .glass-card,
+body.glass-theme.glass-flash .editor-panel {
+  animation: glass-lightning .56s var(--ease);
+}
+@keyframes glass-lightning {
+  0%   { box-shadow: var(--shadow); border-color: var(--border); }
+  14%  {
+    box-shadow: var(--shadow),
+      inset 0 1px 0 rgba(255, 255, 255, calc(.55 * var(--flash-power, 1))),
+      0 0 32px -8px rgba(210, 232, 255, calc(.5 * var(--flash-power, 1)));
+    border-color: rgba(255, 255, 255, calc(.6 * var(--flash-power, 1)));
+  }
+  100% { box-shadow: var(--shadow); border-color: var(--border); }
+}
+/* 水珠在闪电里最亮：它们是最靠近眼睛的一层 */
+body.glass-theme.glass-flash .gdrop { animation: drop-lightning .5s var(--ease); }
+@keyframes drop-lightning {
+  0%, 100% { filter: none; }
+  16% { filter: brightness(1.7) saturate(115%); }
+}
+
+/* ---- 21 + 28 + 19：玻璃表面的三层光学（统一在 background-image 上叠）----
+     第 1 层：卡片内指针高光（--mx / --my，glass.js 写，仅 .glass-lit 时出现）
+     第 2 层：视口级指针邻域折射（--px / --py，fx.js 写，attachment: fixed）
+     第 3 层：随滚动缓慢转角的镜面高光（--sheen-angle / --sheen-shift）
+   ::before / ::after 一律不碰：那里是虹膜环、顶沿光线与掠光 sheen。 */
+body.glass-theme .post-card,
+body.glass-theme .article-view,
+body.glass-theme .glass-card {
+  background-image:
+    radial-gradient(420px 420px at var(--px, -999px) var(--py, -999px),
+      rgba(255, 255, 255, .06), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(
+      var(--sheen-angle, 152deg),
+      rgba(255, 255, 255, .13) 0%,
+      rgba(255, 255, 255, .045) calc(24% + var(--sheen-shift, 0%) * .12),
+      rgba(255, 255, 255, .015) 52%,
+      rgba(255, 255, 255, .05) 82%,
+      rgba(255, 255, 255, .1) 100%);
+  background-attachment: fixed, scroll;
+}
+html[data-theme="light"] body.glass-theme .post-card,
+html[data-theme="light"] body.glass-theme .article-view,
+html[data-theme="light"] body.glass-theme .glass-card {
+  background-image:
+    radial-gradient(420px 420px at var(--px, -999px) var(--py, -999px),
+      rgba(255, 255, 255, .26), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(
+      var(--sheen-angle, 152deg),
+      rgba(255, 255, 255, .5) 0%,
+      rgba(255, 255, 255, .18) calc(24% + var(--sheen-shift, 0%) * .12),
+      rgba(255, 255, 255, .06) 52%,
+      rgba(255, 255, 255, .16) 82%,
+      rgba(255, 255, 255, .34) 100%);
+  background-attachment: fixed, scroll;
+}
+/* 指针正停在这张卡上：再叠一圈跟手的近场高光（卡片本体几乎不动） */
+body.glass-theme .post-card.glass-lit,
+body.glass-theme .article-view.glass-lit,
+body.glass-theme .glass-card.glass-lit {
+  background-image:
+    radial-gradient(180px 180px at var(--mx, 50%) var(--my, 0%),
+      rgba(255, 255, 255, .2), rgba(255, 255, 255, 0) 72%),
+    radial-gradient(420px 420px at var(--px, -999px) var(--py, -999px),
+      rgba(255, 255, 255, .06), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(
+      var(--sheen-angle, 152deg),
+      rgba(255, 255, 255, .13) 0%,
+      rgba(255, 255, 255, .045) calc(24% + var(--sheen-shift, 0%) * .12),
+      rgba(255, 255, 255, .015) 52%,
+      rgba(255, 255, 255, .05) 82%,
+      rgba(255, 255, 255, .1) 100%);
+  background-attachment: scroll, fixed, scroll;
+}
+html[data-theme="light"] body.glass-theme .post-card.glass-lit,
+html[data-theme="light"] body.glass-theme .article-view.glass-lit,
+html[data-theme="light"] body.glass-theme .glass-card.glass-lit {
+  background-image:
+    radial-gradient(190px 190px at var(--mx, 50%) var(--my, 0%),
+      rgba(255, 255, 255, .5), rgba(255, 255, 255, 0) 72%),
+    radial-gradient(420px 420px at var(--px, -999px) var(--py, -999px),
+      rgba(255, 255, 255, .26), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(
+      var(--sheen-angle, 152deg),
+      rgba(255, 255, 255, .5) 0%,
+      rgba(255, 255, 255, .18) calc(24% + var(--sheen-shift, 0%) * .12),
+      rgba(255, 255, 255, .06) 52%,
+      rgba(255, 255, 255, .16) 82%,
+      rgba(255, 255, 255, .34) 100%);
+  background-attachment: scroll, fixed, scroll;
+}
+/* 触摸设备没有指针：退回纯滚动高光，别留一块永远不动的亮斑 */
+@media (hover: none), (pointer: coarse) {
+  body.glass-theme .post-card,
+  body.glass-theme .article-view,
+  body.glass-theme .glass-card {
+    background-image: var(--glass-spec);
+    background-attachment: scroll;
+  }
+}
+
+/* ---- 22. 文章图片光影：图片也是一块「玻璃下的相纸」 ---- */
+body.glass-theme .article-content .img-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(var(--sheen-angle, 152deg),
+    rgba(255, 255, 255, .16) 0%,
+    rgba(255, 255, 255, 0) 38%,
+    rgba(255, 255, 255, 0) 70%,
+    rgba(255, 255, 255, .08) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 0 40px -22px rgba(0, 0, 0, .8);
+}
+
+/* ---- 4. 按钮三态 + loading / success / error / disabled ---- */
+body.glass-theme button,
+body.glass-theme .glass-btn,
+body.glass-theme .sidebar-cat-item,
+body.glass-theme .sidebar-archive-item,
+body.glass-theme .sidebar-tag,
+body.glass-theme .article-nav-item,
+.palette-item { position: relative; overflow: hidden; }
+/* 例外：这些按钮内部本来就有需要溢出的装饰 / 浮层，不能裁 */
+body.glass-theme .theme-toggle,
+body.glass-theme .mobile-menu-btn,
+body.glass-theme .copy-code-btn { overflow: visible; }
+body.glass-theme button:active:not(:disabled),
+body.glass-theme .glass-btn:active { transform: scale(.985) translateZ(0); }
+body.glass-theme button:disabled,
+body.glass-theme .glass-btn[aria-disabled="true"] {
+  opacity: .5;
+  cursor: not-allowed;
+  filter: saturate(60%);
+}
+body.glass-theme .is-loading-btn { color: transparent !important; pointer-events: none; }
+body.glass-theme .is-loading-btn::after {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 1em;
+  height: 1em;
+  margin: -.5em 0 0 -.5em;
+  border-radius: 50%;
+  border: 1.6px solid currentColor;
+  border-top-color: transparent;
+  color: var(--text);
+  animation: save-spin .8s linear infinite;
+}
+body.glass-theme .is-success-btn { box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--ok) 60%, transparent) inset; }
+body.glass-theme .is-error-btn { box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--danger) 60%, transparent) inset; }
+
+/* 主题按钮：☀ → ◐ → ☾ 的短过渡（图标交叉旋转淡入） */
+body.glass-theme .theme-toggle .sun-icon,
+body.glass-theme .theme-toggle .moon-icon,
+body.glass-theme .theme-btn .sun-icon,
+body.glass-theme .theme-btn .moon-icon {
+  transition: transform .34s var(--ease-spring), opacity .24s var(--ease);
+}
+body.glass-theme .theme-toggle:active .sun-icon,
+body.glass-theme .theme-toggle:active .moon-icon { transform: rotate(45deg) scale(.86); }
+
+/* ---- 10. 灯箱：缩放 / 拖动 / 原图 ---- */
+.lightbox-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  max-width: 100%;
+  max-height: 100%;
+  /* 入场弹跳交给舞台做：图片自身的 transform 要留给缩放 / 拖动，
+     否则 article.css 的 lightboxPop 动画会和 JS 的 transform 打架 */
+  animation: lightboxPop .35s cubic-bezier(.34, 1.5, .64, 1);
+}
+.lightbox-stage .lightbox-img { animation: none; }
+.lightbox-img {
+  transform-origin: center center;
+  transition: transform .18s var(--ease);
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.lightbox-img.is-zoomed { cursor: grab; transition: none; }
+.lightbox-img.is-dragging { cursor: grabbing; }
+.lightbox-tools {
+  position: fixed;
+  left: 50%;
+  bottom: 1.1rem;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .4rem .6rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--glass-spec), var(--surface-glass);
+  -webkit-backdrop-filter: var(--lens-blur-soft);
+  backdrop-filter: var(--lens-blur-soft);
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
+  z-index: 2;
+}
+.lightbox-tools button,
+.lightbox-tools a {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: .28rem .45rem;
+  border-radius: 999px;
+  font: inherit;
+  font-size: .78rem;
+  text-decoration: none;
+}
+.lightbox-tools button:hover,
+.lightbox-tools a:hover { background: var(--surface-2); }
+.lightbox-tools svg { width: 1em; height: 1em; }
+.lightbox-scale { font-size: .75rem; color: var(--text-soft); min-width: 3.2em; text-align: center; }
+@media (max-width: 480px) {
+  .lightbox-origin span { display: none; }
+}
+
+/* ---- 15. 移动端文章底部操作条 ---- */
+.article-mobile-bar {
+  position: fixed;
+  left: 50%;
+  bottom: .9rem;
+  transform: translateX(-50%);
+  z-index: 4800;
+  display: none;
+  gap: .4rem;
+  padding: .35rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--glass-spec), var(--surface-glass);
+  -webkit-backdrop-filter: var(--lens-blur-soft);
+  backdrop-filter: var(--lens-blur-soft);
+  box-shadow: var(--shadow);
+}
+.article-mobile-bar[hidden] { display: none !important; }
+.article-mobile-bar button {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: .82rem;
+  padding: .42rem .85rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.article-mobile-bar button:active { background: var(--surface-2); }
+.article-mobile-bar svg { width: 1em; height: 1em; }
+@media (max-width: 768px) {
+  body.view-detail .article-mobile-bar { display: inline-flex; }
+  body.view-detail.reader-mode .article-mobile-bar { display: inline-flex; opacity: .85; }
+  /* 底部条会挡住文末导航，给正文补一段安全距离 */
+  body.view-detail .site-footer { padding-bottom: 4.2rem; }
+  .reader-toggle { bottom: 8.4rem; }
+}
+
+/* ---- 5. 玻璃确认框 ---- */
+.glass-modal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 6800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem;
+  background: rgba(3, 6, 14, .5);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  animation: glass-view-in .16s var(--ease) both;
+}
+.glass-modal-layer[hidden] { display: none; }
+html[data-theme="light"] .glass-modal-layer { background: rgba(120, 150, 195, .34); }
+.glass-modal {
+  width: min(420px, 100%);
+  padding: 1.5rem 1.5rem 1.2rem;
+  text-align: center;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  background: var(--glass-spec), var(--surface-glass);
+  -webkit-backdrop-filter: var(--lens-blur);
+  backdrop-filter: var(--lens-blur);
+  box-shadow: var(--shadow-hover);
+}
+.glass-modal-icon { color: var(--warn-ink); display: flex; justify-content: center; margin-bottom: .6rem; }
+.glass-modal-icon svg { width: 1.7rem; height: 1.7rem; }
+.glass-modal-title { margin: 0 0 .5rem; font-size: 1.02rem; }
+.glass-modal-msg { margin: 0 0 1.2rem; font-size: .86rem; color: var(--text-muted); line-height: 1.7; }
+.glass-modal-actions { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; }
+.glass-modal-btn {
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: .85rem;
+  padding: .5rem 1.1rem;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.glass-modal-btn:hover { background: var(--surface); }
+.glass-modal-btn.confirm { background: var(--accent-soft); color: var(--accent); }
+.glass-modal-btn.confirm.is-danger { background: var(--danger-soft); color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+.glass-modal-btn:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 2px; }
+
+@media print {
+  .glass-modal-layer, .article-mobile-bar, .lightbox-tools { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .water-ripple { display: none !important; }
+  body.glass-theme.glass-flash * { animation: none !important; }
+  .lightbox-img { transition: none !important; }
 }

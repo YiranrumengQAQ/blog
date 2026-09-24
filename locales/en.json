@@ -109,7 +109,11 @@
   "lightbox": {
     "close": "Close",
     "prev": "Previous image",
-    "next": "Next image"
+    "next": "Next image",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "reset": "Reset (0)",
+    "origin": "Open original"
   },
   "boot": {
     "errorTitle": "Blog failed to start",

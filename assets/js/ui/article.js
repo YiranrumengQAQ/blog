@@ -286,6 +286,7 @@
         });
         const back = $('#articleBackBtn', el.contentBody);
         if (back) back.addEventListener('click', () => ctx.actions.navigateToList());
+        ensureMobileBar(ctx);
         el.contentBody.querySelectorAll('[data-article-action]').forEach((btn) => {
             btn.addEventListener('click', () => {
                 if (btn.dataset.articleAction === 'home') ctx.actions.resetFilters();
@@ -307,14 +308,24 @@
         root.innerHTML = `
           <button class="lightbox-close" type="button" data-i18n-attr="aria-label:lightbox.close" aria-label="关闭">${icon('x')}</button>
           <button class="lightbox-prev" type="button" data-i18n-attr="aria-label:lightbox.prev" aria-label="上一张">${icon('chevron-left')}</button>
-          <img class="lightbox-img" alt="">
+          <div class="lightbox-stage"><img class="lightbox-img" alt="" draggable="false"></div>
           <div class="lightbox-caption"></div>
           <div class="lightbox-counter"></div>
+          <div class="lightbox-tools">
+            <button type="button" class="lightbox-zoom-out" aria-label="${escapeAttr(t('lightbox.zoomOut'))}" title="${escapeAttr(t('lightbox.zoomOut'))}">${icon('minus')}</button>
+            <span class="lightbox-scale">100%</span>
+            <button type="button" class="lightbox-zoom-in" aria-label="${escapeAttr(t('lightbox.zoomIn'))}" title="${escapeAttr(t('lightbox.zoomIn'))}">${icon('plus')}</button>
+            <button type="button" class="lightbox-reset" aria-label="${escapeAttr(t('lightbox.reset'))}" title="${escapeAttr(t('lightbox.reset'))}">${icon('maximize')}</button>
+            <a class="lightbox-origin" target="_blank" rel="noopener noreferrer" title="${escapeAttr(t('lightbox.origin'))}">${icon('link')}<span>${escapeHTML(t('lightbox.origin'))}</span></a>
+          </div>
           <button class="lightbox-next" type="button" data-i18n-attr="aria-label:lightbox.next" aria-label="下一张">${icon('chevron-right')}</button>`;
         Blog.i18n.applyToDOM(root);
         document.body.appendChild(root);
         lbElements = {
             root,
+            stage: $('.lightbox-stage', root),
+            scaleLabel: $('.lightbox-scale', root),
+            origin: $('.lightbox-origin', root),
             img: $('.lightbox-img', root),
             caption: $('.lightbox-caption', root),
             counter: $('.lightbox-counter', root),
@@ -327,11 +338,15 @@
         root.addEventListener('click', (e) => { if (e.target === root) closeLightbox(); });
         lbElements.prev.addEventListener('click', () => stepLightbox(-1));
         lbElements.next.addEventListener('click', () => stepLightbox(1));
+        bindZoom(root);
         document.addEventListener('keydown', (e) => {
             if (root.hidden) return;
             if (e.key === 'Escape') closeLightbox();
             else if (e.key === 'ArrowLeft') stepLightbox(-1);
             else if (e.key === 'ArrowRight') stepLightbox(1);
+            else if (e.key === '+' || e.key === '=') zoomBy(1.25);
+            else if (e.key === '-' || e.key === '_') zoomBy(0.8);
+            else if (e.key === '0') resetZoom();
         });
 
         // 触摸滑动切换
@@ -350,6 +365,81 @@
     let lbImages = [];
     let lbCurrent = 0;
 
+    /* 缩放 / 拖动：滚轮缩放、双击切换 1x↔2x、放大后可拖动、0 复位 */
+    const ZOOM_MIN = 1, ZOOM_MAX = 6;
+    let zoom = 1, panX = 0, panY = 0;
+    let dragging = false, dragX = 0, dragY = 0, startPanX = 0, startPanY = 0;
+
+    function applyTransform() {
+        if (!lbElements) return;
+        lbElements.img.style.transform =
+            `translate3d(${panX.toFixed(1)}px, ${panY.toFixed(1)}px, 0) scale(${zoom.toFixed(3)})`;
+        lbElements.img.classList.toggle('is-zoomed', zoom > 1.01);
+        if (lbElements.scaleLabel) lbElements.scaleLabel.textContent = Math.round(zoom * 100) + '%';
+    }
+
+    function setZoom(next, originX, originY) {
+        const clamped = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, next));
+        if (clamped === zoom) return;
+        if (originX !== undefined && lbElements) {
+            // 以指针为锚点缩放：放大时不会把用户正在看的那块跑掉
+            const rect = lbElements.img.getBoundingClientRect();
+            const cx = originX - (rect.left + rect.width / 2);
+            const cy = originY - (rect.top + rect.height / 2);
+            const k = clamped / zoom;
+            panX = panX - cx * (k - 1);
+            panY = panY - cy * (k - 1);
+        }
+        zoom = clamped;
+        if (zoom <= 1.01) { panX = 0; panY = 0; }
+        applyTransform();
+    }
+
+    function zoomBy(factor) { setZoom(zoom * factor); }
+    function resetZoom() { zoom = 1; panX = 0; panY = 0; applyTransform(); }
+
+    function bindZoom(root) {
+        const img = lbElements.img;
+        $('.lightbox-zoom-in', root).addEventListener('click', () => zoomBy(1.3));
+        $('.lightbox-zoom-out', root).addEventListener('click', () => zoomBy(1 / 1.3));
+        $('.lightbox-reset', root).addEventListener('click', resetZoom);
+
+        root.addEventListener('wheel', (e) => {
+            if (root.hidden) return;
+            e.preventDefault();
+            setZoom(zoom * (e.deltaY < 0 ? 1.12 : 1 / 1.12), e.clientX, e.clientY);
+        }, { passive: false });
+
+        img.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            if (zoom > 1.01) resetZoom();
+            else setZoom(2.2, e.clientX, e.clientY);
+        });
+
+        img.addEventListener('pointerdown', (e) => {
+            if (zoom <= 1.01) return;
+            dragging = true;
+            dragX = e.clientX; dragY = e.clientY;
+            startPanX = panX; startPanY = panY;
+            img.setPointerCapture(e.pointerId);
+            img.classList.add('is-dragging');
+        });
+        img.addEventListener('pointermove', (e) => {
+            if (!dragging) return;
+            panX = startPanX + (e.clientX - dragX);
+            panY = startPanY + (e.clientY - dragY);
+            applyTransform();
+        });
+        const endDrag = (e) => {
+            if (!dragging) return;
+            dragging = false;
+            img.classList.remove('is-dragging');
+            try { img.releasePointerCapture(e.pointerId); } catch (err) { /* 忽略 */ }
+        };
+        img.addEventListener('pointerup', endDrag);
+        img.addEventListener('pointercancel', endDrag);
+    }
+
     function openLightbox(ctx, index) {
         const imgs = $$('.article-content img', ctx.el.contentBody);
         if (!imgs.length) return;
@@ -364,10 +454,13 @@
 
     function showLightboxImage(index) {
         if (!lbImages.length) return;
+        resetZoom();                      // 换图回到 100%，不然会莫名其妙停在放大状态
         lbCurrent = (index + lbImages.length) % lbImages.length;
         const img = lbImages[lbCurrent];
         const lb = lbElements;
-        lb.img.src = img.currentSrc || img.src;
+        const src = img.currentSrc || img.src;
+        lb.img.src = src;
+        if (lb.origin) lb.origin.href = src;
         lb.img.alt = img.alt || '';
         lb.caption.textContent = img.alt || '';
         lb.caption.style.display = img.alt ? '' : 'none';
@@ -383,16 +476,55 @@
 
     function closeLightbox() {
         if (!lbElements) return;
+        resetZoom();
         lbElements.root.hidden = true;
         lbElements.img.src = '';
         if (Blog.ui.sidebar) Blog.ui.sidebar.unlockBodyScroll();
+    }
+
+    /* ---------------- 移动端文章底部操作条 ---------------- */
+
+    /**
+     * 手机上读长文时，返回与回顶都在屏幕最上面，够不着。
+     * 这里在文章页底部浮一条玻璃小条：← 返回 / ↑ 顶部（只在 ≤768px 出现）。
+     */
+    let mobileBar = null;
+
+    function ensureMobileBar(ctx) {
+        if (!mobileBar || !document.body.contains(mobileBar)) {
+            mobileBar = document.createElement('div');
+            mobileBar.className = 'article-mobile-bar';
+            mobileBar.innerHTML =
+                `<button type="button" data-act="back">${icon('arrow-left')}<span>${escapeHTML(t('article.back'))}</span></button>` +
+                `<button type="button" data-act="top">${icon('arrow-up')}<span>${escapeHTML(t('nav.backToTop'))}</span></button>`;
+            mobileBar.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                if (btn.dataset.act === 'back') ctx.actions.navigateToList();
+                else window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            document.body.appendChild(mobileBar);
+        } else {
+            // 语言可能换了：文字重新取一次
+            const labels = mobileBar.querySelectorAll('span');
+            if (labels[0]) labels[0].textContent = t('article.back');
+            if (labels[1]) labels[1].textContent = t('nav.backToTop');
+        }
+        mobileBar.hidden = false;
+    }
+
+    function hideMobileBar() {
+        if (mobileBar) mobileBar.hidden = true;
     }
 
     /* ---------------- 阅读进度条 ---------------- */
 
     function setProgressVisible(ctx, visible) {
         ctx.el.readingProgress.hidden = !visible;
-        if (!visible) ctx.el.readingProgressBar.style.width = '0';
+        if (!visible) {
+            ctx.el.readingProgressBar.style.width = '0';
+            hideMobileBar();
+        }
     }
 
     function updateProgress(ctx) {

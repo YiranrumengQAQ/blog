@@ -339,8 +339,16 @@
         S.nextStrike = now + rand(7000, 22000);
     }
 
+    /** 广播闪电：玻璃层（fx.js）会同步掠过一道冷光，天上闪、屋里也亮 */
+    function emitLightning(power) {
+        try {
+            document.dispatchEvent(new CustomEvent('blog:lightning', { detail: { power: power } }));
+        } catch (e) { /* 老浏览器没有 CustomEvent 构造器 */ }
+    }
+
     function strike() {
         S.flash = 1;
+        emitLightning(1);
         S.boltLife = rand(180, 320);
         const x0 = rand(S.W * 0.1, S.W * 0.9);
         const pts = [{ x: x0, y: -20 }];
@@ -355,7 +363,11 @@
         S.bolt = pts;
         // 35% 概率双重闪：120ms 后再闪一次
         if (Math.random() < 0.35) {
-            setTimeout(() => { if (S.running) S.flash = Math.max(S.flash, 0.7); }, 130);
+            setTimeout(() => {
+                if (!S.running) return;
+                S.flash = Math.max(S.flash, 0.7);
+                emitLightning(0.7);
+            }, 130);
         }
     }
 

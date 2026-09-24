@@ -573,7 +573,7 @@
                 return;
             }
             if (Object.keys(existingPosts).length === 0) {
-                const ok = confirm(
+                const ok = window.confirm(
                     '注意：你还没有导入现有的 posts 文件夹。\n\n' +
                     '下载的 manifest.json 将只包含当前这一篇文章。\n' +
                     '如果博客里已有其他文章，它们会从首页消失！\n\n' +
@@ -617,18 +617,59 @@
         // 站内跳转（返回博客）同样保护
         const backLink = document.querySelector('.editor-back-link');
         if (backLink) {
-            backLink.addEventListener('click', (e) => {
+            backLink.addEventListener('click', async (e) => {
                 if (!dirty || !hasContent()) return;
                 saveDraft.cancel();
-                if (writeDraft()) return;  // 存下来了就放心走
-                if (!confirm('还有内容没有保存，而且浏览器存储不可用。\n离开后修改可能会丢失，确定离开吗？')) {
-                    e.preventDefault();
+                if (writeDraft()) return;  // 存下来了就放心走，不打扰
+                e.preventDefault();
+                const href = backLink.getAttribute('href');
+                const ans = Blog.ui.modal
+                    ? await Blog.ui.modal.confirm({
+                        title: '还有内容没有保存',
+                        message: '浏览器存储不可用（隐私模式 / 空间已满），离开后修改可能会丢失。建议先用「下载 .md」把文章存到本地。',
+                        confirmLabel: '仍然离开',
+                        cancelLabel: '继续编辑',
+                        extraLabel: '下载 .md 再走',
+                        danger: true
+                    })
+                    : (window.confirm('还有内容没有保存，确定离开吗？') ? 'confirm' : 'cancel');
+                if (ans === 'cancel') return;
+                if (ans === 'extra') {
+                    const btnMd = $('#btnDownloadMd');
+                    if (btnMd) btnMd.click();
+                    setTimeout(() => { window.location.href = href; }, 600);
+                    return;
                 }
+                window.location.href = href;
             });
         }
-        $('#btnClear').addEventListener('click', () => {
-            if (confirm('确定清空当前内容吗？（已导入的文章列表会保留，草稿会被删除）')) {
-                clearAll();
+        $('#btnClear').addEventListener('click', async () => {
+            // 高风险且不可逆 → 才打断；并且提供「先存一份再清」
+            const snapshot = draftPayload();
+            const ans = Blog.ui.modal
+                ? await Blog.ui.modal.confirm({
+                    title: '确定清空当前内容吗？',
+                    message: '已导入的文章列表会保留，草稿会被删除。清空后可以用提示里的「撤销」找回。',
+                    confirmLabel: '清空',
+                    cancelLabel: '继续编辑',
+                    danger: true
+                })
+                : (window.confirm('确定清空当前内容吗？') ? 'confirm' : 'cancel');
+            if (ans !== 'confirm') return;
+            clearAll();
+            // 撤销：把刚才那份快照原样写回去
+            if (Blog.ui.toast && Blog.ui.toast.undo) {
+                Blog.ui.toast.undo('已清空', () => {
+                    try {
+                        localStorage.setItem(DRAFT_KEY, snapshot);
+                        restoreDraft();
+                        renderPreview();
+                        toast('已恢复清空前的内容', 'success');
+                    } catch (e) {
+                        toast('恢复失败：浏览器存储不可用', 'error');
+                    }
+                });
+            } else {
                 toast('已清空', 'success');
             }
         });
