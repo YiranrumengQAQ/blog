@@ -2210,3 +2210,216 @@ html[data-theme="light"] body.glass-theme .editor-preview pre {
 
 /* 旧皮肤开关按钮如果还被缓存脚本注入，直接藏掉（玻璃主题唯一） */
 body.glass-theme .ui-style-switch { display: none !important; }
+
+/* ==========================================================================
+   16. 体验层：页面软切换 / 沉浸阅读模式 / 快捷键帮助
+   --------------------------------------------------------------------------
+   原则：换内容 ≠ 换世界。雨幕、极光、背景与玻璃舞台永远不重启，
+   这里动的只有「内容区」这一层。
+   ========================================================================== */
+
+/* ---- 页面软切换（内容区淡出 → 换内容 → 淡入，150~220ms） ---- */
+body.glass-theme .content-area {
+  transition: opacity .16s var(--ease), filter .16s var(--ease), translate .16s var(--ease);
+}
+body.glass-theme .content-area.view-leaving {
+  opacity: 0;
+  filter: blur(2px);
+  translate: 0 4px;
+}
+body.glass-theme .content-area.view-entering {
+  animation: glass-view-in .22s var(--ease) both;
+}
+@keyframes glass-view-in {
+  from { opacity: 0; filter: blur(3px); translate: 0 8px; }
+  to   { opacity: 1; filter: blur(0);   translate: 0 0; }
+}
+
+/* ---- 阅读模式入口按钮（文章页右下角，回到顶部按钮上方） ---- */
+.reader-toggle {
+  position: fixed;
+  right: 1.2rem;
+  bottom: 5.2rem;
+  z-index: 5000;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .55rem .9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  background: var(--glass-spec), var(--surface-glass);
+  -webkit-backdrop-filter: var(--lens-blur-soft);
+  backdrop-filter: var(--lens-blur-soft);
+  box-shadow: var(--shadow-sm);
+  font: inherit;
+  font-size: .82rem;
+  cursor: pointer;
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+              opacity var(--dur) var(--ease);
+}
+[dir="rtl"] .reader-toggle { right: auto; left: 1.2rem; }
+.reader-toggle[hidden] { display: none; }
+.reader-toggle .icon, .reader-toggle svg { width: 1em; height: 1em; }
+@media (hover: hover) and (pointer: fine) {
+  .reader-toggle:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+}
+.reader-toggle:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 3px; }
+@media (max-width: 480px) {
+  .reader-toggle { bottom: 4.6rem; font-size: .78rem; padding: .5rem .75rem; }
+}
+
+/* ---- 沉浸阅读模式 ---- */
+body.glass-theme.reader-mode .site-header {
+  transform: translateY(-105%);
+  opacity: 0;
+  pointer-events: none;
+}
+body.glass-theme.reader-mode .sidebar { display: none; }
+body.glass-theme.reader-mode .main-container { grid-template-columns: 1fr; display: block; }
+body.glass-theme.reader-mode .content-area { margin: 0 auto; max-width: 46rem; }
+body.glass-theme.reader-mode .site-footer { opacity: .35; }
+
+/* 背景变暗、雨幕降低存在感（但绝不停止——世界还在下雨） */
+body.glass-theme.reader-mode .rain-stage { opacity: .42; }
+body.glass-theme.reader-mode .drop-stage { opacity: .3; }
+body.glass-theme.reader-mode .rain-aurora { opacity: .35; }
+body.glass-theme.reader-mode::before,
+body.glass-theme.reader-mode::after { opacity: .35; }
+.rain-stage, .drop-stage { transition: opacity .45s var(--ease); }
+
+/* 玻璃变干净：模糊收敛、高光减弱，让文字成为主角 */
+body.glass-theme.reader-mode .article-view {
+  -webkit-backdrop-filter: saturate(112%) blur(26px);
+  backdrop-filter: saturate(112%) blur(26px);
+  padding: 2.6rem 2.4rem 2.2rem;
+}
+body.glass-theme.reader-mode .article-view::after { display: none; }
+body.glass-theme.reader-mode .article-content {
+  font-size: 1.07rem;
+  line-height: 1.95;
+  letter-spacing: .012em;
+}
+body.glass-theme.reader-mode .article-content p { margin: 1.15em 0; }
+body.glass-theme.reader-mode .article-content img { max-width: 100%; height: auto; }
+body.glass-theme.reader-mode .article-content pre { overflow-x: auto; }
+@media (max-width: 768px) {
+  body.glass-theme.reader-mode .article-view { padding: 1.6rem 1.15rem; }
+  body.glass-theme.reader-mode .article-content { font-size: 1.02rem; line-height: 1.85; }
+}
+
+/* 阅读进度：一条玻璃高光线，不是传统粗进度条 */
+body.glass-theme .reading-progress {
+  height: 2px;
+  background: transparent;
+}
+body.glass-theme .reading-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, .25),
+    var(--accent) 55%,
+    rgba(255, 255, 255, .85));
+  box-shadow: 0 0 10px -2px var(--accent-ring);
+  transition: width .12s linear;
+}
+body.glass-theme.reader-mode .reading-progress {
+  position: fixed;
+  top: 0;
+  z-index: 6000;
+}
+
+/* ---- 快捷键帮助面板（? 呼出） ---- */
+.shortcut-help {
+  position: fixed;
+  inset: 0;
+  z-index: 6500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem;
+  background: rgba(3, 6, 14, .45);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.shortcut-help[hidden] { display: none; }
+.shortcut-help-card {
+  width: min(420px, 100%);
+  padding: 1.4rem 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  background: var(--glass-spec), var(--surface-glass);
+  -webkit-backdrop-filter: var(--lens-blur);
+  backdrop-filter: var(--lens-blur);
+  box-shadow: var(--shadow-hover);
+}
+.shortcut-help-card h3 { margin: 0 0 .9rem; font-size: 1.05rem; }
+.shortcut-help-card ul { margin: 0; padding: 0; list-style: none; }
+.shortcut-help-card li {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  padding: .3rem 0;
+  font-size: .88rem;
+  color: var(--text-muted);
+}
+.shortcut-help-card kbd {
+  flex: 0 0 auto;
+  min-width: 5.6rem;
+  text-align: center;
+  padding: .2rem .5rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: .78rem;
+}
+.shortcut-help-tip { margin: .9rem 0 0; font-size: .76rem; color: var(--text-soft); }
+
+/* 打印与减少动态下，这些体验层组件一律让路 */
+@media print {
+  .reader-toggle, .shortcut-help { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.glass-theme .content-area.view-leaving { opacity: 1; filter: none; translate: 0 0; }
+  body.glass-theme .content-area.view-entering { animation: none; }
+}
+
+/* ---- 写作助手：自动保存状态胶囊 ---- */
+.save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .38rem .8rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background: var(--surface-2);
+  -webkit-backdrop-filter: var(--lens-blur-soft);
+  backdrop-filter: var(--lens-blur-soft);
+  font: inherit;
+  font-size: .78rem;
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.save-status .save-dot {
+  width: .52em;
+  height: .52em;
+  border-radius: 50%;
+  background: currentColor;
+  transition: background var(--dur) var(--ease);
+}
+.save-status[data-state="saved"] { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+.save-status[data-state="dirty"] { color: var(--warn-ink); }
+.save-status[data-state="dirty"] .save-dot { animation: save-pulse 1.4s var(--ease) infinite; }
+.save-status[data-state="saving"] { color: var(--text-soft); }
+.save-status[data-state="saving"] .save-dot { animation: save-spin .9s linear infinite; background: none; border: 1.5px solid currentColor; border-top-color: transparent; }
+.save-status[data-state="error"] { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 50%, transparent); }
+.save-status:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 2px; }
+@keyframes save-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@keyframes save-spin { to { transform: rotate(360deg); } }
+@media (max-width: 480px) {
+  .save-status .save-text { display: none; }
+  .save-status { padding: .38rem .5rem; }
+}

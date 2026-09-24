@@ -53,6 +53,11 @@
                 <span class="badge">零代码写博客</span>
             </div>
             <div class="editor-header-actions">
+                <!-- 自动保存状态：● 已保存 / ◌ 保存中… / ! 保存失败（点击看最后保存时间） -->
+                <button class="save-status" id="saveStatus" type="button" data-state="saved"
+                    title="草稿自动保存在本浏览器">
+                    <span class="save-dot" aria-hidden="true"></span><span class="save-text">已保存</span>
+                </button>
                 <button class="md-btn theme-btn" id="themeToggle" type="button" title="切换亮色/暗色主题"
                     aria-label="切换亮色/暗色主题">
                     <svg class="icon sun-icon" data-icon="sun"></svg>
@@ -299,6 +304,7 @@
     <script src="assets/vendor/marked.min.js"></script>
     <script src="assets/vendor/purify.min.js"></script>
     <script src="assets/js/utils/dom.js" defer></script>
+    <script src="assets/js/utils/storage.js" defer></script>
     <script src="assets/js/utils/format.js" defer></script>
     <!-- 图标（与阅读页共用同一套内联 SVG，替代 emoji） -->
     <script src="assets/js/ui/icons.js" defer></script>

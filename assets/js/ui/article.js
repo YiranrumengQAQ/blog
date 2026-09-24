@@ -20,6 +20,64 @@
     // 图标统一走内联 SVG 图标库（不使用 emoji）
     const icon = (name) => Blog.ui.icons.svg(name);
 
+    const store = Blog.storage;
+    const MAX_RECENT = 12;
+
+    /* ---------------- 阅读位置记忆 / 最近阅读 ---------------- */
+
+    /**
+     * 阅读位置按「比例」存（不是像素）：换设备、换窗口宽度、换字号后
+     * 回来仍然大致停在原处；比例小于 2% 或已经读完的不记，免得干扰。
+     */
+    function saveReadPos(slug) {
+        if (!store || !slug) return;
+        const doc = document.documentElement;
+        const total = doc.scrollHeight - window.innerHeight;
+        if (total <= 0) return;
+        const ratio = Math.min(1, Math.max(0, window.scrollY / total));
+        const map = store.getJSON(store.KEYS.readPos, {}) || {};
+        if (ratio < 0.02 || ratio > 0.985) delete map[slug];
+        else map[slug] = Math.round(ratio * 1000) / 1000;
+        store.setJSON(store.KEYS.readPos, map);
+    }
+
+    function readPosOf(slug) {
+        if (!store || !slug) return 0;
+        const map = store.getJSON(store.KEYS.readPos, {}) || {};
+        const v = Number(map[slug]);
+        return v > 0 && v < 1 ? v : 0;
+    }
+
+    /** 恢复阅读位置：等两帧让图片占位与布局落定，再平滑滚过去 */
+    function restoreReadPos(slug) {
+        const ratio = readPosOf(slug);
+        if (!ratio) return;
+        const go = () => {
+            const doc = document.documentElement;
+            const total = doc.scrollHeight - window.innerHeight;
+            if (total <= 0) return;
+            window.scrollTo({ top: total * ratio, behavior: 'smooth' });
+            if (Blog.ui.toast) {
+                Blog.ui.toast.show(t('article.resumed', { n: Math.round(ratio * 100) }), 'info', 2200);
+            }
+        };
+        requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(go, 120)));
+    }
+
+    function pushRecent(post) {
+        if (!store || !post || !post.slug) return;
+        const list = (store.getJSON(store.KEYS.recent, []) || []).filter(
+            (r) => r && r.slug && r.slug !== post.slug
+        );
+        list.unshift({ slug: post.slug, title: post.title || post.slug, at: Date.now() });
+        store.setJSON(store.KEYS.recent, list.slice(0, MAX_RECENT));
+    }
+
+    function recentPosts() {
+        if (!store) return [];
+        return (store.getJSON(store.KEYS.recent, []) || []).filter((r) => r && r.slug);
+    }
+
     /* ---------------- 渲染 ---------------- */
 
     function render(ctx) {
@@ -38,6 +96,12 @@
         return blog.getPostDetail(slug).then((post) => {
             ctx.el.skeleton.hidden = true;
             paint(ctx, post);
+            pushRecent(post);
+            // 只有「不是刚从列表点进来的第一屏」才需要恢复；由调用方决定
+            if (ctx.pendingRestoreRead === slug) {
+                ctx.pendingRestoreRead = null;
+                restoreReadPos(slug);
+            }
         }).catch((err) => {
             ctx.el.skeleton.hidden = true;
             console.error('[article] 加载失败:', err);
@@ -322,9 +386,29 @@
     }
 
     function init(ctx) {
-        window.addEventListener('scroll', () => updateProgress(ctx), { passive: true });
+        let saveTimer = 0;
+        const onScroll = () => {
+            updateProgress(ctx);
+            // 滚动停下 400ms 后再落盘，避免把每一帧都写进 storage
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => {
+                if (ctx.state.view === 'detail' && ctx.state.slug) saveReadPos(ctx.state.slug);
+            }, 400);
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
         window.addEventListener('resize', () => updateProgress(ctx), { passive: true });
+        // 离开页面 / 切后台前补存一次，保证「关掉再回来」也能续上
+        window.addEventListener('pagehide', () => {
+            if (ctx.state.view === 'detail' && ctx.state.slug) saveReadPos(ctx.state.slug);
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' &&
+                ctx.state.view === 'detail' && ctx.state.slug) saveReadPos(ctx.state.slug);
+        });
     }
 
-    Blog.ui.article = { render, init, setProgressVisible, openLightbox, closeLightbox };
+    Blog.ui.article = {
+        render, init, setProgressVisible, openLightbox, closeLightbox,
+        saveReadPos, readPosOf, recentPosts
+    };
 })();

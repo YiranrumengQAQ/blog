@@ -211,7 +211,62 @@
 
     /* ---------------- 草稿 ---------------- */
 
+    /* 自动保存状态机：dirty → saving → saved / error
+       用户随时能在顶栏看到自己的字到底有没有落盘，这是写作工具的底线体验 */
+    let lastSavedAt = 0;
+    let dirty = false;
+
+    function draftPayload() {
+        return JSON.stringify({
+            form: {
+                title: els.fTitle.value, date: els.fDate.value, category: els.fCategory.value,
+                tags: els.fTags.value, cover: els.fCover.value, summary: els.fSummary.value,
+                sticky: els.fSticky.checked, content: els.fContent.value,
+                slug: els.fSlug.value, slugEdited: slugManuallyEdited
+            },
+            existing: existingPosts
+        });
+    }
+
+    function setSaveState(state) {
+        const node = document.getElementById('saveStatus');
+        if (!node) return;
+        const text = node.querySelector('.save-text');
+        node.dataset.state = state;
+        const label = { saved: '已保存', saving: '保存中…', dirty: '未保存', error: '保存失败' }[state] || state;
+        if (text) text.textContent = label;
+        const time = lastSavedAt
+            ? new Date(lastSavedAt).toLocaleTimeString([], { hour12: false })
+            : '—';
+        node.title = state === 'error'
+            ? '保存失败：浏览器存储不可用（隐私模式 / 空间已满）'
+            : '草稿自动保存在本浏览器 · 最后保存：' + time;
+    }
+
+    function hasContent() {
+        return !!(els.fTitle.value.trim() || els.fContent.value.trim());
+    }
+
+    function writeDraft() {
+        setSaveState('saving');
+        try {
+            localStorage.setItem(DRAFT_KEY, draftPayload());
+            lastSavedAt = Date.now();
+            dirty = false;
+            setSaveState('saved');
+            return true;
+        } catch (e) {
+            setSaveState('error');
+            return false;
+        }
+    }
+
     const saveDraft = debounce(() => {
+        writeDraft();
+    }, 500);
+
+    /** 旧实现保留在下面（未再使用），真正的写盘统一走 writeDraft() */
+    const saveDraftLegacy = debounce(() => {
         try {
             const post = getFormPost();
             localStorage.setItem(DRAFT_KEY, JSON.stringify({
@@ -225,6 +280,7 @@
             }));
         } catch (e) { /* 存储空间不足等，忽略 */ }
     }, 500);
+    void saveDraftLegacy;
 
     function restoreDraft() {
         let data = null;
@@ -461,6 +517,8 @@
             .forEach((id) => {
                 els[id].addEventListener('input', () => {
                     renderPreview();
+                    dirty = true;
+                    setSaveState('dirty');
                     saveDraft();
                 });
             });
@@ -530,21 +588,44 @@
         // 草稿 & 清空
         $('#btnSaveDraft').addEventListener('click', () => {
             saveDraft.cancel();
-            try {
-                localStorage.setItem(DRAFT_KEY, JSON.stringify({
-                    form: {
-                        title: els.fTitle.value, date: els.fDate.value, category: els.fCategory.value,
-                        tags: els.fTags.value, cover: els.fCover.value, summary: els.fSummary.value,
-                        sticky: els.fSticky.checked, content: els.fContent.value,
-                        slug: els.fSlug.value, slugEdited: slugManuallyEdited
-                    },
-                    existing: existingPosts
-                }));
-                toast('草稿已保存到本浏览器（Ctrl+S 随时保存）', 'success');
-            } catch (e) {
-                toast('保存失败：浏览器存储不可用', 'error');
-            }
+            if (writeDraft()) toast('草稿已保存到本浏览器（Ctrl+S 随时保存）', 'success');
+            else toast('保存失败：浏览器存储不可用', 'error');
         });
+
+        // 状态胶囊：点一下立刻保存并报告最后保存时间
+        const statusBtn = document.getElementById('saveStatus');
+        if (statusBtn) {
+            statusBtn.addEventListener('click', () => {
+                saveDraft.cancel();
+                if (writeDraft()) {
+                    toast('已保存 · ' + new Date(lastSavedAt).toLocaleTimeString([], { hour12: false }), 'success');
+                } else {
+                    toast('保存失败：浏览器存储不可用', 'error');
+                }
+            });
+        }
+
+        // 离开保护：只有「真的还有没落盘的修改」才拦，已保存就直接放行
+        window.addEventListener('beforeunload', (e) => {
+            if (!dirty || !hasContent()) return;
+            writeDraft();                  // 先尽力抢救一次
+            if (!dirty) return;            // 抢救成功就不打扰用户
+            e.preventDefault();
+            e.returnValue = '';
+        });
+
+        // 站内跳转（返回博客）同样保护
+        const backLink = document.querySelector('.editor-back-link');
+        if (backLink) {
+            backLink.addEventListener('click', (e) => {
+                if (!dirty || !hasContent()) return;
+                saveDraft.cancel();
+                if (writeDraft()) return;  // 存下来了就放心走
+                if (!confirm('还有内容没有保存，而且浏览器存储不可用。\n离开后修改可能会丢失，确定离开吗？')) {
+                    e.preventDefault();
+                }
+            });
+        }
         $('#btnClear').addEventListener('click', () => {
             if (confirm('确定清空当前内容吗？（已导入的文章列表会保留，草稿会被删除）')) {
                 clearAll();
@@ -597,6 +678,15 @@
 
     /* ---------------- 启动 ---------------- */
 
+    function localStorage_available() {
+        try {
+            const k = '__editor_probe__';
+            localStorage.setItem(k, '1');
+            localStorage.removeItem(k);
+            return true;
+        } catch (e) { return false; }
+    }
+
     function init() {
         // 主题恢复
         try {
@@ -614,6 +704,8 @@
         // 先按"还没导入"的状态刷一次导入区：警示条、提示文案（带图标）与下拉框都要就位。
         // 以前只有恢复草稿时才会执行 refreshImportUI，第一次打开页面看不到未导入的警示。
         refreshImportUI();
+
+        setSaveState(localStorage_available() ? 'saved' : 'error');
 
         const hasDraft = restoreDraft();
         if (!hasDraft) {

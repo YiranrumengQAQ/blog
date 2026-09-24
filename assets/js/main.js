@@ -60,7 +60,78 @@
         headerBlogName: $('#headerBlogName')
     };
 
-    const ctx = { blog, state, el, config: null, actions: {} };
+    const ctx = { blog, state, el, config: null, actions: {}, pendingRestoreRead: null };
+
+    /* ---------------- 状态连续性（列表筛选 + 滚动位置） ---------------- */
+
+    const store = Blog.storage;
+
+    /** 同一组筛选条件 = 同一个「列表位置」，翻页也算不同位置 */
+    function listKey(st) {
+        return [st.category || '', st.tag || '', st.archive || '', st.keyword || '', st.page || 1].join('|');
+    }
+
+    const scrollMemory = new Map();   // listKey → scrollY（本次会话，最准）
+
+    function rememberListScroll() {
+        if (state.view !== 'list') return;
+        scrollMemory.set(listKey(state), window.scrollY);
+        persistListState();
+    }
+
+    /** 把当前列表状态写进 storage：下次打开裸地址时可以回到原来的位置 */
+    function persistListState() {
+        if (!store) return;
+        store.setJSON(store.KEYS.listState, {
+            category: state.category,
+            tag: state.tag,
+            archive: state.archive,
+            keyword: state.keyword,
+            page: state.page,
+            scrollY: state.view === 'list' ? window.scrollY : 0,
+            at: Date.now()
+        });
+    }
+
+    /**
+     * 恢复列表滚动位置。列表是异步渲染的（骨架 → 卡片 → 封面补全），
+     * 所以连续几帧尝试，直到页面高度够得着目标位置为止。
+     */
+    function restoreListScroll(key) {
+        const y = scrollMemory.get(key);
+        if (!y) return;
+        let tries = 0;
+        const tick = () => {
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            const root = document.documentElement;
+            const prev = root.style.scrollBehavior;
+            root.style.scrollBehavior = 'auto';
+            window.scrollTo(0, Math.min(y, Math.max(0, max)));
+            root.style.scrollBehavior = prev;
+            if (max < y && ++tries < 24) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+    }
+
+    /* ---------------- 页面软切换 ---------------- */
+
+    /**
+     * 换内容 ≠ 换世界：雨幕 / 极光 / 背景 / 玻璃舞台永远不重启，
+     * 这里只让内容区做一次很短的淡出 → 换内容 → 淡入。
+     */
+    function softSwap(render) {
+        const node = el.contentArea;
+        if (!node || !node.animate) { render(); return; }
+        node.classList.add('view-leaving');
+        setTimeout(() => {
+            node.classList.remove('view-leaving');
+            render();
+            node.classList.remove('view-entering');
+            void node.offsetWidth;          // 强制重排，保证动画重新播放
+            node.classList.add('view-entering');
+            setTimeout(() => node.classList.remove('view-entering'), 320);
+        }, 120);
+    }
 
     /**
      * 瞬时滚到顶部。html 上有 scroll-behavior: smooth，
@@ -104,18 +175,30 @@
     /* ---------------- 动作 ---------------- */
 
     const actions = {
-        refreshAll() {
+        refreshAll(opts) {
+            opts = opts || {};
             Blog.ui.search.syncInput(ctx);
             Blog.ui.sidebar.updateActive(ctx);
-            if (state.view === 'detail' && state.slug) {
-                Blog.ui.article.render(ctx);
-            } else {
-                state.view = 'list';
-                el.skeleton.hidden = true;
-                Blog.ui.article.setProgressVisible(ctx, false);
-                applySiteName();
-                Blog.ui.postlist.render(ctx);
-            }
+            document.body.classList.toggle('view-detail', state.view === 'detail');
+            document.body.classList.toggle('view-list', state.view !== 'detail');
+            if (Blog.ui.reader) Blog.ui.reader.syncView(state.view);
+
+            const paint = () => {
+                if (state.view === 'detail' && state.slug) {
+                    ctx.pendingRestoreRead = state.slug;   // article.js 渲染完会尝试续读
+                    Blog.ui.article.render(ctx);
+                } else {
+                    state.view = 'list';
+                    el.skeleton.hidden = true;
+                    Blog.ui.article.setProgressVisible(ctx, false);
+                    applySiteName();
+                    Blog.ui.postlist.render(ctx);
+                    persistListState();
+                    if (opts.restoreScroll) restoreListScroll(listKey(state));
+                }
+            };
+            if (opts.soft) softSwap(paint);
+            else paint();
         },
 
         /** 设置筛选条件（保留未提及的字段语义由调用方决定） */
@@ -137,20 +220,23 @@
         },
 
         navigateToPost(slug) {
+            rememberListScroll();          // 记住「从哪儿点进来的」
+            if (state.view === 'detail' && state.slug) Blog.ui.article.saveReadPos(state.slug);
             state.view = 'detail';
             state.slug = slug;
             Blog.ui.router.syncPostHash(slug);
             Blog.ui.sidebar.closeMobile(ctx);
             scrollToTopInstant();
-            actions.refreshAll();
+            actions.refreshAll({ soft: true });
         },
 
+        /** 返回列表：筛选条件、页码、搜索词、滚动位置全部保持原样 */
         navigateToList() {
+            if (state.slug) Blog.ui.article.saveReadPos(state.slug);
             state.view = 'list';
             state.slug = null;
             Blog.ui.router.syncListHash(state);
-            actions.refreshAll();
-            el.contentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            actions.refreshAll({ soft: true, restoreScroll: true });
         },
 
         reload() {
@@ -200,6 +286,8 @@
 
     Blog.ui.theme.initTheme();
     Blog.ui.article.init(ctx);
+    if (Blog.ui.reader) Blog.ui.reader.init(ctx);
+    if (Blog.ui.shortcuts) Blog.ui.shortcuts.init(ctx);
     Blog.ui.postlist.init(ctx);
     Blog.ui.search.init(ctx);
     Blog.ui.sidebar.init(ctx);
@@ -213,18 +301,33 @@
     });
 
     // 回到顶部 & 顶栏阴影
+    let scrollSaveTimer = 0;
     function onScroll() {
         el.backToTop.classList.toggle('visible', window.scrollY > 500);
         el.siteHeader.classList.toggle('scrolled', window.scrollY > 10);
+        // 列表滚动位置随时记账：从任意入口离开列表都能原位返回
+        if (state.view === 'list') {
+            clearTimeout(scrollSaveTimer);
+            scrollSaveTimer = setTimeout(rememberListScroll, 260);
+        }
     }
     window.addEventListener('scroll', onScroll, { passive: true });
     el.backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
     // 浏览器前进 / 后退
     window.addEventListener('popstate', () => {
+        const wasList = state.view === 'list';
+        if (wasList) rememberListScroll();
+        else if (state.slug) Blog.ui.article.saveReadPos(state.slug);
         Blog.ui.router.parseHash(state);
-        actions.refreshAll();
         if (state.view === 'detail') scrollToTopInstant();
+        actions.refreshAll({ soft: true, restoreScroll: state.view === 'list' });
+    });
+
+    // 关页面前补存一次，跨会话也能续上
+    window.addEventListener('pagehide', () => {
+        if (state.view === 'list') rememberListScroll();
+        else persistListState();
     });
 
     /* ---------------- 启动 ---------------- */
@@ -253,7 +356,22 @@
         await Blog.i18n.init({ configUrl: './config.json' });
         setupLangSwitcher();
 
+        const bareURL = !window.location.hash || window.location.hash === '#' || window.location.hash === '#/';
         Blog.ui.router.parseHash(state);
+        // 裸地址进站（不是分享链接）→ 恢复上次的筛选 / 页码 / 滚动位置
+        if (bareURL && store) {
+            const saved = store.getJSON(store.KEYS.listState, null);
+            // 只认 7 天内的记忆，太久远的恢复反而让人困惑
+            if (saved && saved.at && Date.now() - saved.at < 7 * 24 * 3600 * 1000) {
+                state.category = saved.category || null;
+                state.tag = saved.tag || null;
+                state.archive = saved.archive || null;
+                state.keyword = saved.keyword || '';
+                state.page = Math.max(1, parseInt(saved.page, 10) || 1);
+                if (saved.scrollY > 0) scrollMemory.set(listKey(state), saved.scrollY);
+                Blog.ui.router.syncListHash(state, { replace: true });
+            }
+        }
         try {
             await blog.init();
         } catch (err) {
@@ -269,7 +387,7 @@
         Blog.ui.sidebar.render(ctx);
         Blog.ui.search.syncInput(ctx);
         Blog.ui.sidebar.updateActive(ctx);
-        actions.refreshAll();
+        actions.refreshAll({ restoreScroll: true });
 
         // 后台预取全部文章：完成后静默更新列表（补全封面 / 摘要）与侧栏
         blog.hydrateAll({
